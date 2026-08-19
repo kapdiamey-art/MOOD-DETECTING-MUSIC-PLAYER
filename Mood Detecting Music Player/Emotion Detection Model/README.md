@@ -99,4 +99,13 @@ Dataset preparation
 
 
 week 3
-── Actual building and training of model        NOW
+├── Tokenization & Vocabulary Building ✅
+├── Word → Token ID Conversion ✅
+├── <PAD> and <UNK> Token Handling ✅
+├── Vocabulary saved as vocabulary.json ✅
+├── dataset.py ✅
+├── Text → Numerical Sequence ✅
+├── Sequence Padding ✅
+├── Emotion Labels → Numerical Labels ✅
+├── PyTorch Dataset & DataLoader ✅
+├── Model Architecture (model.py) ⬅️ Next
