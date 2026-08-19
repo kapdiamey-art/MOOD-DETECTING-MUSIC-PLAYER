@@ -1,0 +1,15 @@
+# Environment variables
+.env
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# R
+.Rhistory
+**/.Rhistory
+
+# Python
+__pycache__/
+**/__pycache__/
+*.pyc
