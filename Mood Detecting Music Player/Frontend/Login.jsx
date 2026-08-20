@@ -1,282 +1,61 @@
-//---221---//
-// import { useState } from "react";
-// import { useNavigate } from "react-router-dom";
-
-
-// export default function Login() {
-
-//   const navigate = useNavigate();
-
-//   const [email, setEmail] = useState("");
-
-//   const [password, setPassword] = useState("");
-
-//   const [error, setError] = useState("");
-
-
-//   const handleLogin = (e) => {
-
-//     e.preventDefault();
-
-
-//     const savedUser =
-//       JSON.parse(
-//         localStorage.getItem("moodifyUser")
-//       );
-
-
-//     if (!savedUser) {
-
-//       setError(
-//         "No account found. Please register first."
-//       );
-
-//       return;
-//     }
-
-
-//     if (
-//       email.trim().toLowerCase() !==
-//       savedUser.email.toLowerCase()
-//     ) {
-
-//       setError(
-//         "Incorrect email or password."
-//       );
-
-//       return;
-//     }
-
-
-//     if (
-//       password !== savedUser.password
-//     ) {
-
-//       setError(
-//         "Incorrect email or password."
-//       );
-
-//       return;
-//     }
-
-
-//     localStorage.setItem(
-//       "moodifyLoggedIn",
-//       "true"
-//     );
-
-
-//     navigate("/mood");
-
-//   };
-
-
-//   return (
-
-//     <div className="auth-page">
-
-//       <div className="auth-card">
-
-//         {/* LOGO */}
-
-//         <div className="auth-logo">
-
-//           <div className="auth-logo-icon">
-//             ♫
-//           </div>
-
-//           <span>
-//             Moodify
-//           </span>
-
-//         </div>
-
-
-//         {/* HEADER */}
-
-//         <div className="auth-header">
-
-//           <span className="auth-badge">
-//             🎧 WELCOME BACK
-//           </span>
-
-//           <h1>
-//             Welcome back
-//           </h1>
-
-//           <p>
-//             Your mood. Your music. Your moment.
-//           </p>
-
-//         </div>
-
-
-//         {/* FORM */}
-
-//         <form onSubmit={handleLogin}>
-
-
-//           <div className="form-group">
-
-//             <label>
-//               Email Address
-//             </label>
-
-//             <input
-//               type="email"
-//               placeholder="you@example.com"
-//               value={email}
-//               onChange={(e) => {
-
-//                 setEmail(e.target.value);
-
-//                 setError("");
-
-//               }}
-//             />
-
-//           </div>
-
-
-//           <div className="form-group">
-
-//             <div className="password-label">
-
-//               <label>
-//                 Password
-//               </label>
-
-//               <button
-//                 type="button"
-//                 onClick={() =>
-//                   navigate("/forgot-password")
-//                 }
-//               >
-//                 Forgot password?
-//               </button>
-
-//             </div>
-
-
-//             <input
-//               type="password"
-//               placeholder="Enter your password"
-//               value={password}
-//               onChange={(e) => {
-
-//                 setPassword(e.target.value);
-
-//                 setError("");
-
-//               }}
-//             />
-
-//           </div>
-
-
-//           {error && (
-
-//             <div className="auth-error">
-//               ⚠️ {error}
-//             </div>
-
-//           )}
-
-
-//           <button
-//             type="submit"
-//             className="auth-submit"
-//           >
-//             Login to Moodify →
-//           </button>
-
-
-//         </form>
-
-
-//         {/* REGISTER */}
-
-//         <div className="auth-switch">
-
-//           <span>
-//             Don't have an account?
-//           </span>
-
-//           <button
-//             type="button"
-//             onClick={() =>
-//               navigate("/register")
-//             }
-//           >
-//             Create Account
-//           </button>
-
-//         </div>
-
-//       </div>
-
-//     </div>
-
-//   );
-// }
-
-
-//----------------------------------------------------------//
-
-import { useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+
 import {
   signInWithEmailAndPassword,
-  sendEmailVerification
+  sendEmailVerification,
 } from "firebase/auth";
 
 import { auth } from "./firebase";
 
-
 export default function Login() {
-
   const navigate = useNavigate();
 
-  const [email, setEmail] = useState("");
+  // ==========================================
+  // STATES
+  // ==========================================
 
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const [error, setError] = useState("");
-
   const [loading, setLoading] = useState(false);
 
   const [showResend, setShowResend] = useState(false);
 
   const [resending, setResending] = useState(false);
 
-  const [resendMessage, setResendMessage] = useState("");
+  const [resendMessage, setResendMessage] =
+    useState("");
 
+  // ==========================================
+  // LOGIN
+  // ==========================================
 
   const handleLogin = async (e) => {
-
     e.preventDefault();
 
     setError("");
     setResendMessage("");
     setShowResend(false);
 
+    // ========================================
+    // CHECK INPUTS
+    // ========================================
 
     if (!email.trim() || !password) {
-
       setError(
         "Please enter your email and password."
       );
-
       return;
     }
 
-
     try {
-
       setLoading(true);
 
-
-      // Login using Firebase
+      // ======================================
+      // FIREBASE LOGIN
+      // ======================================
 
       const userCredential =
         await signInWithEmailAndPassword(
@@ -285,14 +64,18 @@ export default function Login() {
           password
         );
 
-
       const user = userCredential.user;
 
+      console.log(
+        "Logged in Firebase user:",
+        user.email
+      );
 
-      // Check whether email is verified
+      // ======================================
+      // CHECK EMAIL VERIFICATION
+      // ======================================
 
       if (!user.emailVerified) {
-
         setError(
           "Please verify your email before logging in."
         );
@@ -302,28 +85,43 @@ export default function Login() {
         return;
       }
 
-
-      // Login successful
+      // ======================================
+      // LOGIN SUCCESSFUL
+      // ======================================
 
       localStorage.setItem(
         "moodifyLoggedIn",
         "true"
       );
 
+      // Save email if needed
+      localStorage.setItem(
+        "moodifyEmail",
+        user.email
+      );
+
+      alert("Login successful!");
+
+      // ======================================
+      // GO TO MOOD PAGE
+      // ======================================
 
       navigate("/mood");
 
-
     } catch (error) {
+      console.error(
+        "Firebase Login Error:",
+        error
+      );
 
-      console.error(error);
-
+      // ======================================
+      // FIREBASE ERRORS
+      // ======================================
 
       if (
         error.code ===
         "auth/invalid-credential"
       ) {
-
         setError(
           "Incorrect email or password."
         );
@@ -332,7 +130,6 @@ export default function Login() {
         error.code ===
         "auth/user-not-found"
       ) {
-
         setError(
           "No account found. Please register first."
         );
@@ -341,7 +138,6 @@ export default function Login() {
         error.code ===
         "auth/wrong-password"
       ) {
-
         setError(
           "Incorrect email or password."
         );
@@ -350,53 +146,59 @@ export default function Login() {
         error.code ===
         "auth/invalid-email"
       ) {
-
         setError(
           "Please enter a valid email address."
         );
 
-      } else {
-
+      } else if (
+        error.code ===
+        "auth/too-many-requests"
+      ) {
         setError(
-          error.message ||
-          "Login failed. Please try again."
+          "Too many login attempts. Please try again later."
         );
 
+      } else if (
+        error.code ===
+        "auth/user-disabled"
+      ) {
+        setError(
+          "This account has been disabled."
+        );
+
+      } else {
+        setError(
+          error.message ||
+            "Login failed. Please try again."
+        );
       }
 
     } finally {
-
       setLoading(false);
-
     }
-
   };
 
-
-  // Resend verification email
+  // ==========================================
+  // RESEND EMAIL VERIFICATION
+  // ==========================================
 
   const handleResendVerification = async () => {
-
     setError("");
     setResendMessage("");
 
-
     if (!email.trim() || !password) {
-
       setError(
         "Enter your email and password first."
       );
-
       return;
     }
 
-
     try {
-
       setResending(true);
 
-
-      // Sign in to get the Firebase user
+      // ======================================
+      // SIGN IN TEMPORARILY
+      // ======================================
 
       const userCredential =
         await signInWithEmailAndPassword(
@@ -405,14 +207,13 @@ export default function Login() {
           password
         );
 
-
       const user = userCredential.user;
 
-
-      // Check if already verified
+      // ======================================
+      // CHECK IF ALREADY VERIFIED
+      // ======================================
 
       if (user.emailVerified) {
-
         setResendMessage(
           "Your email is already verified. You can log in."
         );
@@ -422,27 +223,26 @@ export default function Login() {
         return;
       }
 
-
-      // Send verification email
+      // ======================================
+      // SEND VERIFICATION EMAIL
+      // ======================================
 
       await sendEmailVerification(user);
-
 
       setResendMessage(
         "Verification email sent! Please check your inbox and spam folder."
       );
 
-
     } catch (error) {
-
-      console.error(error);
-
+      console.error(
+        "Resend verification error:",
+        error
+      );
 
       if (
         error.code ===
         "auth/invalid-credential"
       ) {
-
         setError(
           "Incorrect email or password."
         );
@@ -451,36 +251,34 @@ export default function Login() {
         error.code ===
         "auth/too-many-requests"
       ) {
-
         setError(
           "Too many requests. Please wait a while and try again."
         );
 
       } else {
-
         setError(
           error.message ||
-          "Could not send verification email."
+            "Could not send verification email."
         );
-
       }
 
     } finally {
-
       setResending(false);
-
     }
-
   };
 
+  // ==========================================
+  // UI
+  // ==========================================
 
   return (
-
     <div className="auth-page">
 
       <div className="auth-card">
 
-        {/* LOGO */}
+        {/* ==================================
+            LOGO
+        ================================== */}
 
         <div className="auth-logo">
 
@@ -494,8 +292,9 @@ export default function Login() {
 
         </div>
 
-
-        {/* HEADER */}
+        {/* ==================================
+            HEADER
+        ================================== */}
 
         <div className="auth-header">
 
@@ -513,11 +312,11 @@ export default function Login() {
 
         </div>
 
-
-        {/* FORM */}
+        {/* ==================================
+            LOGIN FORM
+        ================================== */}
 
         <form onSubmit={handleLogin}>
-
 
           {/* EMAIL */}
 
@@ -532,18 +331,15 @@ export default function Login() {
               placeholder="you@example.com"
               value={email}
               onChange={(e) => {
-
                 setEmail(e.target.value);
 
                 setError("");
                 setShowResend(false);
                 setResendMessage("");
-
               }}
             />
 
           </div>
-
 
           {/* PASSWORD */}
 
@@ -558,7 +354,9 @@ export default function Login() {
               <button
                 type="button"
                 onClick={() =>
-                  navigate("/forgot-password")
+                  navigate(
+                    "/forgot-password"
+                  )
                 }
               >
                 Forgot password?
@@ -566,26 +364,26 @@ export default function Login() {
 
             </div>
 
-
             <input
               type="password"
               placeholder="Enter your password"
               value={password}
               onChange={(e) => {
-
-                setPassword(e.target.value);
+                setPassword(
+                  e.target.value
+                );
 
                 setError("");
                 setShowResend(false);
                 setResendMessage("");
-
               }}
             />
 
           </div>
 
-
-          {/* ERROR */}
+          {/* ==================================
+              ERROR
+          ================================== */}
 
           {error && (
 
@@ -593,26 +391,25 @@ export default function Login() {
 
               ⚠️ {error}
 
-
-              {/* RESEND BUTTON */}
+              {/* RESEND VERIFICATION */}
 
               {showResend && (
 
                 <button
                   type="button"
-                  onClick={handleResendVerification}
+                  onClick={
+                    handleResendVerification
+                  }
                   disabled={resending}
                   style={{
                     display: "block",
                     marginTop: "12px",
-                    width: "100%"
+                    width: "100%",
                   }}
                 >
-
                   {resending
                     ? "Sending..."
                     : "Resend Verification Email"}
-
                 </button>
 
               )}
@@ -621,8 +418,9 @@ export default function Login() {
 
           )}
 
-
-          {/* SUCCESS MESSAGE */}
+          {/* ==================================
+              SUCCESS MESSAGE
+          ================================== */}
 
           {resendMessage && (
 
@@ -634,8 +432,9 @@ export default function Login() {
 
           )}
 
-
-          {/* LOGIN BUTTON */}
+          {/* ==================================
+              LOGIN BUTTON
+          ================================== */}
 
           <button
             type="submit"
@@ -649,11 +448,11 @@ export default function Login() {
 
           </button>
 
-
         </form>
 
-
-        {/* REGISTER */}
+        {/* ==================================
+            REGISTER
+        ================================== */}
 
         <div className="auth-switch">
 
@@ -675,7 +474,5 @@ export default function Login() {
       </div>
 
     </div>
-
   );
-
 }
