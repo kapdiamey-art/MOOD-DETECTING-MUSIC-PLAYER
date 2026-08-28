@@ -7,9 +7,7 @@ import json
 import re
 
 
-# ============================================================
 # 1. Tokenization function
-# ============================================================
 
 def tokenize(text):
     """
@@ -26,9 +24,9 @@ def tokenize(text):
     return tokens
 
 
-# ============================================================
+
 # 2. Load vocabulary
-# ============================================================
+
 
 with open(
     "models/vocabulary.json",
@@ -43,9 +41,8 @@ print("Vocabulary loaded!")
 print("Vocabulary size:", len(word_to_index))
 
 
-# ============================================================
 # 3. Emotion labels
-# ============================================================
+
 
 LABEL_MAP = {
     "sadness": 0,
@@ -57,9 +54,8 @@ LABEL_MAP = {
 }
 
 
-# ============================================================
 # 4. Convert text into numerical sequence
-# ============================================================
+
 
 def text_to_sequence(text):
 
@@ -76,9 +72,8 @@ def text_to_sequence(text):
     return sequence
 
 
-# ============================================================
 # 5. Padding function
-# ============================================================
+
 
 def pad_sequence(sequence, max_length):
 
@@ -99,9 +94,8 @@ def pad_sequence(sequence, max_length):
     return sequence
 
 
-# ============================================================
 # 6. Custom Emotion Dataset
-# ============================================================
+
 
 class EmotionDataset(Dataset):
 
@@ -122,18 +116,15 @@ class EmotionDataset(Dataset):
         )
 
 
-    # --------------------------------------------------------
+   
     # Number of examples
-    # --------------------------------------------------------
 
     def __len__(self):
 
         return len(self.data)
 
-
-    # --------------------------------------------------------
     # Get one example
-    # --------------------------------------------------------
+
 
     def __getitem__(self, index):
 
@@ -172,9 +163,7 @@ class EmotionDataset(Dataset):
         return input_ids, label
 
 
-# ============================================================
 # 7. Create DataLoaders
-# ============================================================
 
 def create_dataloaders(
     batch_size=32,
@@ -227,9 +216,8 @@ def create_dataloaders(
     )
 
 
-# ============================================================
 # 8. Test Dataset
-# ============================================================
+
 
 if __name__ == "__main__":
 

@@ -108,4 +108,23 @@ week 3
 ├── Sequence Padding ✅
 ├── Emotion Labels → Numerical Labels ✅
 ├── PyTorch Dataset & DataLoader ✅
-├── Model Architecture (model.py) ⬅️ Next
+
+
+WEEK 4
+Model Building & Training
+├── model.py                    ✅
+├── train.py                    ✅
+├── evaluate.py                 ✅
+└── predict.py                  ✅
+
+
+WEEK 5
+Model Improvement & Deployment Preparation
+├── Model Performance Analysis          ⬅️
+├── Hyperparameter Tuning               ⬅️
+├── Architecture Experiments           ⬅️
+├── Overfitting / Underfitting Analysis ⬅️
+├── Performance Visualization           ⬅️
+├── Error Analysis                      ⬅️
+├── Save Best Model                     ⬅️
+└── Prepare Model for Integration       ⬅️
