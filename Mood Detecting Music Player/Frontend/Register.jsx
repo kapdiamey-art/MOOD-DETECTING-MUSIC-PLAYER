@@ -2,15 +2,19 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
-  createUserWithEmailAndPassword
+  createUserWithEmailAndPassword,
+  sendEmailVerification,
+  signOut
 } from "firebase/auth";
 
 import { auth } from "./firebase";
 
-
 export default function Register() {
-
   const navigate = useNavigate();
+
+  // =====================================================
+  // FORM STATES
+  // =====================================================
 
   const [form, setForm] = useState({
     name: "",
@@ -19,75 +23,74 @@ export default function Register() {
     confirmPassword: ""
   });
 
+  // =====================================================
+  // OTP STATES
+  // =====================================================
+
   const [otp, setOtp] = useState("");
-
   const [otpSent, setOtpSent] = useState(false);
-
   const [otpVerified, setOtpVerified] = useState(false);
 
-  const [error, setError] = useState("");
+  // =====================================================
+  // GENERAL STATES
+  // =====================================================
 
+  const [error, setError] = useState("");
   const [message, setMessage] = useState("");
 
   const [loading, setLoading] = useState(false);
-
   const [otpLoading, setOtpLoading] = useState(false);
 
-
-  // --------------------------------------------------
-  // Handle input changes
-  // --------------------------------------------------
+  // =====================================================
+  // HANDLE INPUT
+  // =====================================================
 
   const handleChange = (e) => {
+    const { name, value } = e.target;
 
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value
-    });
+    setForm((previous) => ({
+      ...previous,
+      [name]: value
+    }));
 
     setError("");
     setMessage("");
   };
 
+  // =====================================================
+  // EMAIL VALIDATION
+  // =====================================================
 
-  // --------------------------------------------------
-  // Send OTP
-  // --------------------------------------------------
+  const isValidEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    return emailRegex.test(email);
+  };
+
+  // =====================================================
+  // SEND BREVO OTP
+  // =====================================================
 
   const handleSendOTP = async () => {
-
     setError("");
     setMessage("");
 
+    const email = form.email.trim().toLowerCase();
+
     // Check email
-    if (!form.email.trim()) {
-
-      setError(
-        "Please enter your email address."
-      );
-
+    if (!email) {
+      setError("Please enter your email address.");
       return;
     }
 
-
-    // Check email format
-    const emailRegex =
-      /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-    if (!emailRegex.test(form.email.trim())) {
-
-      setError(
-        "Please enter a valid email address."
-      );
-
+    // Validate email
+    if (!isValidEmail(email)) {
+      setError("Please enter a valid email address.");
       return;
     }
-
 
     try {
-
       setOtpLoading(true);
-
 
       const response = await fetch(
         "http://localhost:5000/send-otp",
@@ -99,83 +102,70 @@ export default function Register() {
           },
 
           body: JSON.stringify({
-            email: form.email.trim()
+            email: email
           })
         }
       );
 
-
       const data = await response.json();
 
-
       if (!response.ok) {
-
         throw new Error(
-          data.message ||
-          "Failed to send OTP."
+          data.message || "Failed to send OTP."
         );
       }
 
-
+      // OTP sent successfully
       setOtpSent(true);
+      setOtp("");
 
       setMessage(
-        "OTP sent successfully! Check your email."
+        "OTP sent successfully. Check your email."
       );
 
-
     } catch (error) {
-
-      console.error(error);
+      console.error(
+        "Send OTP Error:",
+        error
+      );
 
       setError(
         error.message ||
-        "Unable to send OTP."
+        "Unable to send OTP. Make sure the backend is running."
       );
 
     } finally {
-
       setOtpLoading(false);
-
     }
-
   };
 
-
-  // --------------------------------------------------
-  // Verify OTP
-  // --------------------------------------------------
+  // =====================================================
+  // VERIFY BREVO OTP
+  // =====================================================
 
   const handleVerifyOTP = async () => {
-
     setError("");
     setMessage("");
 
+    const email = form.email.trim().toLowerCase();
+    const enteredOTP = otp.trim();
 
-    if (!otp.trim()) {
-
-      setError(
-        "Please enter the OTP."
-      );
-
+    // Check OTP
+    if (!enteredOTP) {
+      setError("Please enter the OTP.");
       return;
     }
 
-
-    if (otp.length !== 6) {
-
+    // Check OTP format
+    if (!/^\d{6}$/.test(enteredOTP)) {
       setError(
-        "OTP must contain 6 digits."
+        "OTP must contain exactly 6 digits."
       );
-
       return;
     }
-
 
     try {
-
       setOtpLoading(true);
-
 
       const response = await fetch(
         "http://localhost:5000/verify-otp",
@@ -187,35 +177,36 @@ export default function Register() {
           },
 
           body: JSON.stringify({
-            email: form.email.trim(),
-            otp: otp.trim()
+            email: email,
+            otp: enteredOTP
           })
         }
       );
 
-
       const data = await response.json();
 
-
       if (!response.ok) {
-
         throw new Error(
           data.message ||
           "OTP verification failed."
         );
       }
 
+      // =================================================
+      // OTP VERIFIED
+      // =================================================
 
       setOtpVerified(true);
 
       setMessage(
-        "Email verified successfully!"
+        "OTP verified successfully! You can now create your account."
       );
 
-
     } catch (error) {
-
-      console.error(error);
+      console.error(
+        "Verify OTP Error:",
+        error
+      );
 
       setError(
         error.message ||
@@ -223,141 +214,220 @@ export default function Register() {
       );
 
     } finally {
-
       setOtpLoading(false);
-
     }
-
   };
 
-
-  // --------------------------------------------------
-  // Register
-  // --------------------------------------------------
+  // =====================================================
+  // REGISTER USER
+  // =====================================================
 
   const handleRegister = async (e) => {
-
     e.preventDefault();
 
     setError("");
     setMessage("");
 
+    const name = form.name.trim();
+    const email = form.email.trim().toLowerCase();
 
-    // Check empty fields
+    // =================================================
+    // CHECK ALL FIELDS
+    // =================================================
 
     if (
-      !form.name.trim() ||
-      !form.email.trim() ||
+      !name ||
+      !email ||
       !form.password ||
       !form.confirmPassword
     ) {
-
-      setError(
-        "Please fill in all fields."
-      );
-
+      setError("Please fill in all fields.");
       return;
     }
 
+    // =================================================
+    // EMAIL VALIDATION
+    // =================================================
 
-    // Check password length
+    if (!isValidEmail(email)) {
+      setError(
+        "Please enter a valid email address."
+      );
+      return;
+    }
+
+    // =================================================
+    // PASSWORD LENGTH
+    // =================================================
 
     if (form.password.length < 6) {
-
       setError(
         "Password must contain at least 6 characters."
       );
-
       return;
     }
 
-
-    // Check password match
+    // =================================================
+    // PASSWORD MATCH
+    // =================================================
 
     if (
-      form.password !== form.confirmPassword
+      form.password !==
+      form.confirmPassword
     ) {
-
       setError(
         "Passwords do not match."
       );
-
       return;
     }
 
-
-    // OTP must be verified
+    // =================================================
+    // OTP MUST BE VERIFIED
+    // =================================================
 
     if (!otpVerified) {
-
       setError(
-        "Please verify your email with OTP first."
+        "Please verify the OTP before creating your account."
       );
-
       return;
     }
 
-
     try {
-
       setLoading(true);
 
+      // =================================================
+      // STEP 1
+      // CREATE FIREBASE ACCOUNT
+      // =================================================
 
-      // --------------------------------------------------
-      // Create Firebase account
-      // --------------------------------------------------
+      console.log(
+        "Creating Firebase account..."
+      );
 
       const userCredential =
         await createUserWithEmailAndPassword(
           auth,
-          form.email.trim(),
+          email,
           form.password
         );
 
+      const user =
+        userCredential.user;
 
-      // --------------------------------------------------
-      // Store name locally
-      // --------------------------------------------------
+      console.log(
+        "Firebase account created:",
+        user.email
+      );
+
+      // =================================================
+      // STEP 2
+      // SEND FIREBASE EMAIL VERIFICATION
+      // =================================================
+
+      console.log(
+        "Sending Firebase verification email..."
+      );
+
+      await sendEmailVerification(user);
+
+      console.log(
+        "Firebase verification email sent."
+      );
+
+      // =================================================
+      // STEP 3
+      // SAVE USER INFORMATION
+      // =================================================
 
       localStorage.setItem(
         "moodifyUserName",
-        form.name.trim()
+        name
       );
 
+      localStorage.setItem(
+        "moodifyEmail",
+        email
+      );
 
-      // User is not automatically considered logged in
+      // User is NOT logged in yet
       localStorage.removeItem(
         "moodifyLoggedIn"
       );
 
-
-      alert(
-        "Account created successfully!"
+      localStorage.removeItem(
+        "moodifyIdToken"
       );
 
+      // =================================================
+      // STEP 4
+      // SIGN OUT FIREBASE USER
+      // =================================================
+
+      /*
+        createUserWithEmailAndPassword()
+        automatically signs the user in.
+
+        But your required flow is:
+
+        Register
+          ↓
+        Verification email
+          ↓
+        User verifies email
+          ↓
+        Login
+
+        Therefore we sign them out here.
+      */
+
+      await signOut(auth);
+
+      console.log(
+        "Firebase user signed out after registration."
+      );
+
+      // =================================================
+      // STEP 5
+      // SUCCESS MESSAGE
+      // =================================================
+
+      alert(
+        "Account created successfully!\n\n" +
+        "A Firebase verification email has been sent to:\n" +
+        email +
+        "\n\n" +
+        "Please open the NEWEST verification email, " +
+        "click the verification link once, and then login."
+      );
+
+      // =================================================
+      // GO TO LOGIN
+      // =================================================
 
       navigate("/login");
 
-
     } catch (error) {
+      console.error(
+        "Registration Error:",
+        error
+      );
 
-      console.error(error);
-
+      // =================================================
+      // FIREBASE ERRORS
+      // =================================================
 
       if (
         error.code ===
         "auth/email-already-in-use"
       ) {
-
         setError(
-          "This email is already registered."
+          "This email is already registered. Please login instead."
         );
 
       } else if (
         error.code ===
         "auth/invalid-email"
       ) {
-
         setError(
           "Please enter a valid email address."
         );
@@ -366,41 +436,50 @@ export default function Register() {
         error.code ===
         "auth/weak-password"
       ) {
-
         setError(
           "Password must contain at least 6 characters."
         );
 
-      } else {
+      } else if (
+        error.code ===
+        "auth/too-many-requests"
+      ) {
+        setError(
+          "Too many requests. Please try again later."
+        );
 
+      } else if (
+        error.code ===
+        "auth/network-request-failed"
+      ) {
+        setError(
+          "Network error. Please check your internet connection."
+        );
+
+      } else {
         setError(
           error.message ||
           "Registration failed. Please try again."
         );
-
       }
 
     } finally {
-
       setLoading(false);
-
     }
-
   };
 
-
-  // --------------------------------------------------
+  // =====================================================
   // UI
-  // --------------------------------------------------
+  // =====================================================
 
   return (
-
     <div className="auth-page">
 
       <div className="auth-card">
 
-
-        {/* LOGO */}
+        {/* =================================================
+            LOGO
+        ================================================= */}
 
         <div className="auth-logo">
 
@@ -414,8 +493,9 @@ export default function Register() {
 
         </div>
 
-
-        {/* HEADER */}
+        {/* =================================================
+            HEADER
+        ================================================= */}
 
         <div className="auth-header">
 
@@ -433,13 +513,15 @@ export default function Register() {
 
         </div>
 
-
-        {/* FORM */}
+        {/* =================================================
+            FORM
+        ================================================= */}
 
         <form onSubmit={handleRegister}>
 
-
-          {/* NAME */}
+          {/* =================================================
+              NAME
+          ================================================= */}
 
           <div className="form-group">
 
@@ -453,12 +535,14 @@ export default function Register() {
               placeholder="Enter your full name"
               value={form.name}
               onChange={handleChange}
+              disabled={loading}
             />
 
           </div>
 
-
-          {/* EMAIL */}
+          {/* =================================================
+              EMAIL
+          ================================================= */}
 
           <div className="form-group">
 
@@ -472,21 +556,24 @@ export default function Register() {
               placeholder="you@example.com"
               value={form.email}
               onChange={handleChange}
-              disabled={otpVerified}
+              disabled={
+                otpVerified ||
+                loading
+              }
             />
 
           </div>
 
-
-          {/* SEND OTP */}
+          {/* =================================================
+              SEND OTP
+          ================================================= */}
 
           {!otpVerified && (
-
             <button
               type="button"
               className="auth-submit"
               onClick={handleSendOTP}
-              disabled={otpLoading}
+              disabled={otpLoading || loading}
               style={{
                 marginBottom: "15px"
               }}
@@ -495,69 +582,79 @@ export default function Register() {
               {otpLoading
                 ? "Sending OTP..."
                 : otpSent
-                  ? "Resend OTP"
-                  : "Send OTP"}
+                ? "Resend OTP"
+                : "Send OTP"}
 
             </button>
-
           )}
 
+          {/* =================================================
+              ENTER OTP
+          ================================================= */}
 
-          {/* OTP */}
+          {otpSent &&
+            !otpVerified && (
+              <div className="form-group">
 
-          {otpSent && !otpVerified && (
+                <label>
+                  Enter OTP
+                </label>
 
-            <div className="form-group">
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  maxLength={6}
+                  placeholder="Enter 6-digit OTP"
+                  value={otp}
+                  onChange={(e) => {
 
-              <label>
-                Enter OTP
-              </label>
+                    const value =
+                      e.target.value.replace(
+                        /\D/g,
+                        ""
+                      );
 
-              <input
-                type="text"
-                inputMode="numeric"
-                maxLength="6"
-                placeholder="Enter 6-digit OTP"
-                value={otp}
-                onChange={(e) => {
+                    setOtp(value);
+                    setError("");
+                    setMessage("");
 
-                  const value =
-                    e.target.value.replace(
-                      /\D/g,
-                      ""
-                    );
+                  }}
+                  disabled={
+                    otpLoading ||
+                    loading
+                  }
+                />
 
-                  setOtp(value);
-                  setError("");
-                }}
-              />
+                <button
+                  type="button"
+                  className="auth-submit"
+                  onClick={
+                    handleVerifyOTP
+                  }
+                  disabled={
+                    otpLoading ||
+                    loading
+                  }
+                  style={{
+                    marginTop: "10px"
+                  }}
+                >
 
+                  {otpLoading
+                    ? "Verifying..."
+                    : "Verify OTP →"}
 
-              <button
-                type="button"
-                className="auth-submit"
-                onClick={handleVerifyOTP}
-                disabled={otpLoading}
-                style={{
-                  marginTop: "10px"
-                }}
-              >
+                </button>
 
-                {otpLoading
-                  ? "Verifying..."
-                  : "Verify OTP"}
+              </div>
+            )}
 
-              </button>
-
-            </div>
-
-          )}
-
-
-          {/* VERIFIED */}
+          {/* =================================================
+              OTP VERIFIED
+          ================================================= */}
 
           {otpVerified && (
-
             <div
               style={{
                 padding: "10px",
@@ -565,18 +662,17 @@ export default function Register() {
                 borderRadius: "8px",
                 background: "#e8f7ee",
                 color: "#16803c",
-                textAlign: "center"
+                textAlign: "center",
+                fontWeight: "500"
               }}
             >
-
-              ✅ Email verified successfully
-
+              ✅ OTP verified successfully
             </div>
-
           )}
 
-
-          {/* PASSWORD */}
+          {/* =================================================
+              PASSWORD
+          ================================================= */}
 
           <div className="form-group">
 
@@ -590,12 +686,14 @@ export default function Register() {
               placeholder="Create a password"
               value={form.password}
               onChange={handleChange}
+              disabled={loading}
             />
 
           </div>
 
-
-          {/* CONFIRM PASSWORD */}
+          {/* =================================================
+              CONFIRM PASSWORD
+          ================================================= */}
 
           <div className="form-group">
 
@@ -609,26 +707,26 @@ export default function Register() {
               placeholder="Confirm your password"
               value={form.confirmPassword}
               onChange={handleChange}
+              disabled={loading}
             />
 
           </div>
 
-
-          {/* ERROR */}
+          {/* =================================================
+              ERROR
+          ================================================= */}
 
           {error && (
-
             <div className="auth-error">
               ⚠️ {error}
             </div>
-
           )}
 
-
-          {/* SUCCESS */}
+          {/* =================================================
+              SUCCESS MESSAGE
+          ================================================= */}
 
           {message && !error && (
-
             <div
               style={{
                 marginBottom: "15px",
@@ -637,11 +735,11 @@ export default function Register() {
             >
               {message}
             </div>
-
           )}
 
-
-          {/* REGISTER */}
+          {/* =================================================
+              CREATE ACCOUNT
+          ================================================= */}
 
           <button
             type="submit"
@@ -658,11 +756,11 @@ export default function Register() {
 
           </button>
 
-
         </form>
 
-
-        {/* LOGIN LINK */}
+        {/* =================================================
+            LOGIN LINK
+        ================================================= */}
 
         <div className="auth-switch">
 
@@ -672,7 +770,9 @@ export default function Register() {
 
           <button
             type="button"
-            onClick={() => navigate("/login")}
+            onClick={() =>
+              navigate("/login")
+            }
           >
             Login
           </button>
@@ -682,7 +782,5 @@ export default function Register() {
       </div>
 
     </div>
-
   );
-
 }

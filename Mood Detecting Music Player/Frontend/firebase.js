@@ -2,12 +2,13 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBs16TJR_sfBZcYY0JP5zhQlmprAKyBf7c",
-  authDomain: "mood-detecting-music-player.firebaseapp.com",
-  projectId: "mood-detecting-music-player",
-  storageBucket: "mood-detecting-music-player.firebasestorage.app",
-  messagingSenderId: "1075539391762",
-  appId: "1:1075539391762:web:a3e18e59a0fa4dfc192fcb",
+  apiKey: "AIzaSyC4Ekqkz6l3klOUMoVI_LgVpHPBTnuqDfw",
+  authDomain: "myis-f3dd6.firebaseapp.com",
+  projectId: "myis-f3dd6",
+  storageBucket: "myis-f3dd6.firebasestorage.app",
+  messagingSenderId: "898194854042",
+  appId: "1:898194854042:web:963d38d406eac0b95ccf23",
+  measurementId: "G-WS32DXTD4C"
 };
 
 const app = initializeApp(firebaseConfig);
