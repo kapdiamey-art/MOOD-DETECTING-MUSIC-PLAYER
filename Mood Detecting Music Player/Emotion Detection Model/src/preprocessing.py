@@ -61,6 +61,37 @@ test = fix_labels(test)
 val = fix_labels(val)
 
 
+# 6.6 Negation normalization
+# The LSTM tokenizer treats "not" and "happy" as two separate words,
+# so it ends up focusing on "happy" and predicting joy even for "not happy".
+# We merge common negation phrases into single tokens like "not_happy"
+# so the model can learn them as distinct patterns.
+
+import re
+
+NEGATION_MAP = {
+    r"\bnot happy\b":        "not_happy",
+    r"\bnot good\b":         "not_good",
+    r"\bnot feeling well\b": "not_feeling_well",
+    r"\bnot well\b":         "not_well",
+    r"\bnot great\b":        "not_great",
+    r"\bnot okay\b":         "not_okay",
+    r"\bnot ok\b":           "not_okay",
+    r"\bnot fine\b":         "not_fine",
+    r"\bnot excited\b":      "not_excited",
+    r"\bnot feeling good\b": "not_feeling_good",
+}
+
+def normalize_negations(text):
+    for pattern, replacement in NEGATION_MAP.items():
+        text = re.sub(pattern, replacement, text, flags=re.IGNORECASE)
+    return text
+
+train["text"] = train["text"].apply(normalize_negations)
+test["text"]  = test["text"].apply(normalize_negations)
+val["text"]   = val["text"].apply(normalize_negations)
+
+
 
 
 # 7. Check emotion labels

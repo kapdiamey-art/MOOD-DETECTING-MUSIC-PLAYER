@@ -5,9 +5,7 @@ import re
 from model import EmotionModel
 
 
-# ============================================================
 # 1. Configuration
-# ============================================================
 
 MAX_LENGTH = 50
 
@@ -17,9 +15,7 @@ HIDDEN_DIM = 128
 NUM_CLASSES = 6
 
 
-# ============================================================
 # 2. Emotion Labels
-# ============================================================
 
 LABEL_NAMES = [
     "sadness",
@@ -31,9 +27,7 @@ LABEL_NAMES = [
 ]
 
 
-# ============================================================
 # 3. Device
-# ============================================================
 
 device = torch.device(
     "cuda" if torch.cuda.is_available() else "cpu"
@@ -42,9 +36,7 @@ device = torch.device(
 print("Using device:", device)
 
 
-# ============================================================
 # 4. Load Vocabulary
-# ============================================================
 
 with open(
     "models/vocabulary.json",
@@ -60,13 +52,33 @@ vocab_size = len(word_to_index)
 print("Vocabulary size:", vocab_size)
 
 
-# ============================================================
-# 5. Tokenization Function
-# ============================================================
+# 5. Negation Normalization
+
+# Must match the same map used in preprocessing.py
+NEGATION_MAP = {
+    r"\bnot happy\b":        "not_happy",
+    r"\bnot good\b":         "not_good",
+    r"\bnot feeling well\b": "not_feeling_well",
+    r"\bnot well\b":         "not_well",
+    r"\bnot great\b":        "not_great",
+    r"\bnot okay\b":         "not_okay",
+    r"\bnot ok\b":           "not_okay",
+    r"\bnot fine\b":         "not_fine",
+    r"\bnot excited\b":      "not_excited",
+    r"\bnot feeling good\b": "not_feeling_good",
+}
+
+def normalize_negations(text):
+    for pattern, replacement in NEGATION_MAP.items():
+        text = re.sub(pattern, replacement, text, flags=re.IGNORECASE)
+    return text
+
+
+# 6. Tokenization Function
 
 def tokenize(text):
 
-    text = text.lower()
+    text = normalize_negations(text.lower())
 
     tokens = re.findall(
         r"\b\w+(?:'\w+)?\b",
@@ -76,9 +88,7 @@ def tokenize(text):
     return tokens
 
 
-# ============================================================
-# 6. Convert Text → Token IDs
-# ============================================================
+# 7. Convert Text to Token IDs
 
 def text_to_sequence(text):
 
@@ -95,9 +105,7 @@ def text_to_sequence(text):
     return sequence
 
 
-# ============================================================
-# 7. Padding
-# ============================================================
+# 8. Padding
 
 def prepare_input(text):
 
@@ -123,9 +131,7 @@ def prepare_input(text):
     )
 
 
-# ============================================================
-# 8. Load Model
-# ============================================================
+# 9. Load Model
 
 model = EmotionModel(
     vocab_size=vocab_size,
@@ -148,9 +154,7 @@ model.eval()
 print("\nModel loaded successfully!")
 
 
-# ============================================================
-# 9. Prediction Function
-# ============================================================
+# 10. Prediction Function
 
 def predict_emotion(text):
 
@@ -182,9 +186,7 @@ def predict_emotion(text):
     return emotion, confidence
 
 
-# ============================================================
-# 10. Take User Input
-# ============================================================
+# 11. Take User Input
 
 print("\n" + "=" * 50)
 print("EMOTION DETECTION")
