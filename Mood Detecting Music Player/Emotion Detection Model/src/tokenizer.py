@@ -75,7 +75,7 @@ print("Vocabulary size:", len(word_to_index))
 print("\nFirst 20 vocabulary entries:")
 
 for word, index in list(word_to_index.items())[:20]:
-    print(word, "→", index)
+    print(word, "->", index)
 
 
 

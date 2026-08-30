@@ -71,8 +71,13 @@ class EmotionModel(nn.Module):
         output, (hidden, cell) = self.lstm(embedded)
 
 
-        # Take the final hidden state
-        final_hidden = hidden[-1]
+        # Get actual sequence lengths (number of non-padding tokens)
+        lengths = (input_ids != 0).sum(dim=1).clamp(min=1)
+
+        # Extract the hidden state from the last valid time step for each sequence
+        batch_size = input_ids.size(0)
+        batch_idx = torch.arange(batch_size, device=output.device)
+        final_hidden = output[batch_idx, lengths - 1, :]
 
 
         # Apply dropout
