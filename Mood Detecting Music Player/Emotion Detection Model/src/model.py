@@ -16,9 +16,9 @@ class EmotionModel(nn.Module):
 
         super().__init__()
 
-        # --------------------------------------------------
+       
         # 1. Embedding Layer
-        # --------------------------------------------------
+       
 
         self.embedding = nn.Embedding(
             num_embeddings=vocab_size,
@@ -27,9 +27,9 @@ class EmotionModel(nn.Module):
         )
 
 
-        # --------------------------------------------------
+        
         # 2. LSTM Layer
-        # --------------------------------------------------
+       
 
         self.lstm = nn.LSTM(
             input_size=embedding_dim,
@@ -40,16 +40,15 @@ class EmotionModel(nn.Module):
         )
 
 
-        # --------------------------------------------------
+        
         # 3. Dropout
-        # --------------------------------------------------
+      
 
         self.dropout = nn.Dropout(dropout)
 
 
-        # --------------------------------------------------
         # 4. Output Layer
-        # --------------------------------------------------
+     
 
         self.fc = nn.Linear(
             hidden_dim,
@@ -57,9 +56,9 @@ class EmotionModel(nn.Module):
         )
 
 
-    # ======================================================
+    
     # Forward Pass
-    # ======================================================
+   
 
     def forward(self, input_ids):
 

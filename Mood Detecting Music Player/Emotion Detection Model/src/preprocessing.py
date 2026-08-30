@@ -60,27 +60,7 @@ train = fix_labels(train)
 test = fix_labels(test)
 val = fix_labels(val)
 
-# 6.6 Inject synthetic data for missing patterns
-# The dataset has very few (or wrong) examples of modern romantic phrases
-# like "crush" or self-love phrases. We append our own data to fix this.
 
-synthetic_data = pd.DataFrame({
-    "text": [
-        "i have a crush on someone",
-        "i like someone a lot",
-        "i like my mummy",
-        "i love myself",
-        "i have a huge crush on you",
-        "my crush smiled at me",
-        "i really like someone",
-        "i love myself so much",
-        "i have a big crush"
-    ],
-    "emotion": ["love"] * 9
-})
-
-# Append this data to the training set multiple times to give it weight
-train = pd.concat([train] + [synthetic_data]*5, ignore_index=True)
 
 
 # 7. Check emotion labels

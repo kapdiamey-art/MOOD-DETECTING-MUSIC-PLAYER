@@ -9,9 +9,9 @@ from dataset import create_dataloaders
 from model import EmotionModel
 
 
-# ============================================================
+
 # 1. Configuration
-# ============================================================
+
 
 BATCH_SIZE = 32
 MAX_LENGTH = 50
@@ -25,10 +25,8 @@ LEARNING_RATE = 0.001
 EPOCHS = 15
 
 
-# ============================================================
-# 2. Device
-# ============================================================
 
+# 2. Device
 device = torch.device(
     "cuda" if torch.cuda.is_available() else "cpu"
 )
@@ -36,9 +34,9 @@ device = torch.device(
 print("Using device:", device)
 
 
-# ============================================================
+
 # 3. Load vocabulary
-# ============================================================
+
 
 with open(
     "models/vocabulary.json",
@@ -54,9 +52,9 @@ vocab_size = len(word_to_index)
 print("Vocabulary size:", vocab_size)
 
 
-# ============================================================
+
 # 4. Create DataLoaders
-# ============================================================
+
 
 train_loader, val_loader, test_loader = \
     create_dataloaders(
@@ -65,9 +63,9 @@ train_loader, val_loader, test_loader = \
     )
 
 
-# ============================================================
+
 # 5. Create Model
-# ============================================================
+
 
 model = EmotionModel(
     vocab_size=vocab_size,
@@ -82,16 +80,13 @@ print("\nModel created successfully!")
 print(model)
 
 
-# ============================================================
+
 # 6. Loss Function
-# ============================================================
 
 criterion = nn.CrossEntropyLoss()
 
-
-# ============================================================
 # 7. Optimizer
-# ============================================================
+
 
 optimizer = optim.Adam(
     model.parameters(),
@@ -99,9 +94,8 @@ optimizer = optim.Adam(
 )
 
 
-# ============================================================
+
 # 8. Training Loop
-# ============================================================
 
 for epoch in range(EPOCHS):
 
@@ -172,9 +166,8 @@ for epoch in range(EPOCHS):
     ) * 100
 
 
-    # ========================================================
     # Validation
-    # ========================================================
+
 
     model.eval()
 
@@ -228,9 +221,9 @@ for epoch in range(EPOCHS):
     )
 
 
-# ============================================================
+
 # 9. Save trained model
-# ============================================================
+
 
 os.makedirs(
     "models",
