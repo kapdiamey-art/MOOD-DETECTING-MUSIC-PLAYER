@@ -9,11 +9,11 @@ introduce recent-music awareness. The system takes one of five supported moods �
 The recommendation engine uses Energy, Valence, Danceability, and Acousticness. Mood-specific weights were introduced
 because different features have different importance for different moods.
 Mood Energy Valence Danceability Acousticness
-Happy 0.25 0.35 0.25 0.15
-Sad 0.30 0.40 0.10 0.20
-Angry 0.40 0.30 0.15 0.15
-Calm 0.30 0.20 0.15 0.35
-Energetic 0.35 0.20 0.35 0.10
+Happy 0.25   0.35     0.25        0.15
+Sad   0.30   0.40     0.10        0.20
+Angry 0.40   0.30     0.15        0.15
+Calm  0.30   0.20     0.15        0.35
+Energetic 0.35 0.20   0.35        0.10
 Weighted Euclidean distance compares each song with the selected mood profile:
 distance = sqrt(Σ weight × (song_feature - mood_feature)²)
 The distance is converted into a mood score:
