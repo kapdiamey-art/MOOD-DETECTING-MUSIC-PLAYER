@@ -1,3 +1,4 @@
+
 import {
   BrowserRouter,
   Routes,
@@ -5,10 +6,13 @@ import {
   Navigate
 } from "react-router-dom";
 
+import AppLayout from "./AppLayout";
 import Landing from "./Landing";
 import Login from "./Login";
 import Register from "./Register";
 import ForgotPassword from "./ForgotPassword";
+
+import ThemeToggle from "./ThemeToggle";
 
 import MoodDetection from "./MoodDetection";
 import Recommendations from "./Recommendations";
@@ -36,6 +40,13 @@ export default function App() {
   return (
 
     <BrowserRouter>
+
+      {/* =========================
+          LIGHT / DARK MODE BUTTON
+      ========================= */}
+
+      <ThemeToggle />
+
 
       <Routes>
 
@@ -113,17 +124,22 @@ export default function App() {
           }
         />
 
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute>
-              <Profile />
-            </ProtectedRoute>
-          }
-        />
+      <Route
+  path="/profile"
+  element={
+    <ProtectedRoute>
+      <AppLayout>
+        <Profile />
+      </AppLayout>
+    </ProtectedRoute>
+  }
+/>
 
 
-        {/* Unknown URL */}
+        {/* =========================
+            UNKNOWN URL
+        ========================= */}
+
         <Route
           path="*"
           element={<Navigate to="/" replace />}
@@ -134,3 +150,4 @@ export default function App() {
     </BrowserRouter>
   );
 }
+

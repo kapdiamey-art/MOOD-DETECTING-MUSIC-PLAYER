@@ -670,47 +670,44 @@ export default function Register() {
             </div>
           )}
 
-          {/* =================================================
-              PASSWORD
-          ================================================= */}
+  {/* =================================================
+    PASSWORD SECTION
+    SHOW ONLY AFTER OTP IS VERIFIED
+================================================= */}
 
-          <div className="form-group">
+{otpVerified && (
+  <>
+    <div className="form-group">
+      <label>
+        Password
+      </label>
 
-            <label>
-              Password
-            </label>
+      <input
+        type="password"
+        name="password"
+        placeholder="Create a password"
+        value={form.password}
+        onChange={handleChange}
+        disabled={loading}
+      />
+    </div>
 
-            <input
-              type="password"
-              name="password"
-              placeholder="Create a password"
-              value={form.password}
-              onChange={handleChange}
-              disabled={loading}
-            />
+    <div className="form-group">
+      <label>
+        Confirm Password
+      </label>
 
-          </div>
-
-          {/* =================================================
-              CONFIRM PASSWORD
-          ================================================= */}
-
-          <div className="form-group">
-
-            <label>
-              Confirm Password
-            </label>
-
-            <input
-              type="password"
-              name="confirmPassword"
-              placeholder="Confirm your password"
-              value={form.confirmPassword}
-              onChange={handleChange}
-              disabled={loading}
-            />
-
-          </div>
+      <input
+        type="password"
+        name="confirmPassword"
+        placeholder="Confirm your password"
+        value={form.confirmPassword}
+        onChange={handleChange}
+        disabled={loading}
+      />
+    </div>
+  </>
+)}
 
           {/* =================================================
               ERROR

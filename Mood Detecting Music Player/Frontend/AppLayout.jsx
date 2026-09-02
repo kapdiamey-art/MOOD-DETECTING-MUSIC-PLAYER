@@ -4,39 +4,33 @@ import {
   useNavigate
 } from "react-router-dom";
 
-
 export default function AppLayout({ children }) {
 
   const location = useLocation();
-
   const navigate = useNavigate();
 
-
-  // Get registered user
+  // ================= USER =================
 
   const savedUser =
     JSON.parse(
       localStorage.getItem("moodifyUser")
     );
 
-
   const userName =
     savedUser?.name || "User";
 
-
   const userEmail =
     savedUser?.email || "";
-
 
   const userInitial =
     userName.charAt(0).toUpperCase();
 
 
+  // ================= NAVIGATION =================
+
   const links = [
 
-    ["🏠", "Home", "/mood"],
-
-    ["🧠", "Mood Detection", "/mood"],
+    ["🧠", "Mood", "/mood"],
 
     ["🎧", "Recommendations", "/recommendations"],
 
@@ -44,12 +38,14 @@ export default function AppLayout({ children }) {
 
     ["❤️", "My Music", "/my-music"],
 
-    ["📊", "Mood Analytics", "/analytics"],
+    ["📊", "Analytics", "/analytics"],
 
     ["👤", "Profile", "/profile"]
 
   ];
 
+
+  // ================= LOGOUT =================
 
   const handleLogout = () => {
 
@@ -67,34 +63,33 @@ export default function AppLayout({ children }) {
     <div className="app-layout">
 
 
-      {/* ================= SIDEBAR ================= */}
+      {/* =================================================
+          DESKTOP TOP NAVIGATION
+          ================================================= */}
 
-      <aside className="sidebar">
+      <nav className="top-navigation">
 
+        {/* LOGO */}
 
-        <div className="sidebar-logo">
+        <Link
+          to="/mood"
+          className="top-logo"
+        >
 
-          <div className="logo">
-
-            <div className="logo-icon">
-              ♫
-            </div>
-
-            <span className="logo-text">
-              Moodify
-            </span>
-
+          <div className="top-logo-icon">
+            ♫
           </div>
 
-        </div>
+          <span>
+            Moodify
+          </span>
+
+        </Link>
 
 
-        <div className="sidebar-section">
+        {/* DESKTOP NAVIGATION */}
 
-          <div className="sidebar-title">
-            MENU
-          </div>
-
+        <div className="top-navigation-links">
 
           {links.map(
             ([icon, title, path]) => (
@@ -102,8 +97,9 @@ export default function AppLayout({ children }) {
               <Link
                 key={path}
                 to={path}
+
                 className={
-                  `sidebar-link ${
+                  `top-navigation-link ${
                     location.pathname === path
                       ? "active"
                       : ""
@@ -111,11 +107,11 @@ export default function AppLayout({ children }) {
                 }
               >
 
-                <span>
+                <span className="nav-icon">
                   {icon}
                 </span>
 
-                <span>
+                <span className="nav-title">
                   {title}
                 </span>
 
@@ -129,16 +125,21 @@ export default function AppLayout({ children }) {
 
         {/* USER */}
 
-        <div className="sidebar-user">
+        <div
+          className="top-user"
 
-          <div className="sidebar-user-avatar">
+          onClick={() =>
+            navigate("/profile")
+          }
 
+          title={userName}
+        >
+
+          <div className="top-user-avatar">
             {userInitial}
-
           </div>
 
-
-          <div className="sidebar-user-info">
+          <div className="top-user-info">
 
             <strong>
               {userName}
@@ -152,27 +153,57 @@ export default function AppLayout({ children }) {
 
         </div>
 
-
-        <button
-          className="logout-btn"
-          onClick={handleLogout}
-        >
-          🚪 Logout
-        </button>
+      </nav>
 
 
-      </aside>
+      {/* =================================================
+          NEW RESPONSIVE NAVIGATION
+          iPHONE / PIXEL / iPAD / SURFACE
+          ================================================= */}
+
+      <div className="responsive-navigation">
+
+        {links.map(
+          ([icon, title, path]) => (
+
+            <Link
+              key={path}
+              to={path}
+
+              className={
+                location.pathname === path
+                  ? "responsive-nav-item active"
+                  : "responsive-nav-item"
+              }
+            >
+
+              <span className="responsive-nav-icon">
+                {icon}
+              </span>
+
+              <span className="responsive-nav-text">
+                {title === "Recommendations"
+                  ? "Recommend"
+                  : title}
+              </span>
+
+            </Link>
+
+          )
+        )}
+
+      </div>
 
 
-      {/* ================= MAIN ================= */}
+      {/* =================================================
+          MAIN CONTENT
+          ================================================= */}
 
       <main className="main-content">
-
 
         {/* TOPBAR */}
 
         <div className="topbar">
-
 
           <div className="search">
 
@@ -186,42 +217,27 @@ export default function AppLayout({ children }) {
 
           </div>
 
-
-          <div
-            className="avatar"
-            onClick={() =>
-              navigate("/profile")
-            }
-            title={userName}
-          >
-
-            {userInitial}
-
-          </div>
-
-
         </div>
 
 
-        {/* PAGE */}
+        {/* CURRENT PAGE */}
 
         {children}
-
 
       </main>
 
 
-      {/* ================= MUSIC PLAYER ================= */}
+      {/* =================================================
+          MUSIC PLAYER
+          ================================================= */}
 
       <div className="music-player glass">
-
 
         <div className="now-playing">
 
           <div className="player-cover">
             🎵
           </div>
-
 
           <div>
 
@@ -277,7 +293,6 @@ export default function AppLayout({ children }) {
           </span>
 
         </div>
-
 
       </div>
 
