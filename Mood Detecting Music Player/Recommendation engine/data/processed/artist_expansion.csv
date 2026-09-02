@@ -1,0 +1,405 @@
+track_id,genres,track_artists,tempo,energy,key,popularity,mode,time_signature,speechiness,danceability,valence,acousticness,liveness,instrumentalness,name
+4HOryCnbme0zBnF8LWij3f,"['art pop', 'pop']",Billie Eilish,159.679,0.128,10.0,72.0,1.0,4.0,0.109,0.599,0.367,0.974,0.115,0.121,Getting Older
+1XjHRolIXL2M1EEOUsGGR4,['pop'],Taylor Swift,127.967,0.517,0.0,68.0,1.0,4.0,0.0347,0.604,0.511,0.768,0.123,0.000155,cowboy like me
+5LBxMvApPk3HdsQdi6DT9L,"['k-pop', 'k-pop girl group', 'pop']",BLACKPINK,88.074,0.433,1.0,0.0,1.0,4.0,0.0383,0.628,0.343,0.569,0.104,7.71e-06,STAY
+2MvvoeRt8NcOXWESkxWn3g,"['art pop', 'metropopolis', 'nz pop', 'pop']",Lorde,127.978,0.472,4.0,78.0,1.0,4.0,0.091,0.511,0.0399,0.534,0.11,0.614,Ribs
+6aLOekfwbytwWvQftxTEF0,['pop'],Taylor Swift,96.97,0.725,5.0,49.0,1.0,4.0,0.0323,0.605,0.539,0.00201,0.101,2.02e-05,All You Had To Do Was Stay
+5LYMamLv12UPbemOaTPyeV,['pop'],Harry Styles,107.041,0.715,11.0,74.0,1.0,4.0,0.04,0.72,0.357,0.258,0.107,0.0568,Music For a Sushi Restaurant
+0hyImI8JaWONOrzKH7kJsC,"['art pop', 'pop']",Lana Del Rey,137.199,0.339,2.0,66.0,0.0,4.0,0.0489,0.387,0.273,0.918,0.13,0.00272,Tulsa Jesus Freak
+6PERP62TejQjgHu81OHxgM,['pop'],Olivia Rodrigo,168.56,0.661,6.0,21.0,0.0,4.0,0.204,0.556,0.668,0.3,0.101,0.0,good 4 u
+5CSKbHjpqborGnlzagyaDo,"['dance pop', 'pop', 'uk pop']",Dua Lipa,115.982,0.667,11.0,67.0,0.0,4.0,0.0339,0.659,0.468,0.00173,0.1,2.85e-05,Love Again
+3RIgHHpnFKj5Rni1shokDj,"['art pop', 'pop']",Lana Del Rey,78.287,0.203,5.0,76.0,1.0,1.0,0.0346,0.215,0.143,0.968,0.0923,0.0585,Norman fucking Rockwell
+5RaBeejGtdPEszYEKYECs2,['pop'],Taylor Swift,123.068,0.56,11.0,54.0,0.0,4.0,0.0352,0.669,0.155,0.00215,0.264,3.23e-05,Love Story (Taylor's Version) - Elvira Remix
+5sp71CUt0jXRNqHblPGp7b,['pop'],Olivia Rodrigo,120.393,0.873,1.0,75.0,1.0,4.0,0.069,0.385,0.469,0.0557,0.353,0.0,ballad of a homeschooled girl
+6FpdEqPmZ9aXIXiDi0Ke0f,"['art pop', 'pop']",Lana Del Rey,85.986,0.111,5.0,47.0,1.0,3.0,0.0415,0.384,0.177,0.938,0.104,6.02e-05,Blue Banisters
+6SQLk9HSNketfgs2AyIiMs,['pop'],Harry Styles,140.026,0.521,0.0,69.0,1.0,3.0,0.0272,0.535,0.457,0.000532,0.19,0.371,She
+5DgdvOOLj3Tn4bEzY9jAJ2,"['filmi', 'modern bollywood']",Armaan Malik,80.005,0.796,2.0,23.0,0.0,4.0,0.0361,0.529,0.34,0.402,0.0942,0.00287,Tum Jo Mile
+045ZeOHPIzhxxsm8bq5kyE,['pop'],Taylor Swift,91.992,0.885,0.0,76.0,1.0,4.0,0.0418,0.547,0.192,0.000512,0.39,9.37e-05,Out Of The Woods (Taylor's Version)
+6iYMfxznTBlcVOgRHab2W0,['pop'],Harry Styles,160.02,0.846,7.0,68.0,0.0,4.0,0.035,0.566,0.86,0.000564,0.121,0.000795,"Sunflower, Vol. 6"
+1vYXt7VSjH9JIM5oRRo7vA,"['dance pop', 'pop', 'uk pop']",Dua Lipa,110.056,0.845,11.0,87.0,0.0,4.0,0.048,0.671,0.775,0.0207,0.329,0.0,Dance The Night - From Barbie The Album
+58P060mo9WWgEAdDvf0Riz,['pop'],Taylor Swift,80.961,0.579,7.0,37.0,1.0,4.0,0.164,0.392,0.549,0.835,0.145,0.00179,willow
+0ZRrJTPXDToRJ2iLo9oLrW,"['garage rock', 'modern rock', 'permanent wave', 'rock', 'sheffield indie']",Arctic Monkeys,169.152,0.875,11.0,0.0,0.0,4.0,0.199,0.348,0.407,0.0341,0.117,0.0,When The Sun Goes Down
+0j3AgwHeoqudbV5ru5wNwT,"['garage rock', 'modern rock', 'permanent wave', 'rock', 'sheffield indie']",Arctic Monkeys,140.402,0.895,4.0,35.0,0.0,4.0,0.0445,0.606,0.786,0.000612,0.0369,0.0,Temptation Greets You Like Your Naughty Friend
+4y5bvROuBDPr5fuwXbIBZR,['pop'],Taylor Swift,103.979,0.719,9.0,81.0,1.0,4.0,0.0497,0.811,0.865,0.0129,0.0742,1.36e-05,Paper Rings
+7Hk6vSplBGJ6zK9GcGgeIa,"['garage rock', 'modern rock', 'permanent wave', 'rock', 'sheffield indie']",Arctic Monkeys,183.67,0.664,0.0,0.0,1.0,4.0,0.0379,0.414,0.863,0.24,0.288,0.0656,One for the Road
+1GwMQaZz6Au3QLDbjbMdme,['pop'],Taylor Swift,163.954,0.504,9.0,77.0,1.0,4.0,0.0731,0.598,0.252,0.186,0.34,0.000221,Call It What You Want
+2naEVOadudtXHwtZNfjMDM,"['k-pop', 'k-pop girl group', 'pop']",BLACKPINK,109.826,0.961,4.0,0.0,1.0,4.0,0.096,0.592,0.508,0.0423,0.0882,0.0,Forever Young
+1Iq8oo9XkmmvCQiGOfORiz,['pop'],Taylor Swift,100.012,0.658,0.0,85.0,1.0,4.0,0.036,0.596,0.176,0.0504,0.127,0.0,Is It Over Now? (Taylor's Version) (From The Vault)
+5kRPPEWFJIMox5qIkQkiz5,['pop'],Harry Styles,104.085,0.262,7.0,73.0,1.0,4.0,0.0276,0.427,0.228,0.746,0.068,0.0,Sweet Creature
+1bAvtmTl0F9loyz9AwPwp7,"['canadian contemporary r&b', 'canadian pop', 'pop']",The Weeknd,91.007,0.485,0.0,60.0,0.0,4.0,0.053,0.666,0.287,0.0355,0.504,0.000599,Losers
+28tIMaewZuGR8urkvFhQyA,['pop'],Taylor Swift,147.948,0.618,7.0,53.0,1.0,4.0,0.0379,0.64,0.614,0.743,0.0574,0.004,the last great american dynasty - the long pond studio sessions
+3GYlZ7tbxLOxe6ewMNVTkw,"['art pop', 'pop']",Billie Eilish,140.214,0.236,4.0,82.0,0.0,4.0,0.0379,0.412,0.119,0.83,0.147,0.00653,TV
+6lzc0Al0zfZOIFsFvBS1ki,['pop'],Taylor Swift,129.958,0.713,9.0,67.0,1.0,4.0,0.0503,0.594,0.328,0.000328,0.114,0.0,State Of Grace (Taylor's Version)
+5SzoFexynLVceTLggJTZZM,"['art pop', 'pop']",Lana Del Rey,84.809,0.317,10.0,56.0,1.0,4.0,0.028,0.189,0.251,0.812,0.214,0.0719,Blue Velvet
+3esA216TyLHEkNiBCeCmcg,['pop'],Taylor Swift,126.084,0.434,1.0,44.0,1.0,4.0,0.0289,0.666,0.396,0.647,0.124,1.95e-06,The Best Day
+6qAcApH8obo8eqatCKUHd9,['pop'],Taylor Swift,170.091,0.648,2.0,72.0,1.0,4.0,0.103,0.602,0.174,0.0104,0.217,0.0,Bad Blood (feat. Kendrick Lamar) (Taylor's Version)
+0zPgEG7Cx33w0o0J2nvURB,"['dance pop', 'pop', 'uk pop']",Dua Lipa,90.483,0.753,5.0,0.0,0.0,4.0,0.0542,0.656,0.79,0.143,0.0981,1.08e-06,Cool
+0eFQWVz0qIxDOvhLpZ40P7,['pop'],Taylor Swift,179.947,0.258,2.0,69.0,1.0,4.0,0.0383,0.313,0.268,0.842,0.0948,1.3e-06,the lakes - bonus track
+6AtZLIzUINvExIUy4QhdjP,['pop'],Taylor Swift,154.008,0.557,6.0,76.0,1.0,4.0,0.0342,0.584,0.767,0.0129,0.0576,0.0,I Knew You Were Trouble (Taylor's Version)
+1z5jOmNswvnzjC5gFLu5Dv,"['dance pop', 'pop', 'uk pop']",Dua Lipa,110.127,0.868,3.0,47.0,0.0,4.0,0.0908,0.532,0.529,0.011,0.0584,0.0,Hotter Than Hell
+1IF5UcqRO42D12vYwceOY6,['pop'],Harry Styles,94.08,0.156,8.0,70.0,1.0,4.0,0.0371,0.671,0.201,0.804,0.113,0.0518,From the Dining Table
+5Kllw7Fco57MHtMEGgRdoc,"['k-pop', 'k-pop boy group', 'pop']",Stray Kids,179.958,0.946,2.0,47.0,1.0,3.0,0.361,0.348,0.589,0.0278,0.14,0.0,CHEESE
+1qEmFfgcLObUfQm0j1W2CK,['pop'],Harry Styles,114.996,0.728,10.0,83.0,1.0,4.0,0.0468,0.714,0.901,0.298,0.106,0.0,Late Night Talking
+1cdzfFjEbUbgTm5nv3FgXR,['pop'],Ariana Grande,100.016,0.876,6.0,64.0,1.0,4.0,0.239,0.671,0.8,0.266,0.444,0.0,Focus
+1mhVXWduD8ReDwusfaHNwU,"['canadian contemporary r&b', 'canadian pop', 'pop']",The Weeknd,74.64,0.454,1.0,66.0,0.0,4.0,0.0425,0.583,0.309,0.265,0.181,0.0,Tell Your Friends
+4c4qqhFrvOgddweMQS0ptG,"['canadian contemporary r&b', 'canadian pop', 'pop']",The Weeknd,122.028,0.742,6.0,54.0,0.0,4.0,0.0784,0.774,0.677,0.0312,0.0907,5.03e-05,Sacrifice (Remix) (feat. Swedish House Mafia)
+4txojlesMFQZGWxwz2EeqB,['pop'],Taylor Swift,157.96,0.837,0.0,64.0,1.0,4.0,0.12,0.482,0.534,0.435,0.123,0.00147,"Would've, Could've, Should've"
+5udz8YvYKpDRB3gcSILh0e,['pop'],Ariana Grande,107.032,0.667,1.0,0.0,1.0,4.0,0.0679,0.746,0.384,0.271,0.102,1.2e-06,"thank u, next"
+761QvVHTibYjEi2r6A4g4Q,"['art pop', 'pop']",Lana Del Rey,203.944,0.472,10.0,68.0,1.0,4.0,0.0718,0.205,0.0392,0.498,0.0953,0.000792,Get Free
+3Cz6MZdwncB4qasyRPen4S,['pop'],Sabrina Carpenter,112.967,0.837,1.0,50.0,0.0,4.0,0.0645,0.659,0.564,0.0134,0.266,0.0,buy me presents
+6pYNq0ZwpPVazKzsqpf0G8,['pop'],Taylor Swift,121.009,0.733,7.0,71.0,1.0,4.0,0.0281,0.678,0.581,0.00115,0.104,0.0,The Very First Night (Taylor's Version) (From The Vault)
+4IwvoV3uQhRpyflYHPmHU3,"['garage rock', 'modern rock', 'permanent wave', 'rock', 'sheffield indie']",Arctic Monkeys,114.967,0.617,2.0,0.0,1.0,4.0,0.037,0.571,0.455,0.184,0.206,0.00545,Fire And The Thud
+7BFI9QZPQKgYuR2HhDgwbG,"['art pop', 'metropopolis', 'nz pop', 'pop']",Lorde,84.878,0.428,7.0,0.0,1.0,4.0,0.122,0.674,0.337,0.121,0.132,0.0,Royals
+0d2nqd8iWUX0BpLo6Lg2C8,"['canadian contemporary r&b', 'canadian pop', 'pop']",The Weeknd,119.993,0.707,7.0,2.0,0.0,4.0,0.0987,0.68,0.382,0.479,0.511,0.0,D.D.
+6xsEAm6w9oMQYYg3jkEkMT,['pop'],Taylor Swift,170.16,0.655,11.0,68.0,0.0,4.0,0.106,0.654,0.221,0.0294,0.139,0.0,Bad Blood
+7nWui6jiMM2m9qFmET1Mtj,['pop'],Taylor Swift,116.04,0.279,0.0,60.0,1.0,4.0,0.031,0.623,0.38,0.661,0.193,0.0,Ronan (Taylor's Version)
+58AFokYCv4jdJ2T0hEoQ2r,['pop'],Sabrina Carpenter,122.221,0.37,4.0,58.0,1.0,4.0,0.0385,0.592,0.385,0.663,0.0777,0.0,decode
+2i8f4VnnBjy0yDqH2C452a,['pop'],Olivia Rodrigo,129.976,0.878,9.0,12.0,1.0,4.0,0.0901,0.628,0.796,0.00196,0.0649,1.23e-05,bad idea right?
+5VQLMrWhailAhErKNUSnv1,['pop'],Taylor Swift,117.937,0.499,4.0,42.0,1.0,4.0,0.0369,0.706,0.545,0.0371,0.132,0.0,The Lucky One
+5qNh5WtzMbfpSj2jLlBkoD,"['art pop', 'pop']",Billie Eilish,129.65,0.285,9.0,5.0,0.0,4.0,0.0807,0.634,0.203,0.937,0.232,0.000359,Your Power
+4Pu3JCVM0YptKrGNjRfz6a,"['ambient pop', 'dream pop', 'el paso indie', 'shoegaze']",Cigarettes After Sex,126.53,0.227,5.0,0.0,0.0,4.0,0.0282,0.45,0.153,0.713,0.108,0.419,Hentai
+5mRNFh0zp9qY1kDpecN9ot,['pop'],Ariana Grande,81.306,0.532,6.0,41.0,1.0,4.0,0.027,0.492,0.267,0.134,0.101,0.0,Beauty and the Beast
+4CkgMiMqZ5JzW9iYXSTMTL,['pop'],Taylor Swift,149.654,0.715,0.0,72.0,1.0,3.0,0.0495,0.391,0.473,0.167,0.183,0.0,I Bet You Think About Me (feat. Chris Stapleton) (Taylor's Version) (From The Vault)
+2HotTAoFiOYTeMZkNs1Ces,"['art pop', 'metropopolis', 'nz pop', 'pop']",Lorde,92.032,0.501,0.0,65.0,1.0,4.0,0.0465,0.799,0.635,0.211,0.118,0.0123,The Love Club
+3v7hMuewavfpJx8sytJ4AO,"['dance pop', 'pop', 'uk pop']",Dua Lipa,123.963,0.768,0.0,36.0,0.0,4.0,0.0306,0.568,0.523,0.00237,0.196,0.012,Hallucinate - Paul Woolford Remix
+1TEL6MlSSVLSdhOSddidlJ,['pop'],Ariana Grande,87.045,0.309,7.0,71.0,0.0,4.0,0.0366,0.647,0.195,0.78,0.202,7.41e-06,needy
+5aRZk9oWIYUB5alrTs8TTV,"['irish singer-songwriter', 'modern rock', 'pov: indie']",Hozier,142.255,0.673,0.0,68.0,1.0,5.0,0.0509,0.399,0.285,0.584,0.118,2.44e-05,From Eden
+3rq5w4bQGigXOfdN30ATJt,"['garage rock', 'modern rock', 'permanent wave', 'rock', 'sheffield indie']",Arctic Monkeys,85.03,0.532,5.0,0.0,1.0,4.0,0.0323,0.548,0.405,0.186,0.217,0.000263,Do I Wanna Know?
+15s3PQjVCiHSwRqSKaqkDw,"['art pop', 'pop']",Lana Del Rey,119.964,0.585,1.0,46.0,0.0,4.0,0.0445,0.635,0.486,0.0807,0.0996,0.00187,Dark Paradise - Parov Stelar Remix
+3Ttx1ky0ZYaVjXZWdcmwh5,"['canadian contemporary r&b', 'canadian pop', 'pop']",The Weeknd,170.964,0.727,1.0,0.0,1.0,4.0,0.0564,0.517,0.342,0.00154,0.0882,0.00015,Blinding Lights
+0fBSs3fRoh1yJcne77fdu9,"['art pop', 'pop']",Lana Del Rey,72.847,0.249,6.0,78.0,0.0,5.0,0.0348,0.236,0.181,0.811,0.087,1e-06,Video Games
+6bnF93Rx87YqUBLSgjiMU8,"['canadian contemporary r&b', 'canadian pop', 'pop']",The Weeknd,170.062,0.746,10.0,81.0,0.0,4.0,0.15,0.537,0.252,0.0236,0.156,1.01e-06,Heartless
+4c9XojqJDu7KNCh8GmNbj5,"['k-pop', 'k-pop boy group', 'pop']",BTS,144.0,0.878,1.0,56.0,1.0,4.0,0.185,0.796,0.795,0.171,0.234,0.0,Hip Hop Phile
+7g3htkaLz4ETFn0cifwM3y,"['art pop', 'pop']",Lana Del Rey,131.988,0.486,11.0,71.0,0.0,4.0,0.0346,0.536,0.0968,0.244,0.12,0.00788,High By The Beach
+7eQj6r5PIdYKEIZjucBMcq,['pop'],Taylor Swift,100.02,0.681,0.0,65.0,1.0,4.0,0.025,0.693,0.663,0.0848,0.0768,0.0,Stay Stay Stay (Taylor's Version)
+6JlI8Ay77m4nJvZTHvfT1J,['pop'],Taylor Swift,150.072,0.284,5.0,65.0,1.0,4.0,0.0821,0.644,0.328,0.916,0.0909,1.5e-05,peace
+2vtmY2mSccRzKGjtcHSzI3,"['art pop', 'pop']",Lana Del Rey,88.013,0.696,10.0,77.0,0.0,4.0,0.0417,0.595,0.533,0.276,0.411,0.0,Diet Mountain Dew
+083PU4XnYAOMAGVruma3vb,"['irish singer-songwriter', 'modern rock', 'pov: indie']",Hozier,153.769,0.275,7.0,64.0,0.0,3.0,0.0292,0.506,0.0639,0.494,0.101,0.00377,Shrike
+6v5YfAj1plZ2Rbl9FzOOF5,"['dance pop', 'pop', 'uk pop']",Dua Lipa,115.993,0.535,7.0,35.0,1.0,4.0,0.0904,0.865,0.863,0.0105,0.299,0.0,New Rules - Freedo Remix
+79wgotDiVZml9PiTtNtYBA,"['art pop', 'pop']",Lana Del Rey,157.862,0.366,9.0,65.0,0.0,4.0,0.0591,0.382,0.0395,0.625,0.112,0.107,Taco Truck x VB
+1mFpMoeZfkIqtqW2AfQ8ba,"['k-pop', 'k-pop girl group', 'pop']",BLACKPINK,160.07,0.738,2.0,70.0,1.0,4.0,0.0577,0.715,0.36,0.00199,0.208,0.0,THE GIRLS - BLACKPINK THE GAME OST
+4tyX1rw9X309WkEdh2As4B,['pop'],Taylor Swift,107.873,0.536,8.0,57.0,1.0,4.0,0.0627,0.529,0.304,0.826,0.141,0.00082,coney island (feat. The National)
+0U0etHtpARihOUUY8Akc7y,['pop'],Taylor Swift,80.855,0.381,4.0,52.0,0.0,4.0,0.0548,0.41,0.557,0.892,0.148,0.0,willow - lonely witch version
+2BDBBNaWZf2ueZwp4h52b2,['pop'],Taylor Swift,89.844,0.221,2.0,21.0,1.0,4.0,0.0468,0.606,0.112,0.794,0.0888,0.0,the lakes - the long pond studio sessions
+4LEK9rD7TWIG4FCL1s27XC,['pop'],Taylor Swift,130.033,0.581,0.0,50.0,0.0,4.0,0.0424,0.613,0.551,0.537,0.25,0.000345,cardigan
+7KokYm8cMIXCsGVmUvKtqf,['pop'],Taylor Swift,90.02,0.62,8.0,83.0,1.0,4.0,0.0666,0.642,0.0969,0.0734,0.483,0.0,Karma
+0zg8u9UUlvwSvBJYEjhgDT,"['dance pop', 'pop', 'uk pop']",Dua Lipa,119.999,0.91,6.0,62.0,0.0,4.0,0.0554,0.717,0.682,0.00262,0.0589,0.00194,Love Again - Imanbek Remix
+4pvb0WLRcMtbPGmtejJJ6y,['pop'],Taylor Swift,75.602,0.38,6.0,79.0,1.0,4.0,0.0287,0.298,0.152,0.778,0.11,5.62e-05,exile (feat. Bon Iver)
+550erGcdD9n6PnwxrvYqZT,['pop'],Taylor Swift,115.99,0.571,6.0,67.0,1.0,4.0,0.0296,0.788,0.797,0.106,0.0934,0.0,Hey Stephen (Taylor's Version)
+1hjRhYpWyqDpPahmSlUTlc,['pop'],Taylor Swift,94.971,0.824,2.0,81.0,1.0,4.0,0.038,0.575,0.292,0.000418,0.0901,0.0214,Style (Taylor's Version)
+7fesNTgTEMEH0ye8MOgEDY,['pop'],Olivia Rodrigo,135.82,0.229,0.0,73.0,1.0,4.0,0.0362,0.422,0.104,0.816,0.109,0.0,teenage dream
+0pjBqAz8GlxGlpaU4W0DxS,['pop'],Taylor Swift,122.99,0.722,9.0,66.0,1.0,4.0,0.0691,0.731,0.265,0.0893,0.112,0.00256,Cruel Summer - LP Giobbi Remix
+5GPwN5iZ9ZMSXAkppj4Uvv,['pop'],Taylor Swift,134.05,0.608,1.0,42.0,0.0,4.0,0.0259,0.552,0.17,0.186,0.125,0.0,Innocent
+3e0McEmoNU05YD0dBT5afU,"['garage rock', 'modern rock', 'permanent wave', 'rock', 'sheffield indie']",Arctic Monkeys,169.929,0.721,9.0,0.0,1.0,4.0,0.0366,0.298,0.727,0.00702,0.307,0.0,Cornerstone
+3BJe4B8zGnqEdQPMvfVjuS,"['art pop', 'pop']",Lana Del Rey,111.968,0.654,1.0,84.0,0.0,4.0,0.0335,0.565,0.235,0.0542,0.122,1.8e-06,Summertime Sadness
+5YkPpicEXy0OtQnXxV2YaP,"['dance pop', 'pop', 'uk pop']",Dua Lipa,172.95,0.448,10.0,17.0,1.0,4.0,0.0434,0.672,0.335,0.636,0.111,2.28e-05,Be the One - Acoustic Version
+2ExKb6Ag2WXob6FpkSeXhE,"['canadian contemporary r&b', 'canadian pop', 'pop']",The Weeknd,118.061,0.817,0.0,57.0,1.0,4.0,0.0308,0.684,0.623,0.0222,0.439,2.19e-05,Save Your Tears
+78dtqFPt7cvYgS2zTXtZKV,"['art pop', 'pop']",Lana Del Rey,149.907,0.84,5.0,66.0,0.0,4.0,0.0441,0.509,0.336,0.0311,0.0969,0.000169,Summertime Sadness - Sped Up
+3HWOknOVmd44e1jg4g0Sga,"['k-pop', 'k-pop girl group', 'pop']",TWICE,129.971,0.968,1.0,63.0,0.0,4.0,0.131,0.672,0.473,0.0243,0.0587,0.0,Knock Knock
+5WhzJEUErG4gdSqxNCB9ED,"['art pop', 'pop']",Lana Del Rey,79.592,0.224,7.0,46.0,0.0,5.0,0.0323,0.352,0.211,0.876,0.113,0.0327,Wildflower Wildfire
+4eKMqf9ZMSclDX7V9Ptg7x,['pop'],Taylor Swift,140.15,0.372,0.0,66.0,1.0,4.0,0.0667,0.654,0.198,0.705,0.114,6.78e-05,Midnight Rain
+12nBPF4Rh4XLFJV0YLN7uj,['pop'],Taylor Swift,133.627,0.598,1.0,65.0,0.0,4.0,0.0284,0.522,0.149,0.101,0.152,0.0,Innocent (Taylor's Version)
+5yeuXkukVGuix3vmLu2BPJ,['pop'],Taylor Swift,79.996,0.279,4.0,63.0,0.0,4.0,0.364,0.87,0.16,0.16,0.121,1.74e-05,Vigilante Shit
+2NmsngXHeC1GQ9wWrzhOMf,['pop'],Taylor Swift,119.845,0.31,10.0,79.0,1.0,4.0,0.0338,0.559,0.46,0.881,0.106,0.0,illicit affairs
+1RvQQGwaPipiNgz8RXAKA8,['pop'],Taylor Swift,124.978,0.896,1.0,49.0,0.0,4.0,0.0437,0.602,0.641,0.0773,0.091,8.87e-05,Red
+5QWTRnyZO44Gtl9sru49VQ,['pop'],Taylor Swift,89.011,0.672,2.0,0.0,1.0,4.0,0.0303,0.668,0.539,0.111,0.329,0.0,Our Song
+6dYcUcj1TyZZES5ivtjLdk,"['ambient pop', 'dream pop', 'el paso indie', 'shoegaze']",Cigarettes After Sex,73.683,0.37,2.0,0.0,0.0,4.0,0.0247,0.455,0.125,0.533,0.111,0.959,Keep On Loving You
+2hloaUoRonYssMuqLCBLTX,['pop'],Ariana Grande,151.976,0.665,2.0,80.0,0.0,4.0,0.0774,0.758,0.643,0.0815,0.216,0.000157,bloodline
+11MyiSGZSYSmhhqwGUTtAq,"['art pop', 'pop']",Lana Del Rey,119.479,0.587,5.0,78.0,1.0,4.0,0.0364,0.345,0.258,0.539,0.119,0.0731,Sad Girl
+7nDYw1nNAW4dAqgmW2W3tq,"['irish singer-songwriter', 'modern rock', 'pov: indie']",Hozier,179.823,0.689,7.0,0.0,1.0,4.0,0.197,0.384,0.702,0.0217,0.204,2.24e-06,Almost (Sweet Music)
+626lrZfNIlthgrUfjvRYrh,"['k-pop', 'k-pop boy group', 'pop']",BTS,136.034,0.475,0.0,0.0,0.0,4.0,0.0846,0.583,0.332,0.148,0.139,0.0,Stigma
+5TgEJ62DOzBpGxZ7WRsrqb,"['irish singer-songwriter', 'modern rock', 'pov: indie']",Hozier,121.412,0.363,10.0,79.0,1.0,4.0,0.0608,0.531,0.259,0.749,0.112,0.0,Work Song
+67Io3gxHwfbUreBf114c0u,['pop'],Taylor Swift,121.038,0.78,7.0,60.0,1.0,4.0,0.0297,0.621,0.672,0.00327,0.184,4.55e-06,Mine
+6ce41JVa6KFaryfmC2bu2W,['pop'],Taylor Swift,103.987,0.729,7.0,68.0,1.0,4.0,0.0376,0.661,0.668,0.00215,0.0477,0.0013,22
+0oSNOJEcBIKNcQzRc5TfyR,"['k-pop', 'k-pop boy group', 'pop']",BTS,92.971,0.887,0.0,0.0,0.0,4.0,0.089,0.585,0.528,0.0244,0.361,0.0,Blood Sweat & Tears
+1iugFsBigGHtRwvFVDG9oo,"['irish singer-songwriter', 'modern rock', 'pov: indie']",Hozier,86.425,0.446,0.0,62.0,0.0,4.0,0.0338,0.5,0.154,0.382,0.159,4.83e-06,It Will Come Back
+4OC6qCqVMscZLBMnLTsVyg,['pop'],Olivia Rodrigo,137.459,0.557,5.0,3.0,1.0,4.0,0.053,0.462,0.294,0.173,0.272,0.0,vampire
+6JmSfynzr6E0QllQZNEXEb,"['irish singer-songwriter', 'modern rock', 'pov: indie']",Hozier,93.507,0.64,4.0,68.0,1.0,4.0,0.0506,0.364,0.386,0.201,0.12,7.25e-05,Angel of Small Death and the Codeine Scene
+560uQyz3p5G9WdnMX39xc6,['pop'],Taylor Swift,117.699,0.235,10.0,55.0,1.0,4.0,0.0356,0.489,0.435,0.883,0.113,0.0,illicit affairs - the long pond studio sessions
+6qwEx0TQJMEqvQdN8hRZDx,"['ambient pop', 'dream pop', 'el paso indie', 'shoegaze']",Cigarettes After Sex,96.556,0.387,4.0,0.0,1.0,4.0,0.0279,0.44,0.267,0.148,0.0844,0.559,Truly
+4wox6emdE5yzgiyN3evNmd,"['dance pop', 'pop', 'uk pop']",Dua Lipa,128.028,0.947,4.0,34.0,0.0,4.0,0.0481,0.601,0.692,0.00237,0.109,0.306,Break My Heart - Jax Jones Midnight Snack Remix
+6qnM0XXPZOINWA778uNqQ9,['pop'],Taylor Swift,117.024,0.634,7.0,58.0,1.0,4.0,0.0324,0.793,0.615,0.038,0.304,1.76e-06,Welcome To New York
+3VSYkAf6f46i5ZkXOHORq1,"['ambient pop', 'dream pop', 'el paso indie', 'shoegaze']",Cigarettes After Sex,96.321,0.511,6.0,4.0,1.0,4.0,0.0274,0.448,0.112,0.362,0.129,0.823,Sweet
+6f5TuB9WtbA1g49A4DcMQ4,['pop'],Ariana Grande,108.801,0.456,1.0,0.0,0.0,4.0,0.0684,0.813,0.587,0.169,0.105,2.86e-06,Be Alright
+5gmP04MVie9LKK0XLB0KEe,"['latin worship', 'peruvian indie', 'rock cristiano']",TWICE,58.559,0.283,3.0,21.0,1.0,4.0,0.0293,0.45,0.256,0.887,0.086,0.0,Abrázame
+2ByBBvpR9b7IynvRmnG7kG,['pop'],Taylor Swift,103.96,0.386,4.0,74.0,1.0,4.0,0.0297,0.771,0.239,0.276,0.121,2.01e-05,Clean (Taylor's Version)
+35rdVq36LMHQX0Suw9a6tK,['pop'],Taylor Swift,151.884,0.704,9.0,62.0,1.0,5.0,0.245,0.689,0.92,0.835,0.134,4.83e-06,closure
+5kMAugdkH2coRHRnW5FuDb,"['art pop', 'pop']",Lana Del Rey,171.564,0.636,4.0,57.0,0.0,4.0,0.0424,0.316,0.4,0.186,0.198,0.00016,Born To Die
+2b7aqGkXjVARTFcA0ivbjZ,"['irish singer-songwriter', 'modern rock', 'pov: indie']",Hozier,99.39,0.313,9.0,36.0,0.0,4.0,0.0569,0.476,0.306,0.927,0.663,2.03e-06,In a Week - Live From Spotify London
+2aI2k39nfa3KFsa4JclQzw,"['k-pop', 'k-pop girl group', 'pop']",BLACKPINK,139.931,0.859,4.0,0.0,0.0,4.0,0.0833,0.671,0.39,0.0313,0.267,0.0,DDU-DU DDU-DU
+10OyIs6KCOmDO19J5wWFPx,"['canadian contemporary r&b', 'canadian pop', 'pop']",The Weeknd,140.047,0.56,2.0,54.0,0.0,3.0,0.0336,0.403,0.153,0.0157,0.931,3.77e-06,Call Out My Name - Live
+0NWqNXBJTpXbkI5rPWNy3p,"['canadian contemporary r&b', 'canadian pop', 'pop']",The Weeknd,120.021,0.417,8.0,62.0,0.0,4.0,0.074,0.467,0.171,0.421,0.102,0.000202,All I Know
+5UPwc30oJ4KhQYctNfv34x,"['canadian contemporary r&b', 'canadian pop', 'pop']",The Weeknd,119.98,0.278,2.0,0.0,0.0,3.0,0.0372,0.483,0.369,0.438,0.0767,0.0,Earned It (Fifty Shades Of Grey)
+6QOU3FhUkPeA2RtaXcvgi7,"['art pop', 'pop']",Lana Del Rey,138.004,0.842,2.0,52.0,0.0,4.0,0.0925,0.534,0.441,0.0904,0.203,0.0388,This Is What Makes Us Girls
+1VNWdmXSbaNrnWod10WIL0,"['canadian contemporary r&b', 'canadian pop', 'pop']",The Weeknd,87.521,0.652,8.0,82.0,1.0,4.0,0.0325,0.531,0.179,0.0524,0.162,1.39e-06,"One Of The Girls (with JENNIE, Lily Rose Depp)"
+1P17dC1amhFzptugyAO7Il,['pop'],Taylor Swift,128.07,0.709,9.0,83.0,0.0,4.0,0.123,0.766,0.506,0.204,0.126,1.41e-05,Look What You Made Me Do
+4B1rpPmQXwj78wk6aIGwwU,['pop'],Harry Styles,69.387,0.407,6.0,67.0,0.0,4.0,0.0268,0.386,0.456,0.234,0.0999,1.86e-06,Two Ghosts
+6sGaavvDeGTY3wV9hzIEOP,"['art pop', 'pop']",Lana Del Rey,189.767,0.725,8.0,54.0,0.0,4.0,0.0656,0.352,0.339,0.00193,0.22,2.73e-06,Gods & Monsters
+6QqUgSjdtWhqsEdz72XhCD,"['brooklyn indie', 'pov: indie']",Mitski,203.981,0.691,11.0,61.0,1.0,4.0,0.0345,0.313,0.595,0.000508,0.185,0.423,Remember My Name
+6pOJF93bhb1bTQvOXxE46u,"['dance pop', 'pop', 'uk pop']",Dua Lipa,95.055,0.794,2.0,42.0,0.0,4.0,0.0655,0.615,0.649,0.308,0.277,6.01e-05,CAN THEY HEAR US (From ‘Gully' with original Daniel Heath Score)
+6iiAfo4wTA2CVC3Uwx9uh8,['pop'],Taylor Swift,133.873,0.444,6.0,66.0,1.0,4.0,0.0285,0.506,0.241,0.0538,0.123,0.0,You're Not Sorry (Taylor's Version)
+1FEiijYPJtyswChfcpv3p0,"['art pop', 'pop']",Lana Del Rey,111.945,0.646,1.0,63.0,0.0,4.0,0.0332,0.568,0.211,0.0464,0.121,0.0,Summertime Sadness
+7IpDQcksaT8SxS7vOX4SRm,"['canadian contemporary r&b', 'canadian pop', 'pop']",The Weeknd,133.895,0.405,0.0,64.0,0.0,4.0,0.0584,0.657,0.0673,0.525,0.146,0.072,What You Need
+7wIYDzWW82O6Rc4vGuzjND,"['dance pop', 'pop', 'uk pop']",Dua Lipa,176.036,0.265,5.0,61.0,1.0,4.0,0.0491,0.455,0.324,0.861,0.685,0.0,"I'm Not the Only One - Live from Spotify, London"
+69UqtTHfUKAJweQwEStRzC,"['ambient pop', 'dream pop', 'el paso indie', 'shoegaze']",Cigarettes After Sex,75.302,0.477,9.0,6.0,0.0,4.0,0.029,0.412,0.141,0.0542,0.0975,0.798,Sunsetz
+0or0gNaKAXYYCsOrpvRzAu,"['art pop', 'metropopolis', 'nz pop', 'pop']",Lorde,76.715,0.218,10.0,0.0,0.0,4.0,0.111,0.534,0.345,0.923,0.0944,0.0,Liability
+4agPFCccTh7gIho2sNhsJp,['pop'],Olivia Rodrigo,169.023,0.202,2.0,52.0,1.0,4.0,0.0995,0.472,0.445,0.938,0.126,0.0,"1 step forward, 3 steps back"
+7AEAGTc8cReDqcbPoY9gwo,['pop'],Taylor Swift,85.984,0.676,7.0,57.0,1.0,4.0,0.0916,0.628,0.75,0.00957,0.102,2.65e-05,We Are Never Ever Getting Back Together
+13wNEvWmBsWaWVtiLPRIW5,"['canadian contemporary r&b', 'canadian pop', 'pop']",The Weeknd,184.131,0.716,5.0,0.0,0.0,4.0,0.167,0.484,0.365,0.3,0.112,0.00214,Hurt You
+6x5yiC9qgFIO0XPekWdjF1,"['brooklyn indie', 'pov: indie']",Mitski,119.186,0.181,8.0,59.0,0.0,3.0,0.0366,0.297,0.0698,0.957,0.0841,0.000288,Shame
+6kkdPUBJurHTLjaweUWeqz,"['k-pop', 'k-pop girl group', 'pop']",TWICE,104.977,0.655,5.0,0.0,1.0,4.0,0.0248,0.72,0.468,0.383,0.156,0.0,The Best Thing I Ever Did
+0wavGRldH0AWyu2zvTz8zb,['pop'],Taylor Swift,176.655,0.156,0.0,72.0,1.0,4.0,0.0518,0.337,0.39,0.964,0.115,7.72e-05,Sweet Nothing
+4bXCcoesMt8u99xMsbLr9U,['pop'],Taylor Swift,103.97,0.377,4.0,54.0,1.0,4.0,0.0346,0.815,0.211,0.232,0.1,0.0,Clean
+2Tz4JnXZOcjcp8fWfMjBBk,['pop'],Taylor Swift,94.069,0.443,2.0,48.0,1.0,4.0,0.0276,0.505,0.123,0.035,0.0906,3.15e-06,The Last Time
+3FvDYk5IC5Um84kK5FbJGR,"['canadian contemporary r&b', 'canadian pop', 'pop']",The Weeknd,114.96,0.793,11.0,45.0,0.0,4.0,0.0691,0.642,0.623,0.159,0.305,0.000557,Adaptation
+3yNJkriPzWjkkDAWHIAVUq,['pop'],Taylor Swift,159.813,0.488,0.0,68.0,1.0,4.0,0.0278,0.535,0.348,0.449,0.111,0.0,Ours (Taylor's Version)
+0IiQ3gvsK7OTYoDvBUKukm,"['garage rock', 'modern rock', 'permanent wave', 'rock', 'sheffield indie']",Arctic Monkeys,115.752,0.657,9.0,0.0,0.0,4.0,0.0295,0.415,0.69,0.052,0.233,0.0552,My Propeller
+5VJETUjJ7y46bAz4min5IB,['pop'],Olivia Rodrigo,137.466,0.559,5.0,65.0,1.0,4.0,0.0557,0.474,0.318,0.165,0.186,0.0,vampire
+7MXgrcOQAJ5VwSNUL0lDd3,"['canadian contemporary r&b', 'canadian pop', 'pop']",The Weeknd,170.903,0.694,5.0,55.0,0.0,4.0,0.0618,0.49,0.249,0.0133,0.0946,4.62e-05,Blinding Lights (with ROSALÍA) - Remix
+3DNziCcqRd2v8uQWwec1GW,['pop'],Sabrina Carpenter,119.957,0.755,7.0,32.0,1.0,4.0,0.101,0.684,0.237,0.00852,0.334,0.0,Skin - Quarterhead Remix
+2ls70nUDfjzm1lSRDuKxmw,['pop'],Taylor Swift,96.009,0.678,5.0,62.0,1.0,4.0,0.0646,0.752,0.583,0.085,0.13,1.64e-06,Blank Space
+5J5w61c4TVxVwU78KdDGdx,['pop'],Taylor Swift,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,Style
+5OndtwLGA9O6XHFcGm2H7r,['pop'],Taylor Swift,91.991,0.842,7.0,57.0,1.0,4.0,0.0373,0.552,0.343,0.00103,0.337,1.17e-05,Out Of The Woods
+11j9B5N8LJoxXQPRpjae9R,['pop'],Taylor Swift,199.909,0.742,10.0,31.0,1.0,4.0,0.0539,0.464,0.485,0.0456,0.0755,0.0,Teardrops On My Guitar - Pop Version
+6D5pfooPP6hi99RaXjkDsP,"['art pop', 'pop']",Lana Del Rey,126.044,0.813,1.0,0.0,0.0,4.0,0.0581,0.567,0.114,0.0138,0.125,9.03e-06,Summertime Sadness [Lana Del Rey vs. Cedric Gervais] - Cedric Gervais Remix
+7CzxXgQXurKZCyHz9ufbo1,['pop'],Taylor Swift,143.964,0.934,8.0,57.0,1.0,4.0,0.0646,0.563,0.518,0.00452,0.103,0.000807,I'm Only Me When I'm With You
+1hJXpII24ReABFg8Ig6k7w,"['brooklyn indie', 'pov: indie']",Mitski,75.663,0.203,11.0,67.0,1.0,3.0,0.0396,0.287,0.238,0.835,0.128,0.0,Abbey
+0IpbLjg5HE1Ju4k1rhYqvp,"['k-pop', 'k-pop boy group', 'pop']",BTS,113.977,0.683,4.0,0.0,1.0,4.0,0.0398,0.653,0.534,0.36,0.324,1e-06,Dynamite - Slow Jam Remix
+3bIxTsfeNMO7Nt2J3EUKrA,['pop'],Taylor Swift,104.007,0.729,7.0,55.0,1.0,4.0,0.0378,0.658,0.668,0.00215,0.0752,0.0013,22
+1QQii3pa5m8MEda0nbkjfw,['pop'],Taylor Swift,125.977,0.345,4.0,64.0,1.0,4.0,0.144,0.661,0.126,0.545,0.0871,0.000915,Mastermind
+6aHCXTCkPiB4zgXKpB7BHS,"['k-pop', 'k-pop boy group', 'pop']",BTS,121.972,0.761,5.0,0.0,0.0,4.0,0.0897,0.761,0.483,0.246,0.103,0.0,Trivia 承 : Love
+3kR1DF3AAFCzOtzMIErJ4H,"['irish singer-songwriter', 'modern rock', 'pov: indie']",Hozier,88.866,0.445,8.0,44.0,1.0,4.0,0.0292,0.503,0.382,0.163,0.111,0.000475,Foreigner's God
+0mt02gJ425Xjm7c3jYkOBn,"['art pop', 'pop']",Lana Del Rey,99.982,0.655,0.0,73.0,0.0,4.0,0.0542,0.504,0.262,0.604,0.364,0.00193,Lust For Life (with The Weeknd)
+6IIcLzR05sN1gk4ngzz7Kk,"['art pop', 'metropopolis', 'nz pop', 'pop']",Lorde,124.852,0.437,0.0,0.0,1.0,4.0,0.052,0.562,0.15,0.219,0.0806,2.18e-05,Supercut
+6rXvxz68x3FqXSdUabupFl,"['irish singer-songwriter', 'modern rock', 'pov: indie']",Hozier,92.644,0.638,4.0,48.0,1.0,4.0,0.0545,0.377,0.369,0.213,0.12,7.97e-05,Angel Of Small Death & The Codeine Scene
+6OqrJqDMu15AGJHJazg9Nr,"['dance pop', 'pop', 'uk pop']",Dua Lipa,102.977,0.825,6.0,0.0,0.0,4.0,0.0601,0.702,0.915,0.00883,0.0674,0.0,Levitating (feat. DaBaby)
+2vfgmmnUDkZNs75AJm7lev,"['k-pop', 'k-pop boy group', 'pop']",Stray Kids,98.026,0.814,4.0,53.0,0.0,4.0,0.0793,0.772,0.531,0.0179,0.0808,0.0,Question
+5Pkn31exSVgFbfDAH961QC,"['irish singer-songwriter', 'modern rock', 'pov: indie']",Hozier,98.062,0.426,6.0,56.0,0.0,3.0,0.0295,0.354,0.185,0.782,0.115,0.11,In the Woods Somewhere
+38td8VabuKlQt72Q2VnhbO,"['k-pop', 'k-pop boy group', 'pop']",BTS,106.022,0.688,11.0,0.0,0.0,4.0,0.0543,0.664,0.65,0.153,0.173,9.14e-05,134340
+4lXHVnmDO5u62tGJIpTafd,"['art pop', 'pop']",Lana Del Rey,65.627,0.589,6.0,56.0,1.0,4.0,0.0359,0.382,0.511,0.484,0.131,0.0,Million Dollar Man
+5JwLhFNrXw49pn3HQqu02G,"['art pop', 'pop']",Lana Del Rey,134.981,0.576,1.0,0.0,1.0,4.0,0.145,0.761,0.13,0.018,0.191,7.54e-06,Summer Bummer (feat. A$AP Rocky & Playboi Carti)
+44V5YKYkMw9vVqnnYTMMIc,['pop'],Taylor Swift,101.96,0.377,0.0,43.0,1.0,4.0,0.0275,0.606,0.446,0.817,0.154,0.0,Nothing New (feat. Phoebe Bridgers) (Taylor's Version) (From The Vault)
+2VgPA0WnwvE2nbltxa3BHz,"['k-pop', 'k-pop boy group', 'pop']",BTS,166.927,0.875,9.0,0.0,1.0,4.0,0.0696,0.649,0.557,0.00128,0.0486,0.0,Silver Spoon
+4jjaOnFqtAyiYmP7PdTJbO,"['k-pop', 'k-pop boy group', 'pop']",Stray Kids,120.0,0.69,0.0,56.0,1.0,4.0,0.238,0.929,0.749,0.703,0.117,0.0,RUN (HAN)
+28dQlavHTyrEkmI7w7Nivp,"['canadian contemporary r&b', 'canadian pop', 'pop']",The Weeknd,169.97,0.752,10.0,45.0,0.0,4.0,0.132,0.537,0.234,0.0187,0.145,1.36e-06,Heartless
+1AVVv4FgNLxQlV64j7dfP1,['pop'],Sabrina Carpenter,139.995,0.69,10.0,50.0,0.0,4.0,0.0741,0.677,0.545,0.288,0.103,0.0,I Can't Stop Me
+11cOetC5wVN9gaqBEGS5B4,['pop'],Taylor Swift,99.953,0.417,10.0,0.0,1.0,4.0,0.0231,0.621,0.289,0.288,0.119,0.0,Teardrops On My Guitar - Radio Single Remix
+51LmI5GE3tHKISLNZMjDPC,"['canadian contemporary r&b', 'canadian pop', 'pop']",The Weeknd,183.672,0.518,9.0,52.0,0.0,4.0,0.0489,0.296,0.0755,0.745,0.462,3.31e-05,The Birds Pt. 2
+3nef5W8jTkXrOKgCu4kmq7,['pop'],Ariana Grande,133.969,0.602,4.0,80.0,0.0,3.0,0.0401,0.662,0.29,0.0529,0.356,0.0,Dangerous Woman
+7mc6gNNKbrCrYGDoVKaVna,"['art pop', 'pop']",Lana Del Rey,82.29,0.256,6.0,35.0,0.0,5.0,0.0311,0.251,0.168,0.812,0.0884,0.0,Video Games
+7s2kWabRM60W9I61HpKg8C,"['art pop', 'metropopolis', 'nz pop', 'pop']",Lorde,87.996,0.483,4.0,64.0,1.0,4.0,0.0879,0.73,0.883,0.237,0.31,7.99e-05,Solar Power
+4Rrj1QxDqsj28gv9SiHQRA,"['canadian contemporary r&b', 'canadian pop', 'pop']",The Weeknd,108.283,0.599,1.0,47.0,1.0,4.0,0.297,0.742,0.573,0.0962,0.0981,0.000578,Out of Time - KAYTRANADA Remix
+5RcLLNStw5qR01c2W5Q92m,"['filmi', 'modern bollywood']",Arijit Singh,128.109,0.747,4.0,0.0,0.0,4.0,0.0558,0.514,0.435,0.274,0.712,0.0,Aa Bhi Ja Yaara (feat. Raabta)
+3sqpZ7OpMc0jto8rUXPw4B,"['dance pop', 'pop', 'uk pop']",Dua Lipa,105.993,0.662,8.0,24.0,1.0,4.0,0.0321,0.703,0.262,0.0643,0.264,0.182,Houdini - Danny L Harle Slowride Mix
+2Irr5XfPM6cyoKijHSCrqM,['pop'],Sabrina Carpenter,120.08,0.803,1.0,63.0,1.0,4.0,0.0446,0.659,0.62,0.0102,0.0746,0.0,Read your Mind
+6HTwoo4dUOvePNqMsTarPA,"['k-pop', 'k-pop girl group', 'pop']",TWICE,97.097,0.909,8.0,0.0,1.0,4.0,0.0624,0.688,0.702,0.0474,0.0674,1.35e-06,Alcohol-Free
+1IxeJLsubGTboNN9K5XNfL,['pop'],Taylor Swift,139.99,0.663,8.0,52.0,1.0,4.0,0.0599,0.587,0.544,0.0354,0.0902,9.06e-05,Wildest Dreams (Taylor's Version)
+7lSdUlVf8k6kxklKkskb1m,"['art pop', 'pop']",Lana Del Rey,118.721,0.41,11.0,61.0,0.0,4.0,0.0388,0.352,0.0952,0.556,0.114,0.0113,Heroin
+1GDF5AusV7p0wwi4OVNz3i,['pop'],Harry Styles,133.625,0.231,6.0,56.0,0.0,4.0,0.0311,0.535,0.291,0.475,0.102,0.0,"Two Ghosts - Recorded at Metropolis Studios, London"
+32qFynFqOmxIdgMSIctWqK,"['irish singer-songwriter', 'modern rock', 'pov: indie']",Hozier,173.376,0.796,6.0,36.0,1.0,3.0,0.0432,0.251,0.729,0.203,0.961,1.59e-06,Jackie And Wilson - Live
+71g5YNZv9ysuAZVPuxOmiC,"['k-pop', 'k-pop boy group', 'pop']",BTS,113.998,0.875,4.0,42.0,1.0,4.0,0.0769,0.676,0.595,0.0185,0.0524,0.0,Dynamite (Holiday Remix)
+0EJJu2Ag7DqTM8W4o7Vg7q,"['art pop', 'metropopolis', 'nz pop', 'pop']",Lorde,117.937,0.48,1.0,0.0,0.0,4.0,0.0428,0.358,0.0653,0.306,0.186,0.00163,A World Alone
+5XkyZyKMdFungjDb9cUKc3,"['k-pop', 'k-pop boy group', 'pop']",BTS,105.008,0.498,8.0,0.0,0.0,4.0,0.0571,0.804,0.704,0.339,0.18,0.000236,A Brand New Day (BTS World Original Soundtrack) [Pt. 2]
+4EjLfjUNonstEf9ZED4gce,['pop'],Ariana Grande,94.008,0.81,1.0,44.0,0.0,4.0,0.0415,0.643,0.411,0.114,0.179,0.0,Lovin' It
+6LQzYkmd8ADbKOOEVDnlG4,['pop'],Ariana Grande,101.364,0.842,0.0,56.0,1.0,4.0,0.24,0.656,0.384,0.5,0.0787,0.0,Only 1
+1k3PzDNjg38cWqOvL4M9vq,['pop'],Taylor Swift,96.001,0.394,7.0,55.0,1.0,4.0,0.0243,0.612,0.233,0.637,0.147,0.0,Invisible
+3yHQKddM8SVCRnuPSo3HPN,"['k-pop', 'k-pop girl group', 'pop']",BLACKPINK,124.969,0.836,5.0,0.0,0.0,4.0,0.0549,0.658,0.387,0.00264,0.507,1.02e-06,BOOMBAYAH
+1BpvuKIG7jK5EiTp2tv5z8,['punjabi hip hop'],Shubh,85.953,0.566,11.0,78.0,0.0,4.0,0.0602,0.794,0.68,0.301,0.151,0.000168,King Shit
+1q3RiD1tIWUpGsNFADMlvl,['pop'],Taylor Swift,93.06,0.609,0.0,56.0,1.0,4.0,0.0243,0.602,0.337,0.0382,0.127,0.0002,All Too Well
+0QE33jkiMTzCI8momkDmQY,"['canadian contemporary r&b', 'canadian pop', 'pop']",The Weeknd,122.028,0.742,6.0,42.0,0.0,4.0,0.0784,0.774,0.677,0.0312,0.0907,5.03e-05,Sacrifice (Remix) (feat. Swedish House Mafia)
+2hmafYGj1CXYKIYcMnX4lj,['pop'],Taylor Swift,129.976,0.237,0.0,56.0,0.0,4.0,0.0335,0.652,0.367,0.9,0.0991,0.0,cardigan - cabin in candlelight version
+5vjgyZm1Zhtg4RptN4evNQ,"['canadian contemporary r&b', 'canadian pop', 'pop']",The Weeknd,115.03,0.736,9.0,44.0,0.0,4.0,0.0514,0.645,0.347,0.16,0.6,0.000156,Love In The Sky
+5by7gtiDrxe4n2qQQunL8S,"['art pop', 'pop']",Lana Del Rey,122.056,0.255,6.0,53.0,0.0,4.0,0.0299,0.39,0.179,0.806,0.0887,1.14e-06,Video Games
+5OGALUjGm5kCEpejHs6vtA,['pop'],Taylor Swift,149.67,0.714,0.0,43.0,1.0,3.0,0.0488,0.403,0.482,0.16,0.179,0.0,I Bet You Think About Me (feat. Chris Stapleton) (Taylor's Version) (From The Vault)
+4FKqLfrZNloY0vp8Pxjz6c,"['canadian contemporary r&b', 'canadian pop', 'pop']",The Weeknd,100.534,0.673,2.0,0.0,1.0,4.0,0.13,0.73,0.161,0.0902,0.104,2.55e-05,Pray For Me (with Kendrick Lamar)
+35TujHR7wzBFeZNRcx2r4q,['pop'],Taylor Swift,122.822,0.8,7.0,0.0,1.0,4.0,0.0402,0.679,0.559,0.362,0.0928,0.0,Christmas Must Be Something More
+4wSWZjWH7a5eVxskGxO13w,"['garage rock', 'modern rock', 'permanent wave', 'rock', 'sheffield indie']",Arctic Monkeys,146.478,0.922,9.0,0.0,0.0,4.0,0.0674,0.387,0.417,0.00487,0.187,0.0,The View From The Afternoon
+44hoFQSNqQKKFPxKCCMoZ3,"['irish singer-songwriter', 'modern rock', 'pov: indie']",Hozier,158.073,0.384,2.0,55.0,1.0,4.0,0.0263,0.436,0.1,0.0855,0.0788,0.00128,Who We Are
+1SySkCqhEG6Z68o2n07Bsr,"['canadian contemporary r&b', 'canadian pop', 'pop']",The Weeknd,99.969,0.786,7.0,48.0,0.0,4.0,0.0366,0.606,0.525,0.00229,0.0725,9.46e-05,In Your Eyes (feat. Kenny G) - Remix
+1bB8idvcjJPUf1QBISrETz,"['k-pop', 'k-pop boy group', 'pop']",BTS,144.059,0.954,8.0,0.0,0.0,4.0,0.145,0.752,0.879,0.00828,0.165,2.29e-06,"We Are Bulletproof, Pt. 2"
+2R7C9dDqv1UPycvepBFziA,['pop'],Taylor Swift,131.982,0.765,7.0,41.0,1.0,4.0,0.0324,0.582,0.559,0.0268,0.103,1.95e-06,Superman
+3vJcz8exedHCjQ9ed95NqU,"['canadian contemporary r&b', 'canadian pop', 'pop']",The Weeknd,118.167,0.959,0.0,53.0,1.0,4.0,0.348,0.447,0.46,0.109,0.0498,2.75e-05,Every Angel is Terrifying
+0jdbVCxHze7xkrdyac3Ksn,"['art pop', 'metropopolis', 'nz pop', 'pop']",Lorde,92.021,0.597,5.0,0.0,1.0,4.0,0.0463,0.611,0.0984,0.436,0.105,0.0,The Path
+2jjh53eV2QVGIRjGTawheD,"['k-pop', 'k-pop girl group', 'pop']",BLACKPINK,102.938,0.449,1.0,34.0,0.0,4.0,0.0431,0.838,0.618,0.788,0.0947,0.0,WHISTLE - Acoustic Ver. Japanese Version
+6fJhF2zdKgCSO3E4JcvVER,"['brooklyn indie', 'pov: indie']",Mitski,111.991,0.204,11.0,0.0,1.0,4.0,0.0316,0.511,0.254,0.835,0.128,0.0,Abbey
+1edP751qQSUaA1vo7Hva3w,['pop'],Ariana Grande,98.089,0.874,8.0,45.0,1.0,4.0,0.2,0.322,0.171,0.0454,0.945,2.27e-06,breathin - live
+76qVJ5CbodXgDGleekie9O,"['k-pop', 'k-pop girl group', 'pop']",TWICE,154.078,0.63,10.0,0.0,1.0,4.0,0.0376,0.716,0.667,0.404,0.0817,0.0,Merry & Happy
+0ZyfiFudK9Si2n2G9RkiWj,"['art pop', 'pop']",Lana Del Rey,93.763,0.686,0.0,64.0,1.0,4.0,0.034,0.373,0.189,0.128,0.383,1.96e-06,Ride
+6ARSouo2qnKWkIZSlkudiD,['pop'],Ariana Grande,143.866,0.578,6.0,30.0,1.0,4.0,0.449,0.654,0.233,0.547,0.112,0.0,Best Mistake
+6pDVjCUA3B1vg9waKutAsv,"['canadian contemporary r&b', 'canadian pop', 'pop']",The Weeknd,148.04,0.428,4.0,63.0,0.0,4.0,0.124,0.671,0.362,0.688,0.119,0.000182,Attention
+4m8OYzzuXMfbia15YlwdQL,"['k-pop', 'k-pop girl group', 'pop']",TWICE,129.909,0.86,2.0,0.0,1.0,4.0,0.0842,0.713,0.354,0.0469,0.434,0.000184,TT
+2xfRDWDKOisEXgRnYI58Tb,"['ambient pop', 'dream pop', 'el paso indie', 'shoegaze']",Cigarettes After Sex,100.426,0.363,2.0,0.0,1.0,4.0,0.0322,0.425,0.12,0.448,0.0685,0.321,Starry Eyes
+2IY7eOUDjw2ArKYxKa2jXc,"['canadian contemporary r&b', 'canadian pop', 'pop']",The Weeknd,186.041,0.592,7.0,0.0,1.0,4.0,0.281,0.682,0.5,0.169,0.136,5.49e-06,Starboy
+1J0qupz0gVGSB5jcRY35tL,"['k-pop', 'k-pop boy group', 'pop']",Stray Kids,129.986,0.619,8.0,62.0,1.0,4.0,0.0465,0.834,0.883,0.28,0.0374,1.97e-05,Maknae On Top (I.N)
+29RfrpHC12SyrPW1ozqdWz,"['art pop', 'pop']",Lana Del Rey,119.479,0.587,5.0,54.0,1.0,4.0,0.0364,0.345,0.258,0.539,0.119,0.0731,Sad Girl
+6aU9WABbPXrV0moONji2g7,['pop'],Taylor Swift,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,Bad Blood
+2ofOe2OaXFpZF5ETbsc7Qu,['pop'],Ariana Grande,125.012,0.608,8.0,54.0,0.0,4.0,0.041,0.692,0.449,0.218,0.348,0.0,Honeymoon Avenue
+3cw6T3OEgqLiqEDLDQPSnE,['k-pop girl group'],IVE,112.997,0.654,5.0,58.0,1.0,4.0,0.0669,0.853,0.868,0.306,0.11,4.71e-06,Cherish
+4KiDinOqlkARDYvoUOrl0j,['pop'],Taylor Swift,79.926,0.548,4.0,0.0,1.0,4.0,0.0254,0.483,0.217,0.00471,0.0997,2.01e-06,Come Back...Be Here
+5U1XqpEGLeDd48dDFNqQEC,"['k-pop', 'k-pop boy group', 'pop']",BTS,185.81,0.739,5.0,0.0,0.0,4.0,0.232,0.544,0.467,0.000226,0.0816,2.14e-05,MAMA
+79ypLbXeRsgNgd3uZTOcY4,"['k-pop', 'k-pop girl group', 'pop']",TWICE,113.973,0.832,10.0,57.0,1.0,4.0,0.0574,0.688,0.818,0.173,0.0901,0.0,Dance Again
+0oHn3CGVerdfLqIrN6CT42,"['k-pop', 'k-pop boy group', 'pop']",Stray Kids,89.989,0.871,1.0,60.0,1.0,4.0,0.231,0.76,0.888,0.306,0.079,0.0,"Muddy Water (Changbin, Hyunjin, HAN, Felix)"
+3RwWW7KeVhHGayYJgUL5eZ,['pop'],Ariana Grande,159.947,0.505,9.0,85.0,1.0,4.0,0.105,0.658,0.331,0.537,0.113,0.0,eternal sunshine
+2gZaVIT44gRC8AZfO1LCgP,"['k-pop', 'k-pop boy group', 'pop']",Stray Kids,167.954,0.748,11.0,47.0,0.0,4.0,0.344,0.65,0.767,0.157,0.102,0.0,Insomnia
+269xqcgGTN9PlivhUkOLhX,"['art pop', 'pop']",Lana Del Rey,89.933,0.674,2.0,68.0,1.0,4.0,0.0802,0.54,0.309,0.0553,0.112,0.0608,In My Feelings
+50yNTF0Od55qnHLxYsA5Pw,['pop'],Taylor Swift,160.058,0.808,7.0,63.0,1.0,4.0,0.0729,0.636,0.917,0.0121,0.359,2.18e-05,Shake It Off (Taylor's Version)
+3eZYOQO4UzKrUDYDghtnFw,['pop'],Ariana Grande,115.036,0.708,9.0,62.0,0.0,4.0,0.0454,0.698,0.322,0.0251,0.124,0.0,test drive
+0MYIrBXK8cmJwY0Ny98L7x,"['art pop', 'metropopolis', 'nz pop', 'pop']",Lorde,123.214,0.382,0.0,20.0,1.0,4.0,0.047,0.664,0.126,0.239,0.0943,0.00749,The Louvre
+42wKjrBHwwVkqcrQAz5fva,"['dance pop', 'pop', 'uk pop']",Dua Lipa,123.013,0.806,5.0,37.0,0.0,4.0,0.0326,0.562,0.695,0.00857,0.162,0.218,Hallucinate (Paul Woolford Remix) [Extended] [Mixed]
+0vfPEfQk0ZCHExTZ007Ryr,"['art pop', 'pop']",Lana Del Rey,108.928,0.666,8.0,60.0,0.0,4.0,0.0448,0.533,0.343,0.3,0.115,0.00862,Guns And Roses
+5wEreUfwxZxWnEol61ulIi,"['art pop', 'pop']",Lana Del Rey,85.767,0.634,4.0,68.0,0.0,4.0,0.0378,0.393,0.395,0.2,0.198,0.000166,Born To Die
+4QcHRRDS0ayymLybzKNZq4,"['k-pop', 'k-pop girl group', 'pop']",TWICE,164.059,0.943,8.0,0.0,1.0,4.0,0.0645,0.565,0.855,0.105,0.154,0.0,Heart Shaker
+10nKpjx7lRAJHiyYtLmTbh,"['art pop', 'pop']",Lana Del Rey,125.966,0.799,11.0,0.0,0.0,4.0,0.0606,0.535,0.427,0.281,0.286,0.0379,Young And Beautiful - Cedric Gervais Remix Radio Edit
+2OghnlGqZZsFzHjG0CSE9l,['pop'],Taylor Swift,124.998,0.902,1.0,38.0,0.0,4.0,0.0358,0.678,0.637,0.113,0.0705,0.000235,Red - Original Demo Recording
+3rnI1UCyGJvUTVvT97VQr5,['pop'],Taylor Swift,99.96,0.855,7.0,41.0,1.0,4.0,0.038,0.604,0.51,0.0571,0.343,3.65e-06,Tell Me Why
+7iKDsPfLT0d5mu2htfMKBZ,"['k-pop', 'k-pop girl group', 'pop']",BLACKPINK,162.225,0.64,8.0,65.0,1.0,4.0,0.159,0.686,0.597,0.0334,0.0801,0.0,Love To Hate Me
+4Vhvlhomv8fTp2e6I4XTpe,"['k-pop', 'k-pop girl group', 'pop']",BLACKPINK,127.995,0.732,6.0,58.0,1.0,4.0,0.0654,0.658,0.409,0.00513,0.13,0.0,Lovesick Girls
+3We8H9cfhS7x4hdwBn9vXW,['pop'],Ariana Grande,106.0,0.662,7.0,42.0,0.0,4.0,0.0554,0.655,0.581,0.451,0.0773,2.72e-05,Jason's Song (Gave It Away)
+41sjzdjScVwnxnxADElts6,['pop'],Taylor Swift,131.597,0.629,8.0,54.0,1.0,4.0,0.0246,0.594,0.504,0.0868,0.137,0.0,Stay Beautiful
+7E8edqa0m0ASLXkLfmWY03,['pop'],Ariana Grande,102.734,0.805,1.0,44.0,0.0,4.0,0.259,0.603,0.611,0.0178,0.133,1.02e-05,Problem
+50YZQsqoTXoPHd1YmZyBID,"['canadian contemporary r&b', 'canadian pop', 'pop']",The Weeknd,97.913,0.53,3.0,41.0,0.0,4.0,0.0268,0.496,0.188,0.258,0.119,3.64e-05,Devil May Cry - From “The Hunger Games: Catching Fire” Soundtrack
+4DmS8lnz6VbEMWrUcbm8WZ,"['k-pop', 'k-pop girl group', 'pop']",TWICE,129.955,0.928,7.0,47.0,1.0,4.0,0.0633,0.74,0.671,0.00288,0.319,0.0,One More Time
+1cfVkL84XmRON3Gl9jDXKI,['pop'],Ariana Grande,126.254,0.781,6.0,56.0,0.0,3.0,0.109,0.615,0.268,0.0171,0.178,0.0017,Into You - 3LAU Remix
+0dssTLrqY79Klk6jx2RXCj,"['art pop', 'pop']",Lana Del Rey,116.031,0.605,7.0,59.0,1.0,4.0,0.0343,0.616,0.185,0.097,0.165,0.00812,When The World Was At War We Kept Dancing
+6Uc4EHr3ktYmLfLDY7LifJ,['pop'],Ariana Grande,135.002,0.533,1.0,41.0,1.0,4.0,0.0518,0.631,0.428,0.257,0.351,0.0,Snow In California
+6zrJLhslleCHby0wbUnvVy,"['dance pop', 'pop', 'uk pop']",Dua Lipa,114.993,0.813,7.0,56.0,1.0,4.0,0.0579,0.875,0.859,0.00618,0.321,0.0,Future Nostalgia
+6E4rQRDFvoB9KZfIwvaH2I,"['art pop', 'pop']",Lana Del Rey,131.946,0.492,11.0,0.0,0.0,4.0,0.0348,0.54,0.0932,0.261,0.118,0.00723,High By The Beach
+6qmlMEO6UKnAbdaEjf25f0,"['art pop', 'pop']",Lana Del Rey,91.781,0.337,6.0,25.0,0.0,5.0,0.036,0.294,0.135,0.814,0.14,0.414,Cinnamon Girl
+2zzxwmoOBnXDT0KnJsoIWk,['pop'],Taylor Swift,146.165,0.578,2.0,54.0,1.0,4.0,0.0294,0.479,0.192,0.525,0.0841,0.0,Tied Together with a Smile
+4KBx9DSSbFaumwlEqjX4CP,['pop'],Ariana Grande,107.027,0.662,1.0,50.0,1.0,4.0,0.0534,0.743,0.408,0.268,0.102,1.36e-06,"thank u, next"
+6reeYMdka9BetPRvgOgUEK,['pop'],Ariana Grande,103.023,0.764,1.0,14.0,0.0,4.0,0.179,0.661,0.586,0.0202,0.128,4.55e-06,Problem
+2Nib4r0saYQf2pUV4RFDhl,"['k-pop', 'k-pop boy group', 'pop']",BTS,149.756,0.798,9.0,0.0,0.0,4.0,0.483,0.385,0.141,0.115,0.181,0.0,Interlude : Shadow
+0mTHy19ihR54DdAxc9mU1C,"['ambient pop', 'dream pop', 'el paso indie', 'shoegaze']",Cigarettes After Sex,93.719,0.401,3.0,0.0,1.0,4.0,0.026,0.454,0.321,0.131,0.137,0.845,K.
+36YCdzT57us0LhDmCYtrNE,"['canadian contemporary r&b', 'canadian pop', 'pop']",The Weeknd,112.878,0.885,9.0,64.0,0.0,4.0,0.206,0.738,0.752,0.0133,0.0821,0.0,Rockin'
+5xZAscnOpluzTCwvDlptBN,"['k-pop', 'k-pop girl group', 'pop']",TWICE,102.985,0.649,2.0,0.0,1.0,4.0,0.181,0.586,0.296,0.129,0.434,0.0,YOUNG & WILD
+6eGMMPRVYzpssGgednRvzU,"['art pop', 'pop']",Lana Del Rey,123.524,0.541,8.0,0.0,0.0,3.0,0.0608,0.355,0.337,0.0457,0.316,0.00516,Cherry
+4GqkWberT9cHK9P6REykBd,['pop'],Ariana Grande,189.833,0.778,10.0,43.0,0.0,4.0,0.427,0.507,0.696,0.0804,0.297,0.0,boyfriend (with Social House)
+7aAsStiuC4Zw8vIbvRWtq7,"['canadian contemporary r&b', 'canadian pop', 'pop']",The Weeknd,122.028,0.742,6.0,0.0,0.0,4.0,0.0784,0.774,0.677,0.0312,0.0907,5.03e-05,Sacrifice (Remix) (feat. Swedish House Mafia)
+598nAglAU2FYie8Gcz9p2A,"['art pop', 'pop']",Lana Del Rey,82.109,0.271,5.0,0.0,0.0,3.0,0.0328,0.268,0.161,0.95,0.111,0.00467,Honeymoon
+1QQIMiVYhsJuPTts6p0hYi,['pop'],Taylor Swift,144.317,0.3,7.0,38.0,1.0,4.0,0.028,0.472,0.289,0.883,0.0698,1.04e-05,Safe & Sound - from The Hunger Games Soundtrack
+0Aj9mjOpjS2TbgSB6sdXNo,"['dance pop', 'pop', 'uk pop']",Dua Lipa,98.002,0.694,10.0,44.0,0.0,4.0,0.0311,0.62,0.319,0.0178,0.19,0.0,Running
+7LQKuOaqJrNgVIGLFnfvdn,"['art pop', 'pop']",Lana Del Rey,65.627,0.589,6.0,65.0,1.0,4.0,0.0359,0.382,0.511,0.484,0.131,0.0,Million Dollar Man
+0uZ9Cop3w5BIkNrMwy2uOL,"['brooklyn indie', 'pov: indie']",Mitski,79.95,0.101,0.0,0.0,1.0,3.0,0.0333,0.376,0.231,0.956,0.382,0.0,Wife
+5NhDDt5Zy8yGOECN3PLRdE,"['k-pop', 'k-pop girl group', 'pop']",TWICE,108.006,0.92,10.0,48.0,0.0,4.0,0.0536,0.7,0.685,0.115,0.701,2.93e-06,FIREWORK
+5podb1asONjqwKk1iMVOeG,"['k-pop', 'k-pop boy group', 'pop']",Stray Kids,160.164,0.858,1.0,69.0,1.0,4.0,0.214,0.593,0.764,0.226,0.115,0.0,Hall of Fame
+0HGcQDbRen8luCnwH53sNl,['pop'],Ariana Grande,93.93,0.605,6.0,55.0,1.0,4.0,0.0628,0.726,0.588,0.0113,0.0639,0.0,Break Your Heart Right Back
+2xV3JIIeKgIvsJRLFgReCU,"['k-pop', 'k-pop girl group', 'pop']",BLACKPINK,90.016,0.719,0.0,55.0,1.0,4.0,0.0761,0.794,0.69,0.0119,0.276,0.0,Pink Venom
+2uqzfXB7NlBnhQd04W7HaH,"['k-pop', 'k-pop boy group', 'pop']",BTS,136.102,0.829,11.0,59.0,0.0,4.0,0.0847,0.61,0.156,0.0111,0.0961,0.0,Let Me Know
+1SrsEuRiRoopW2pZDaHgVA,"['k-pop', 'k-pop boy group', 'pop']",Stray Kids,180.058,0.86,4.0,57.0,1.0,4.0,0.0669,0.575,0.311,0.0563,0.167,2.17e-06,Love Untold (Hyunjin)
+2yYDijitHN6psA2tH0ndXs,"['canadian contemporary r&b', 'canadian pop', 'pop']",The Weeknd,78.639,0.564,9.0,55.0,0.0,3.0,0.0357,0.278,0.177,0.459,0.256,9.4e-06,The Birds Pt. 2
+2e9N4vHYVUwSwRorBzsZXE,"['irish singer-songwriter', 'modern rock', 'pov: indie']",Hozier,88.875,0.689,7.0,0.0,1.0,4.0,0.135,0.427,0.706,0.021,0.203,1.69e-06,Almost (Sweet Music)
+35dhwUoJNlxrPyEIJkfDnx,"['k-pop', 'k-pop girl group', 'pop']",TWICE,176.103,0.805,8.0,71.0,1.0,4.0,0.0551,0.52,0.496,0.0451,0.0935,0.0,I GOT YOU
+4qCySCQyiyLT2mVUOM2zdS,['pop'],Olivia Rodrigo,141.897,0.374,5.0,50.0,1.0,4.0,0.0376,0.437,0.461,0.786,0.107,0.0,The Rose Song
+0xYGd48DeDuVok1DpMungk,['pop'],Taylor Swift,105.586,0.877,7.0,0.0,1.0,4.0,0.0323,0.658,0.821,0.173,0.0962,0.0,Picture To Burn
+56fUbkZ2DHk2PixrNaxlzJ,"['canadian contemporary r&b', 'canadian pop', 'pop']",The Weeknd,183.908,0.721,5.0,31.0,0.0,4.0,0.0876,0.479,0.388,0.249,0.111,0.00372,Hurt You
+34l2nKu9kSj0BZahVIAT3L,"['art pop', 'pop']",Lana Del Rey,71.925,0.201,3.0,49.0,0.0,4.0,0.0294,0.506,0.145,0.926,0.253,0.000411,Yayo
+4rsoLz7ZY1Ldz8dpm4Lqtg,"['k-pop', 'k-pop girl group', 'pop']",BLACKPINK,124.949,0.787,1.0,61.0,0.0,4.0,0.0445,0.765,0.381,0.0156,0.0736,0.0,Kick It
+7zUEAYmAy98AZ1See3m8l8,"['canadian contemporary r&b', 'canadian pop', 'pop']",The Weeknd,185.989,0.603,7.0,0.0,1.0,4.0,0.282,0.675,0.479,0.134,0.151,6.19e-06,Starboy
+7ovNQzugF7Rf6KYMvcfwSG,['pop'],Taylor Swift,121.009,0.733,7.0,39.0,1.0,4.0,0.0281,0.678,0.581,0.00115,0.104,0.0,The Very First Night (Taylor's Version) (From The Vault)
+3hqJdqziOPbu422kXaOyII,['pop'],Sabrina Carpenter,107.978,0.678,2.0,39.0,1.0,4.0,0.0401,0.649,0.528,0.0407,0.156,0.0,Right Now
+0NAwPzl6im6ds9pe51BdD4,['pop'],Ariana Grande,131.949,0.653,4.0,29.0,0.0,4.0,0.0425,0.696,0.794,0.0173,0.279,0.0,Bad Decisions
+7Gq4tfeuWPjr6WQiB7aBXz,['pop'],Sabrina Carpenter,143.999,0.473,1.0,54.0,0.0,4.0,0.0451,0.764,0.53,0.277,0.117,0.0,Mona Lisa
+711e2SNCky0TBH38Ywer18,"['art pop', 'pop']",Lana Del Rey,111.67,0.468,7.0,49.0,0.0,4.0,0.0317,0.255,0.175,0.822,0.339,0.248,The Other Woman
+51hIGgLnT8s6gEzjVqKlEF,"['k-pop', 'k-pop boy group', 'pop']",BTS,185.832,0.739,5.0,57.0,0.0,4.0,0.232,0.543,0.466,0.000226,0.0816,2.14e-05,MAMA
+0B5QveFYJv8jpcJe2G5wcF,"['brooklyn indie', 'pov: indie']",Mitski,81.914,0.744,7.0,0.0,1.0,4.0,0.0641,0.202,0.316,2.18e-05,0.493,5.13e-05,My Body's Made of Crushed Little Stars
+6GfTYfb5eBLN1p1ByOsPmi,['pop'],Olivia Rodrigo,129.385,0.444,6.0,61.0,1.0,4.0,0.0396,0.469,0.221,0.808,0.0932,0.0,"Wondering - From ""High School Musical: The Musical: The Series"""
+6LlfNW9JzD0USPRkD8imdc,"['dance pop', 'pop', 'uk pop']",Dua Lipa,110.056,0.845,11.0,41.0,0.0,4.0,0.048,0.671,0.775,0.0207,0.329,0.0,Dance The Night
+0MciUrJaj9OZoAuGUU40Wr,"['dance pop', 'pop', 'uk pop']",Dua Lipa,127.994,0.696,7.0,47.0,1.0,4.0,0.0414,0.677,0.357,0.00285,0.155,0.0,Don't Start Now - Pink Panda Remix
+5LYQSNHZxEA880URXFHg6h,"['art pop', 'pop']",Lana Del Rey,99.979,0.676,0.0,0.0,0.0,4.0,0.0582,0.499,0.295,0.588,0.358,0.00484,Lust for Life (with The Weeknd)
+0YrMTMLpLq1UIkWgghNM6c,['pop'],Taylor Swift,109.984,0.593,2.0,42.0,1.0,4.0,0.0288,0.645,0.299,0.0344,0.13,0.000127,Treacherous (Taylor's Version)
+4w1dIZxwO83XpKo5wgLhkk,"['canadian contemporary r&b', 'canadian pop', 'pop']",The Weeknd,121.008,0.858,5.0,43.0,0.0,4.0,0.0578,0.503,0.361,0.00392,0.119,0.0,Belong To The World
+1Sftw4WKhFJGv7qQXlse4Y,"['k-pop', 'k-pop boy group', 'pop']",Stray Kids,146.944,0.738,5.0,56.0,0.0,4.0,0.365,0.752,0.585,0.0541,0.526,0.0,Double Knot
+4yOqfpzmL4FvmXJTUgAMUP,"['k-pop', 'k-pop girl group', 'pop']",BLACKPINK,114.954,0.66,4.0,48.0,1.0,4.0,0.0582,0.805,0.617,0.0367,0.215,6.4e-05,Crazy Over You
+4DLLB9erwRrOPPVQLitCyV,"['garage rock', 'modern rock', 'permanent wave', 'rock', 'sheffield indie']",Arctic Monkeys,107.034,0.846,7.0,40.0,1.0,4.0,0.0295,0.669,0.552,0.00325,0.0651,0.82,Chun Li Flying Bird Kick
+7N015NTIWGjQDddHUdHPoO,['pop'],Taylor Swift,151.956,0.305,6.0,55.0,1.0,4.0,0.0306,0.359,0.108,0.848,0.111,6.74e-05,exile (feat. Bon Iver) - the long pond studio sessions
+4sC589n5FFW9jHOSUxnkd6,['pop'],Taylor Swift,108.94,0.494,7.0,43.0,1.0,4.0,0.204,0.722,0.131,0.216,0.226,0.0,Question...?
+4pHQ9RYFhn3W0ha5KEuMnj,"['canadian contemporary r&b', 'canadian pop', 'pop']",The Weeknd,114.96,0.79,11.0,54.0,0.0,4.0,0.0681,0.642,0.613,0.151,0.305,0.000583,Adaptation
+6Q4JJnjX00q8O10OliHhjS,['pop'],Ariana Grande,104.024,0.71,1.0,43.0,0.0,4.0,0.0578,0.448,0.273,0.196,0.638,0.0,love me harder - live
+1FlYPPzFJUNh3KRE36pYbe,['pop'],Ariana Grande,77.915,0.666,1.0,0.0,0.0,4.0,0.248,0.397,0.568,0.0907,0.344,0.0,Sometimes
+7Keo3ZZNaFgFiI3inNMFod,"['k-pop', 'k-pop boy group', 'pop']",Stray Kids,132.006,0.928,9.0,45.0,0.0,4.0,0.239,0.67,0.697,0.136,0.225,0.0,YAYAYA
+0pKrMTlDlW54abYkdBsgxj,"['garage rock', 'modern rock', 'permanent wave', 'rock', 'sheffield indie']",Arctic Monkeys,97.993,0.54,11.0,0.0,0.0,4.0,0.0339,0.669,0.549,0.137,0.339,0.00374,Knee Socks
+1LiNP5q2thWScdvCRkJ584,"['k-pop', 'k-pop girl group', 'pop']",TWICE,119.948,0.88,2.0,57.0,1.0,4.0,0.0585,0.709,0.713,0.0298,0.103,4.46e-06,UP NO MORE
+1D7e4LrjdB4mKaI9XYrmPY,"['k-pop', 'k-pop girl group', 'pop']",TWICE,172.95,0.885,6.0,0.0,1.0,4.0,0.124,0.551,0.509,0.139,0.114,0.0,CHEER UP
+7qqrGV5WpQnMKqVTsDZd9J,"['art pop', 'pop']",Lana Del Rey,77.94,0.324,5.0,55.0,1.0,4.0,0.0301,0.289,0.244,0.851,0.112,0.00368,Buddy's Rendezvous
+3n1vWk5ATCmw4116OfUFVl,"['dance pop', 'pop', 'uk pop']",Dua Lipa,128.003,0.729,1.0,39.0,1.0,4.0,0.146,0.927,0.874,0.00594,0.206,0.000309,Pretty Please (Midland Refix) [Mixed]
+6t5zloC7h0EQllwYph9brV,"['canadian contemporary r&b', 'canadian pop', 'pop']",The Weeknd,81.186,0.609,10.0,41.0,1.0,4.0,0.065,0.466,0.103,0.0911,0.122,9.32e-05,Hardest To Love
+7ut4Y7gxOFe3d3rLJQ7i5w,['pop'],Taylor Swift,92.027,0.535,7.0,0.0,1.0,4.0,0.135,0.8,0.451,0.0713,0.213,9.48e-06,Gorgeous
+36aoiqTQcBGDb7bAO3n5XO,"['canadian contemporary r&b', 'canadian pop', 'pop']",The Weeknd,108.283,0.599,1.0,40.0,1.0,4.0,0.297,0.742,0.573,0.0962,0.0981,0.000578,Out of Time - KAYTRANADA Remix
+33CeM8NI7tfrNgciVOFMoo,"['art pop', 'pop']",Lana Del Rey,111.931,0.647,1.0,59.0,0.0,4.0,0.0334,0.565,0.216,0.0456,0.121,0.0,Summertime Sadness
+6oCGHGu19poEz8iF3ZXHrj,"['dance pop', 'pop', 'uk pop']",Dua Lipa,120.283,0.885,2.0,49.0,1.0,4.0,0.0583,0.696,0.81,0.0697,0.344,0.0217,Break My Heart / Cosmic Girl (Dimitri From Paris Edit) [Mixed]
+3JWzwvBe0kZ2pD2ldDD5Sh,['pop'],Ariana Grande,119.062,0.77,1.0,18.0,1.0,4.0,0.0514,0.792,0.872,0.183,0.102,2.24e-05,"yes, and?"
+40eQ3f56CJ34Io5JXKn5rF,"['k-pop', 'k-pop boy group', 'pop']",Stray Kids,89.977,0.698,10.0,49.0,1.0,4.0,0.192,0.84,0.846,0.215,0.149,0.0,CALL
+7BaPSGIHqsUmYLyF5H8gAG,"['brooklyn indie', 'pov: indie']",Mitski,109.22,0.124,2.0,0.0,1.0,3.0,0.0432,0.192,0.039,0.883,0.175,3.83e-05,Class of 2013 (Audiotree Live Version)
+3TVWi92dWPMVcKpXvX32UX,"['k-pop', 'k-pop boy group', 'pop']",BTS,86.526,0.741,8.0,0.0,0.0,4.0,0.323,0.517,0.672,0.362,0.164,0.0,First Love
+2mBtKEUCZVh9BTDhlj5OiW,"['k-pop', 'k-pop boy group', 'pop']",Stray Kids,200.11,0.893,10.0,53.0,0.0,4.0,0.243,0.573,0.725,0.0957,0.0974,0.0,Awkward Silence
+2jYmK1cb3Uya6FFsocdpzO,['pop'],Sabrina Carpenter,180.044,0.561,11.0,0.0,0.0,4.0,0.209,0.669,0.604,0.157,0.0739,0.0,Why
+1gK0BfPe1BbB6jxyD9FSyX,"['garage rock', 'modern rock', 'permanent wave', 'rock', 'sheffield indie']",Arctic Monkeys,96.919,0.803,0.0,0.0,0.0,4.0,0.0518,0.502,0.398,0.137,0.113,0.064,The Jeweller's Hands
+0d9BBAvHC8DjidkKmKBNms,['pop'],Taylor Swift,110.01,0.703,0.0,0.0,1.0,4.0,0.0382,0.675,0.314,0.00882,0.0391,2.21e-06,King Of My Heart
+2WFb9JwoOvZMoiuzZrCfR4,"['art pop', 'pop']",Lana Del Rey,131.978,0.484,11.0,0.0,0.0,4.0,0.0359,0.526,0.0944,0.255,0.118,0.00601,High By The Beach
+7LfIX3DCzl3AtGJWlCKOKK,"['filmi', 'modern bollywood']",Arijit Singh,94.058,0.449,5.0,38.0,0.0,4.0,0.025,0.528,0.317,0.785,0.122,0.0,"Tum Hi Ho (From ""Aashiqui 2)"
+2LCWFpLZ92PyjyWzJ2VvCj,"['dance pop', 'pop', 'uk pop']",Dua Lipa,116.072,0.345,9.0,0.0,0.0,4.0,0.0372,0.825,0.506,0.601,0.121,0.0,New Rules - Acoustic
+7Hh3tWJgv856P2sPCtVIDB,"['dance pop', 'pop', 'uk pop']",Dua Lipa,118.014,0.917,11.0,22.0,0.0,4.0,0.0725,0.712,0.454,0.00582,0.252,0.000101,Don't Start Now (Zach Witness Remix) [Malibu Mermaids Version]
+7EpKfPAURnG9OCVer0S30N,['pop'],Ariana Grande,93.984,0.821,1.0,41.0,0.0,4.0,0.0422,0.624,0.449,0.112,0.276,0.0,Lovin' It
+3bQsp4Vr9Rg4fNCx6HPOgX,"['desi pop', 'hindi indie', 'indian indie', 'indian singer-songwriter']",Anuv Jain,118.968,0.299,6.0,74.0,1.0,4.0,0.0403,0.699,0.459,0.869,0.0724,0.0,Alag Aasmaan
+5jbYpsQ90SOPOkORyG4a4F,"['art pop', 'pop']",Lana Del Rey,109.978,0.172,10.0,0.0,0.0,1.0,0.0333,0.314,0.185,0.889,0.134,1e-05,Old Money
+1oyvfXXSKGurQV68wZq8aK,['pop'],Taylor Swift,147.909,0.661,7.0,39.0,1.0,4.0,0.0407,0.684,0.713,0.473,0.109,0.00215,the last great american dynasty
+1FYLqciy2MckeKgTvOCawO,['pop'],Ariana Grande,158.053,0.865,6.0,43.0,0.0,4.0,0.161,0.515,0.372,0.0251,0.971,5.59e-05,side to side - live
+7g5DlwyMdGDvcExDg5H2BA,['pop'],Sabrina Carpenter,118.787,0.388,11.0,44.0,1.0,4.0,0.0483,0.401,0.301,0.744,0.109,0.0,white xmas
+786NsUYn4GGUf8AOt0SQhP,['pop'],Taylor Swift,129.968,0.825,4.0,39.0,1.0,4.0,0.0328,0.588,0.397,0.000197,0.0885,0.00138,State Of Grace
+0ao5xnzWNAt0dZFF6v4Sct,['pop'],Ariana Grande,111.02,0.611,1.0,42.0,1.0,4.0,0.0322,0.603,0.158,0.158,0.944,0.0,goodnight n go - live
+0q85C1JiECyYIQthz1posA,['pop'],Ariana Grande,159.852,0.672,0.0,60.0,1.0,4.0,0.106,0.624,0.26,0.0967,0.155,0.0,obvious
+36naJUGTa5nfjyhbkUwH1y,"['canadian contemporary r&b', 'canadian pop', 'pop']",The Weeknd,107.96,0.774,9.0,19.0,0.0,4.0,0.041,0.71,0.61,0.117,0.0967,0.0,Can't Feel My Face
+6UvZ1XimCap0SJyErd8zmW,"['irish singer-songwriter', 'modern rock', 'pov: indie']",Hozier,128.864,0.657,4.0,0.0,0.0,4.0,0.0465,0.56,0.416,0.564,0.114,0.0,Take Me To Church
+6fsrtPKAPL1erRl4oeDnOf,"['k-pop', 'k-pop boy group', 'pop']",Stray Kids,94.991,0.453,2.0,45.0,0.0,4.0,0.126,0.848,0.54,0.422,0.333,3.67e-05,Another Day
+33xsfOv9tfMN6nfH1UwGqi,['pop'],Ariana Grande,125.012,0.44,8.0,1.0,1.0,4.0,0.0346,0.603,0.106,0.0309,0.209,7e-06,One Last Time
+7rWGO6nfsDwHTqYrHP9eSh,"['brooklyn indie', 'pov: indie']",Mitski,147.183,0.748,9.0,0.0,1.0,4.0,0.0568,0.331,0.338,1.28e-05,0.166,6.65e-05,A Loving Feeling
+79J3t6ZGyQWKHUXCdKPidK,"['art pop', 'pop']",Lana Del Rey,129.839,0.69,5.0,37.0,1.0,4.0,0.0554,0.52,0.182,0.601,0.137,0.201,Fucked My Way Up To The Top
+4xbN7giFhdGbSQTPyG178F,"['ambient pop', 'dream pop', 'el paso indie', 'shoegaze']",Cigarettes After Sex,124.033,0.457,3.0,0.0,1.0,4.0,0.0294,0.429,0.183,0.35,0.099,0.859,John Wayne
+58nh2KDDyG5eJdm0bndUdT,"['latin worship', 'peruvian indie', 'rock cristiano']",TWICE,169.926,0.813,0.0,21.0,1.0,4.0,0.135,0.635,0.891,0.21,0.0771,3.93e-06,Que No Se Apague Tu Luz
+3ZhnXFSunfOPWSqfLLQA9W,"['canadian contemporary r&b', 'canadian pop', 'pop']",The Weeknd,126.049,0.685,11.0,43.0,0.0,4.0,0.0397,0.572,0.328,0.0355,0.315,3.43e-05,Pretty
+3j3JGGetYI05XwOMWP3MY4,"['latin worship', 'peruvian indie', 'rock cristiano']",TWICE,93.993,0.862,0.0,20.0,1.0,4.0,0.0341,0.632,0.415,0.00448,0.36,0.0,Ya Llegó la Navidad
+1XJQ7xI6jzcZybuHemxsPP,"['irish singer-songwriter', 'modern rock', 'pov: indie']",Hozier,67.05,0.443,0.0,60.0,0.0,3.0,0.0259,0.559,0.264,0.403,0.141,0.000183,To Be Alone
+4WFWvM4zjMgjQxmP21ezfO,['pop'],Sabrina Carpenter,129.768,0.699,7.0,42.0,1.0,4.0,0.0368,0.658,0.437,0.499,0.0692,1.25e-05,All We Have Is Love
+6ECwimRuwOxwQv5VXoN5Mt,"['art pop', 'pop']",Lana Del Rey,144.936,0.693,7.0,56.0,0.0,4.0,0.0434,0.622,0.446,0.342,0.0876,0.000708,Doin' Time
+4M3EDAP3NUwzQDGeeCyzqL,"['art pop', 'pop']",Lana Del Rey,197.098,0.581,3.0,41.0,0.0,3.0,0.0462,0.2,0.53,0.481,0.0662,0.0,Million Dollar Man
+1qLeEu4iXEclkLwoBlMiou,['pop'],Taylor Swift,99.981,0.748,0.0,38.0,1.0,4.0,0.0245,0.729,0.928,0.307,0.09,1.29e-06,Stay Stay Stay
+4FoV729rw7IhoKlMZW5K5V,['pop'],Taylor Swift,78.828,0.128,9.0,0.0,0.0,4.0,0.589,0.592,0.15,0.829,0.527,0.0,I Know Places - Voice Memo
+5ajpyr32JgFtvW0nzvgva4,"['k-pop', 'k-pop boy group', 'pop']",BTS,95.039,0.717,11.0,52.0,0.0,4.0,0.151,0.684,0.861,0.478,0.367,0.0,Iine!Pt.2 - Ano Bashode -
+1iEvAoG05TQvIed18AUQf7,"['art pop', 'metropopolis', 'nz pop', 'pop']",Lorde,107.016,0.436,10.0,23.0,1.0,4.0,0.0614,0.78,0.242,0.301,0.097,1.52e-05,Homemade Dynamite
+32G6qOwK5SuBEA9D6pth34,"['irish singer-songwriter', 'modern rock', 'pov: indie']",Hozier,67.048,0.443,0.0,45.0,0.0,3.0,0.0255,0.576,0.258,0.402,0.141,0.000183,To Be Alone
+2IKJtXeR5UsaUjZB46fTOK,['pop'],Ariana Grande,120.109,0.516,0.0,55.0,1.0,4.0,0.0539,0.739,0.434,0.67,0.151,0.0,six thirty
+11UOOhOsF9Ki1nvEC3PZ37,"['brooklyn indie', 'pov: indie']",Mitski,74.783,0.689,8.0,56.0,1.0,3.0,0.0401,0.407,0.648,0.000161,0.503,0.243,Dan the Dancer
+6utQlfLooYsUkq5xUg3vxt,"['canadian contemporary r&b', 'canadian pop', 'pop']",The Weeknd,131.922,0.577,1.0,59.0,1.0,4.0,0.0352,0.532,0.0397,0.00253,0.234,0.0437,Nothing Compares - Bonus Track
+1FRF7olkTDWPwHf5JwYudq,['pop'],Taylor Swift,83.438,0.282,7.0,27.0,1.0,4.0,0.0281,0.59,0.351,0.942,0.11,4.85e-06,invisible string - the long pond studio sessions
+6nzGLhRPjVjGHh0Cya2m8Z,"['garage rock', 'modern rock', 'permanent wave', 'rock', 'sheffield indie']",Arctic Monkeys,100.413,0.885,7.0,0.0,1.0,4.0,0.0622,0.353,0.531,0.000784,0.0949,0.0,Black Treacle
+6fboMBmKadFSFHlyA2LjF1,"['garage rock', 'modern rock', 'permanent wave', 'rock', 'sheffield indie']",Arctic Monkeys,128.438,0.294,2.0,0.0,1.0,4.0,0.0391,0.455,0.288,0.632,0.0843,0.00295,Despair In The Departure Lounge
+3g50Ix1IrljYD6vx4RiaCo,"['k-pop', 'k-pop boy group', 'pop']",BTS,84.927,0.828,0.0,0.0,1.0,4.0,0.0618,0.506,0.475,0.000426,0.0544,0.0,Lost
+3KQ1KVG2F8qAospksegrmZ,"['canadian contemporary r&b', 'canadian pop', 'pop']",The Weeknd,90.673,0.653,6.0,41.0,0.0,5.0,0.0551,0.255,0.058,0.0337,0.168,0.107,Alone Again
+0453JIwwt6A5swqriaQWcb,"['art pop', 'pop']",Lana Del Rey,175.743,0.683,10.0,52.0,0.0,4.0,0.0891,0.46,0.592,0.282,0.425,0.0,Diet Mountain Dew
+72DnQlaqdNhz9QJZXfYe6L,['pop'],Sabrina Carpenter,135.535,0.383,6.0,44.0,1.0,4.0,0.195,0.582,0.388,0.126,0.25,0.0,Hold Tight
+09i5WtpyEswhWwzmucaAVw,"['k-pop', 'k-pop boy group', 'pop']",Stray Kids,104.891,0.903,2.0,53.0,1.0,4.0,0.133,0.585,0.462,0.00716,0.185,0.0,Boxer
+5YsH2FTcm7qqfRw83PcLMd,"['art pop', 'pop']",Lana Del Rey,86.023,0.658,4.0,0.0,0.0,4.0,0.0355,0.415,0.356,0.221,0.165,0.000145,Born To Die
+6ONsOskPONM6DpMcDjNfrF,['pop'],Taylor Swift,205.256,0.612,7.0,30.0,1.0,3.0,0.0703,0.445,0.407,0.427,0.218,0.0,Lover (feat. Shawn Mendes) - Remix
+6n54lM5M7lji4DGDoOul8c,"['brooklyn indie', 'pov: indie']",Mitski,75.219,0.188,10.0,51.0,1.0,4.0,0.0321,0.31,0.158,0.931,0.11,0.000135,Liquid Smooth - Audiotree Live Version
+2oIDOl0I0nHPi1haUSAdfk,"['art pop', 'metropopolis', 'nz pop', 'pop']",Lorde,77.671,0.281,0.0,13.0,1.0,4.0,0.065,0.553,0.285,0.904,0.111,0.0,Liability (Reprise)
+3wRsEmxlh4puMRmeg9ioE6,"['irish singer-songwriter', 'modern rock', 'pov: indie']",Hozier,177.549,0.388,10.0,53.0,1.0,3.0,0.1,0.432,0.256,0.776,0.112,0.0,Work Song
+5LMoKDVzW2kDneNu2UbspP,"['k-pop', 'k-pop girl group']",NewJeans,171.932,0.653,1.0,67.0,0.0,4.0,0.17,0.705,0.578,0.31,0.122,1.46e-05,Zero
+4TXHE0TVqmAMmCRfGurb15,"['k-pop', 'k-pop boy group', 'pop']",Stray Kids,120.05,0.84,1.0,51.0,0.0,4.0,0.104,0.739,0.627,0.0189,0.183,0.0,Astronaut
+4QHAJxzDX0nhraz6bn6Qgn,"['garage rock', 'modern rock', 'permanent wave', 'rock', 'sheffield indie']",Arctic Monkeys,128.291,0.932,4.0,0.0,1.0,4.0,0.057,0.339,0.586,0.00105,0.255,0.114,Suck It And See
+5g7RMU3cV7zXWH244BLe7G,['pop'],Taylor Swift,96.601,0.266,5.0,37.0,1.0,4.0,0.026,0.623,0.467,0.814,0.145,0.0,Fearless - Live From Clear Channel Stripped 2008
+6LuvVxHXQDtsPxtE07Ycbe,"['k-pop', 'k-pop boy group', 'pop']",Stray Kids,104.996,0.781,5.0,60.0,0.0,4.0,0.333,0.886,0.672,0.0895,0.0715,0.0,S-Class
+3oZ6cw7ibiuBh6jPSgEvuJ,['pop'],Sabrina Carpenter,122.99,0.565,6.0,0.0,1.0,4.0,0.0408,0.767,0.767,0.00422,0.0739,9.92e-05,"Wildside - From ""Adventures in Babysitting"""
+6LiJoY2SoXQYe5nSbBHRIt,"['art pop', 'pop']",Lana Del Rey,91.781,0.337,6.0,0.0,0.0,5.0,0.036,0.294,0.135,0.814,0.14,0.414,Cinnamon Girl
+5KfbFCacFuNJGdK2zvovcF,"['k-pop', 'k-pop girl group', 'pop']",TWICE,129.946,0.853,2.0,0.0,1.0,4.0,0.0844,0.708,0.399,0.0525,0.399,0.000173,TT
+1fWHv2gMrEGfBnBvio4yEp,,The Weeknd,120.073,0.549,6.0,3.0,0.0,4.0,0.039,0.652,0.186,0.317,0.104,0.0,The Morning
+1YqPDOmooQQIXsRSdbRrwI,,Sabrina Carpenter,82.964,0.536,0.0,46.0,1.0,4.0,0.0623,0.667,0.693,0.243,0.566,0.0,Bad Time
+5Ja8ZlVexmTQKbWAQgZ3f0,,Dua Lipa,125.057,0.747,8.0,41.0,0.0,4.0,0.0614,0.786,0.471,0.0464,0.0668,0.00415,We're Good - Dillon Francis Remix
+1hg4cx4qaqWwDkBApYL8qG,"['canadian contemporary r&b', 'canadian pop', 'pop']",The Weeknd,151.968,0.364,5.0,0.0,0.0,4.0,0.0866,0.716,0.448,0.107,0.113,9.23e-05,Missed You - Bonus Track
+1oCyEPXnvytOWS5S9mBE8N,"['canadian contemporary r&b', 'canadian pop', 'pop']",The Weeknd,90.673,0.653,6.0,48.0,0.0,5.0,0.0551,0.255,0.058,0.0337,0.168,0.107,Alone Again
+6byRW2mzuc4nBTZ6TN6APu,"['filmi', 'modern bollywood']",Arijit Singh,95.989,0.666,11.0,56.0,0.0,4.0,0.0566,0.717,0.74,0.45,0.111,0.00101,"Pasoori Nu (From ""Satyaprem Ki Katha"")"
+1DVgSXCvkry3HUU6w8kCLd,['pop'],Ariana Grande,125.026,0.656,8.0,0.0,1.0,4.0,0.0292,0.659,0.152,0.0774,0.189,1.27e-06,One Last Time (Attends-Moi)
+0x9y2S5meCeLvHz6WAGjxu,"['k-pop', 'k-pop girl group', 'pop']",TWICE,207.86,0.771,0.0,0.0,1.0,4.0,0.33,0.616,0.63,0.228,0.12,0.0,SIGNAL
+2OGA4hbUqiAhCQj1pxeNld,,Taylor Swift,92.71,0.342,0.0,0.0,1.0,4.0,0.0257,0.587,0.212,0.298,0.106,0.0,White Horse
+0Xe5szsIjDqnY2VwrSUuJ4,"['dance pop', 'pop', 'uk pop']",Dua Lipa,109.863,0.744,6.0,40.0,1.0,4.0,0.0918,0.625,0.49,0.00479,0.18,0.0,Hotter Than Hell - Matoma Remix
+5Ct2PYPUSogyWvbV40k9Bf,['pop'],Taylor Swift,177.936,0.696,2.0,33.0,1.0,4.0,0.0301,0.516,0.664,0.00739,0.354,1.11e-06,Our Song - International Mix
+0OTvJXmQPv7SKavoV6td75,"['garage rock', 'modern rock', 'permanent wave', 'rock', 'sheffield indie']",Arctic Monkeys,180.048,0.668,0.0,0.0,1.0,4.0,0.036,0.415,0.842,0.212,0.27,0.0615,One For The Road

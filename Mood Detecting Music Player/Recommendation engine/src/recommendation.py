@@ -3,6 +3,7 @@ import sys
 import numpy as np
 import pandas as pd
 
+
 # ---------------------------------------------------------
 # Spotify API import
 # ---------------------------------------------------------
@@ -32,7 +33,7 @@ DATA_DIR = os.path.join(
 
 SONGS_PATH = os.path.join(
     DATA_DIR,
-    "music_dataset_clean.csv"
+    "music_dataset_expanded.csv"
 )
 
 
@@ -58,7 +59,7 @@ FEATURES = [
 
 
 # ---------------------------------------------------------
-# Emotions produced by the ML model
+# Emotions
 # ---------------------------------------------------------
 
 EMOTIONS = [
@@ -69,6 +70,16 @@ EMOTIONS = [
     "fear",
     "sadness"
 ]
+
+
+# ---------------------------------------------------------
+# Precomputed mood columns
+# ---------------------------------------------------------
+
+MOOD_COLUMNS = {
+    emotion: f"mood_{emotion}"
+    for emotion in EMOTIONS
+}
 
 
 # ---------------------------------------------------------
@@ -188,6 +199,19 @@ BASE_RANKING_WEIGHTS = {
 
 
 # ---------------------------------------------------------
+# Values that mean "no preference"
+# ---------------------------------------------------------
+
+NO_PREFERENCE_VALUES = {
+    "",
+    "none",
+    "no",
+    "any",
+    "all"
+}
+
+
+# ---------------------------------------------------------
 # Text normalization
 # ---------------------------------------------------------
 
@@ -200,7 +224,7 @@ def normalize_text(value):
 
 
 # ---------------------------------------------------------
-# Convert preference to list
+# Convert and clean preferences
 # ---------------------------------------------------------
 
 def normalize_preferences(preferences):
@@ -217,15 +241,28 @@ def normalize_preferences(preferences):
             continue
 
         if isinstance(value, str):
-            normalized[key] = [value]
-        else:
-            normalized[key] = value
+
+            value = [value]
+
+        cleaned_values = []
+
+        for item in value:
+
+            item = normalize_text(item)
+
+            if item in NO_PREFERENCE_VALUES:
+                continue
+
+            if item:
+                cleaned_values.append(item)
+
+        normalized[key] = cleaned_values
 
     return normalized
 
 
 # ---------------------------------------------------------
-# Preference matching
+# General preference matching
 # ---------------------------------------------------------
 
 def preference_score(
@@ -259,6 +296,82 @@ def preference_score(
             and preference in value
         ):
             return 1.0
+
+    return 0.0
+
+
+# ---------------------------------------------------------
+# Artist preference matching
+# ---------------------------------------------------------
+#
+# Artist fields may contain:
+#
+#     BTS
+#
+# or:
+#
+#     BTS;Sia
+#
+# We split multiple artists and compare individually.
+#
+# We also allow useful partial input:
+#
+#     "taylor" -> "Taylor Swift"
+#     "lana"   -> "Lana Del Rey"
+#
+# Minimum partial length is 3 characters.
+# ---------------------------------------------------------
+
+def artist_preference_score(
+    value,
+    preferences
+):
+
+    if not preferences:
+        return 0.0
+
+    if pd.isna(value):
+        return 0.0
+
+    artist_value = str(
+        value
+    ).strip().lower()
+
+    if isinstance(
+        preferences,
+        str
+    ):
+        preferences = [
+            preferences
+        ]
+
+    artists_in_row = [
+        artist.strip().lower()
+        for artist in artist_value.split(";")
+        if artist.strip()
+    ]
+
+    for preference in preferences:
+
+        preference = normalize_text(
+            preference
+        )
+
+        if not preference:
+            continue
+
+        for artist in artists_in_row:
+
+            # Exact match
+            if preference == artist:
+                return 1.0
+
+            # Useful partial match
+            if (
+                len(preference) >= 3
+                and preference in artist
+            ):
+                return 1.0
 
     return 0.0
 
@@ -365,7 +478,7 @@ def calculate_feedback_score(
     positive = 0.0
     negative = 0.0
 
-    if preference_score(
+    if artist_preference_score(
         row["artists"],
         liked_artists
     ):
@@ -383,7 +496,7 @@ def calculate_feedback_score(
     ):
         positive += 1.0
 
-    if preference_score(
+    if artist_preference_score(
         row["artists"],
         skipped_artists
     ):
@@ -402,12 +515,14 @@ def calculate_feedback_score(
         negative += 1.0
 
     if positive > 0:
+
         return min(
             positive / 3.0,
             1.0
         )
 
     if negative > 0:
+
         return -min(
             negative / 3.0,
             1.0
@@ -425,13 +540,16 @@ def calculate_ranking_weights(
 ):
 
     try:
+
         confidence = float(
             confidence
         )
+
     except (
         ValueError,
         TypeError
     ):
+
         confidence = 1.0
 
     confidence = min(
@@ -442,18 +560,13 @@ def calculate_ranking_weights(
         1.0
     )
 
-    weights = BASE_RANKING_WEIGHTS.copy()
+    weights = (
+        BASE_RANKING_WEIGHTS.copy()
+    )
 
-    # Emotion confidence controls how strongly
-    # mood matching influences the result.
-    #
-    # High confidence:
-    #     stronger mood influence
-    #
-    # Lower confidence:
-    #     personalization has relatively more influence
-
-    original_mood = weights["mood"]
+    original_mood = (
+        weights["mood"]
+    )
 
     weights["mood"] = (
         original_mood
@@ -571,58 +684,32 @@ def recommend(
 ):
 
     """
-    Generate personalized music recommendations.
+    Generate personalized recommendations.
 
-    Parameters
-    ----------
-    emotion : str
-        Emotion produced by the ML model.
+    Selection behavior
+    ------------------
 
-    n : int
-        Number of recommendations.
+    Genre = none, Artist = none
+        -> Mood-based recommendations.
 
-    candidate_size : int
-        Number of candidates selected from each
-        mood/preference pool.
+    Genre selected, Artist = none
+        -> Mood + selected genre.
 
-    preferences : dict
-        User preferences.
+    Genre = none, Artist selected
+        -> Only selected artist(s), ranked by mood.
 
-        Example:
+    Genre selected, Artist selected
+        -> Only selected artist(s).
+        -> Selected genre preferred within artist pool.
 
-        {
-            "genres": ["k-pop", "pop"],
-            "languages": ["english"],
-            "artists": ["BTS"],
-            "audio": {
-                "energy": 0.8,
-                "valence": 0.8,
-                "danceability": 0.7,
-                "acousticness": 0.2
-            }
-        }
-
-    confidence : float
-        Confidence score from the emotion model.
-        Expected range: 0 to 1.
-
-    feedback : dict
-        Optional user feedback/history.
-
-        Example:
-
-        {
-            "liked_artists": ["BTS"],
-            "liked_genres": ["k-pop"],
-            "liked_tracks": ["Like"],
-            "skipped_artists": [],
-            "skipped_genres": [],
-            "skipped_tracks": []
-        }
-
-    use_spotify : bool
-        Whether to retrieve Spotify metadata.
+    If the selected artist has no songs matching the
+    selected genre, the engine falls back to that artist's
+    songs instead of recommending unrelated artists.
     """
+
+    # -----------------------------------------------------
+    # Validate emotion
+    # -----------------------------------------------------
 
     emotion = normalize_text(
         emotion
@@ -635,42 +722,14 @@ def recommend(
             f"Choose from: {EMOTIONS}"
         )
 
-    preferences = normalize_preferences(
-        preferences
+    preferences = (
+        normalize_preferences(
+            preferences
+        )
     )
 
     if feedback is None:
         feedback = {}
-
-
-    # -----------------------------------------------------
-    # Emotion target
-    # -----------------------------------------------------
-
-    target = np.array(
-        [
-            EMOTION_PROFILES[
-                emotion
-            ][feature]
-            for feature in FEATURES
-        ],
-        dtype=float
-    )
-
-
-    # -----------------------------------------------------
-    # Emotion feature weights
-    # -----------------------------------------------------
-
-    feature_weights = np.array(
-        [
-            EMOTION_WEIGHTS[
-                emotion
-            ][feature]
-            for feature in FEATURES
-        ],
-        dtype=float
-    )
 
 
     # -----------------------------------------------------
@@ -681,50 +740,120 @@ def recommend(
 
 
     # -----------------------------------------------------
-    # Calculate weighted mood distance
+    # Determine mood column
     # -----------------------------------------------------
 
-    song_features = data[
-        FEATURES
-    ].values.astype(float)
-
-    weighted_distance = np.sqrt(
-        np.sum(
-            feature_weights
-            * (
-                song_features
-                - target
-            ) ** 2,
-            axis=1
-        )
+    mood_column = (
+        MOOD_COLUMNS[
+            emotion
+        ]
     )
+
+
+    # -----------------------------------------------------
+    # Use precomputed mood mapping
+    # -----------------------------------------------------
+
+    if mood_column in data.columns:
+
+        data[mood_column] = pd.to_numeric(
+            data[mood_column],
+            errors="coerce"
+        )
+
+        data[mood_column] = (
+            data[mood_column]
+            .fillna(0.0)
+            .clip(0.0, 1.0)
+        )
+
+    else:
+
+        # -------------------------------------------------
+        # Backward-compatible fallback
+        # -------------------------------------------------
+
+        target = np.array(
+            [
+                EMOTION_PROFILES[
+                    emotion
+                ][feature]
+                for feature in FEATURES
+            ],
+            dtype=float
+        )
+
+        feature_weights = np.array(
+            [
+                EMOTION_WEIGHTS[
+                    emotion
+                ][feature]
+                for feature in FEATURES
+            ],
+            dtype=float
+        )
+
+        song_features = data[
+            FEATURES
+        ].copy()
+
+        for feature in FEATURES:
+
+            song_features[feature] = pd.to_numeric(
+                song_features[feature],
+                errors="coerce"
+            )
+
+            song_features[feature] = (
+                song_features[feature]
+                .fillna(
+                    song_features[feature].median()
+                )
+            )
+
+        song_features = (
+            song_features[
+                FEATURES
+            ]
+            .values
+            .astype(float)
+        )
+
+        weighted_distance = np.sqrt(
+            np.sum(
+                feature_weights
+                * (
+                    song_features
+                    - target
+                ) ** 2,
+                axis=1
+            )
+        )
+
+        data[mood_column] = (
+            1.0
+            - weighted_distance
+        )
+
+        data[mood_column] = (
+            data[mood_column]
+            .clip(0.0, 1.0)
+        )
+
+
+    # -----------------------------------------------------
+    # Mood distance
+    # -----------------------------------------------------
 
     data["mood_distance"] = (
-        weighted_distance
+        1.0
+        - data[mood_column]
     )
 
 
     # -----------------------------------------------------
-    # Mood candidate pool
+    # User preferences
     # -----------------------------------------------------
-
-    mood_candidates = (
-        data
-        .nsmallest(
-            candidate_size,
-            "mood_distance"
-        )
-        .copy()
-    )
-
-
-    # -----------------------------------------------------
-    # Preference candidate pool
-    # -----------------------------------------------------
-
-    preference_candidates = (
-        pd.DataFrame()
-    )
 
     genres = preferences.get(
         "genres",
@@ -736,58 +865,213 @@ def recommend(
         []
     )
 
-    if genres or artists:
 
-        genre_mask = pd.Series(
-            False,
-            index=data.index
+    # -----------------------------------------------------
+    # Preference state
+    # -----------------------------------------------------
+
+    has_artist_preference = (
+        len(artists) > 0
+    )
+
+    has_genre_preference = (
+        len(genres) > 0
+    )
+
+
+    # -----------------------------------------------------
+    # Artist pool
+    # -----------------------------------------------------
+
+    artist_pool = (
+        pd.DataFrame()
+    )
+
+    if has_artist_preference:
+
+        artist_mask = data[
+            "artists"
+        ].apply(
+            lambda x:
+            artist_preference_score(
+                x,
+                artists
+            ) > 0
         )
 
-        artist_mask = pd.Series(
-            False,
-            index=data.index
-        )
-
-
-        if genres:
-
-            genre_mask = data[
-                "track_genre"
-            ].apply(
-                lambda x:
-                preference_score(
-                    x,
-                    genres
-                ) > 0
-            )
-
-
-        if artists:
-
-            artist_mask = data[
-                "artists"
-            ].apply(
-                lambda x:
-                preference_score(
-                    x,
-                    artists
-                ) > 0
-            )
-
-
-        preference_candidates = data[
-            genre_mask
-            |
+        artist_pool = data[
             artist_mask
         ].copy()
 
+        # -------------------------------------------------
+        # If artist was not found:
+        #
+        # Disable artist restriction so the engine can
+        # safely fall back to normal recommendations.
+        # -------------------------------------------------
+
+        if len(artist_pool) == 0:
+
+            has_artist_preference = False
+
+
+    # -----------------------------------------------------
+    # Candidate generation
+    # -----------------------------------------------------
+
+    preference_candidates = (
+        pd.DataFrame()
+    )
+
+
+    # -----------------------------------------------------
+    # Artist selected
+    # -----------------------------------------------------
+
+    if has_artist_preference:
+
+        # -------------------------------------------------
+        # Artist + genre
+        # -------------------------------------------------
+
+        if has_genre_preference:
+
+            artist_genre_mask = (
+                artist_pool[
+                    "track_genre"
+                ].apply(
+                    lambda x:
+                    preference_score(
+                        x,
+                        genres
+                    ) > 0
+                )
+            )
+
+            artist_genre_pool = (
+                artist_pool[
+                    artist_genre_mask
+                ].copy()
+            )
+
+            # -------------------------------------------------
+            # Matching artist + genre exists
+            # -------------------------------------------------
+
+            if len(
+                artist_genre_pool
+            ) > 0:
+
+                preference_candidates = (
+                    artist_genre_pool
+                    .nsmallest(
+                        candidate_size,
+                        "mood_distance"
+                    )
+                    .copy()
+                )
+
+            # -------------------------------------------------
+            # No artist + genre combination.
+            #
+            # Stay with the requested artist.
+            # -------------------------------------------------
+
+            else:
+
+                preference_candidates = (
+                    artist_pool
+                    .nsmallest(
+                        candidate_size,
+                        "mood_distance"
+                    )
+                    .copy()
+                )
+
+        # -------------------------------------------------
+        # Artist only
+        # -------------------------------------------------
+
+        else:
+
+            preference_candidates = (
+                artist_pool
+                .nsmallest(
+                    candidate_size,
+                    "mood_distance"
+                )
+                .copy()
+            )
+
+
+    # -----------------------------------------------------
+    # Genre only
+    # -----------------------------------------------------
+
+    elif has_genre_preference:
+
+        genre_mask = data[
+            "track_genre"
+        ].apply(
+            lambda x:
+            preference_score(
+                x,
+                genres
+            ) > 0
+        )
 
         preference_candidates = (
-            preference_candidates
+            data[
+                genre_mask
+            ]
             .nsmallest(
                 candidate_size,
                 "mood_distance"
             )
+            .copy()
+        )
+
+
+    # -----------------------------------------------------
+    # Global mood pool
+    # -----------------------------------------------------
+
+    if has_artist_preference:
+
+        # -------------------------------------------------
+        # Artist preference is a hard constraint.
+        # -------------------------------------------------
+
+        mood_candidates = (
+            preference_candidates
+            .copy()
+        )
+
+    elif has_genre_preference:
+
+        # -------------------------------------------------
+        # Genre preference is a candidate restriction.
+        # -------------------------------------------------
+
+        mood_candidates = (
+            preference_candidates
+            .copy()
+        )
+
+    else:
+
+        # -------------------------------------------------
+        # No preferences:
+        # use entire dataset's mood ranking.
+        # -------------------------------------------------
+
+        mood_candidates = (
+            data
+            .nsmallest(
+                candidate_size,
+                "mood_distance"
+            )
+            .copy()
         )
 
 
@@ -799,14 +1083,18 @@ def recommend(
         pd.DataFrame()
     )
 
-    feedback_artists = feedback.get(
-        "liked_artists",
-        []
+    feedback_artists = (
+        feedback.get(
+            "liked_artists",
+            []
+        )
     )
 
-    feedback_genres = feedback.get(
-        "liked_genres",
-        []
+    feedback_genres = (
+        feedback.get(
+            "liked_genres",
+            []
+        )
     )
 
     if (
@@ -835,7 +1123,7 @@ def recommend(
                     "artists"
                 ].apply(
                     lambda x:
-                    preference_score(
+                    artist_preference_score(
                         x,
                         feedback_artists
                     ) > 0
@@ -862,6 +1150,27 @@ def recommend(
             feedback_genre_mask
         ].copy()
 
+        # -------------------------------------------------
+        # Explicit artist selection remains a hard
+        # restriction.
+        # -------------------------------------------------
+
+        if has_artist_preference:
+
+            feedback_candidates = (
+                feedback_candidates[
+                    feedback_candidates[
+                        "artists"
+                    ].apply(
+                        lambda x:
+                        artist_preference_score(
+                            x,
+                            artists
+                        ) > 0
+                    )
+                ]
+            )
+
         feedback_candidates = (
             feedback_candidates
             .nsmallest(
@@ -886,6 +1195,22 @@ def recommend(
 
 
     # -----------------------------------------------------
+    # Safety check
+    # -----------------------------------------------------
+
+    if len(candidates) == 0:
+
+        candidates = (
+            data
+            .nsmallest(
+                candidate_size,
+                "mood_distance"
+            )
+            .copy()
+        )
+
+
+    # -----------------------------------------------------
     # Remove duplicate songs
     # -----------------------------------------------------
 
@@ -902,20 +1227,35 @@ def recommend(
 
 
     # -----------------------------------------------------
+    # Final artist safety filter
+    # -----------------------------------------------------
+
+    if has_artist_preference:
+
+        candidates = candidates[
+            candidates[
+                "artists"
+            ].apply(
+                lambda x:
+                artist_preference_score(
+                    x,
+                    artists
+                ) > 0
+            )
+        ].copy()
+
+
+    # -----------------------------------------------------
     # Mood score
     # -----------------------------------------------------
 
-    candidates["mood_score"] = (
-        1.0
-        - candidates[
-            "mood_distance"
-        ]
-    )
-
-    candidates["mood_score"] = (
+    candidates[
+        "mood_score"
+    ] = (
         candidates[
-            "mood_score"
-        ].clip(
+            mood_column
+        ]
+        .clip(
             0.0,
             1.0
         )
@@ -929,11 +1269,17 @@ def recommend(
     candidates[
         "popularity_score"
     ] = (
-        candidates[
-            "popularity"
-        ]
+        pd.to_numeric(
+            candidates[
+                "popularity"
+            ],
+            errors="coerce"
+        )
         .fillna(0)
-        .clip(0, 100)
+        .clip(
+            0,
+            100
+        )
         / 100.0
     )
 
@@ -957,11 +1303,6 @@ def recommend(
 
     # -----------------------------------------------------
     # Language preference score
-    # -----------------------------------------------------
-    #
-    # The current dataset has no language column.
-    # Therefore this remains zero until language
-    # metadata is added.
     # -----------------------------------------------------
 
     languages = preferences.get(
@@ -1000,7 +1341,7 @@ def recommend(
         "artists"
     ].apply(
         lambda x:
-        preference_score(
+        artist_preference_score(
             x,
             artists
         )
@@ -1081,7 +1422,7 @@ def recommend(
 
 
     # -----------------------------------------------------
-    # Personalized score
+    # Final personalized score
     # -----------------------------------------------------
 
     candidates[
@@ -1162,19 +1503,25 @@ def recommend(
     # Penalize skipped songs/artists/genres
     # -----------------------------------------------------
 
-    skipped_tracks = feedback.get(
-        "skipped_tracks",
-        []
+    skipped_tracks = (
+        feedback.get(
+            "skipped_tracks",
+            []
+        )
     )
 
-    skipped_artists = feedback.get(
-        "skipped_artists",
-        []
+    skipped_artists = (
+        feedback.get(
+            "skipped_artists",
+            []
+        )
     )
 
-    skipped_genres = feedback.get(
-        "skipped_genres",
-        []
+    skipped_genres = (
+        feedback.get(
+            "skipped_genres",
+            []
+        )
     )
 
     if (
@@ -1201,7 +1548,7 @@ def recommend(
                 "artists"
             ].apply(
                 lambda x:
-                preference_score(
+                artist_preference_score(
                     x,
                     skipped_artists
                 ) > 0
@@ -1268,6 +1615,8 @@ def recommend(
 
         "track_genre",
 
+        "primary_mood",
+
         "mood_score",
 
         "genre_score",
@@ -1287,6 +1636,12 @@ def recommend(
         "final_score"
     ]
 
+    result_columns = [
+        column
+        for column in result_columns
+        if column in candidates.columns
+    ]
+
 
     return (
         candidates[
@@ -1303,80 +1658,180 @@ def recommend(
 
 if __name__ == "__main__":
 
-    test_preferences = {
+    print("=" * 70)
+    print("MOOD-MAPPED RECOMMENDATION ENGINE TEST")
+    print("=" * 70)
 
-        "genres": [
-            "k-pop",
-            "pop",
-            "indian"
-        ],
+    print(
+        f"\nDataset: {len(songs):,} songs"
+    )
 
-        "languages": [
-            "english",
-            "hindi"
-        ],
-
-        "artists": [
-            "BTS",
-            "Diljit Dosanjh"
-        ],
-
-        "audio": {
-
-            "energy": 0.80,
-
-            "valence": 0.80,
-
-            "danceability": 0.70,
-
-            "acousticness": 0.20
-        }
-    }
-
-
-    test_feedback = {
-
-        "liked_artists": [
-            "BTS"
-        ],
-
-        "liked_genres": [
-            "k-pop"
-        ],
-
-        "liked_tracks": [],
-
-        "skipped_artists": [],
-
-        "skipped_genres": [],
-
-        "skipped_tracks": []
-    }
-
+    print(
+        "\nMood mapping columns available:"
+    )
 
     for emotion in EMOTIONS:
 
-        print(
-            f"\n--- {emotion.upper()} ---"
-        )
-
-        result = recommend(
-
-            emotion,
-
-            n=5,
-
-            preferences=test_preferences,
-
-            confidence=0.90,
-
-            feedback=test_feedback,
-
-            use_spotify=False
-        )
+        column = MOOD_COLUMNS[
+            emotion
+        ]
 
         print(
-            result.to_string(
-                index=False
-            )
+            f"  {emotion:<10} -> "
+            f"{column}: "
+            f"{column in songs.columns}"
         )
+
+
+    # -----------------------------------------------------
+    # TEST 1
+    # No preferences
+    # -----------------------------------------------------
+
+    print(
+        "\n"
+        + "=" * 70
+    )
+
+    print(
+        "TEST 1: SADNESS + NO PREFERENCES"
+    )
+
+    print(
+        "=" * 70
+    )
+
+    result = recommend(
+        "sadness",
+        n=5,
+        preferences={
+            "genres": ["none"],
+            "artists": ["none"]
+        },
+        confidence=1.0,
+        use_spotify=False
+    )
+
+    print(
+        result.to_string(
+            index=False
+        )
+    )
+
+
+    # -----------------------------------------------------
+    # TEST 2
+    # Artist only
+    # -----------------------------------------------------
+
+    print(
+        "\n"
+        + "=" * 70
+    )
+
+    print(
+        "TEST 2: SADNESS + LANA DEL REY"
+    )
+
+    print(
+        "=" * 70
+    )
+
+    result = recommend(
+        "sadness",
+        n=5,
+        preferences={
+            "genres": ["none"],
+            "artists": [
+                "Lana Del Rey"
+            ]
+        },
+        confidence=1.0,
+        use_spotify=False
+    )
+
+    print(
+        result.to_string(
+            index=False
+        )
+    )
+
+
+    # -----------------------------------------------------
+    # TEST 3
+    # Artist + genre
+    # -----------------------------------------------------
+
+    print(
+        "\n"
+        + "=" * 70
+    )
+
+    print(
+        "TEST 3: SADNESS + POP + LANA DEL REY"
+    )
+
+    print(
+        "=" * 70
+    )
+
+    result = recommend(
+        "sadness",
+        n=5,
+        preferences={
+            "genres": [
+                "pop"
+            ],
+            "artists": [
+                "Lana Del Rey"
+            ]
+        },
+        confidence=1.0,
+        use_spotify=False
+    )
+
+    print(
+        result.to_string(
+            index=False
+        )
+    )
+
+
+    # -----------------------------------------------------
+    # TEST 4
+    # Genre only
+    # -----------------------------------------------------
+
+    print(
+        "\n"
+        + "=" * 70
+    )
+
+    print(
+        "TEST 4: JOY + ROCK"
+    )
+
+    print(
+        "=" * 70
+    )
+
+    result = recommend(
+        "joy",
+        n=5,
+        preferences={
+            "genres": [
+                "rock"
+            ],
+            "artists": [
+                "none"
+            ]
+        },
+        confidence=1.0,
+        use_spotify=False
+    )
+
+    print(
+        result.to_string(
+            index=False
+        )
+    )
