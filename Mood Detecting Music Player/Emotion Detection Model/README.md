@@ -117,8 +117,15 @@ Model Building & Training
 ├── evaluate.py                 ✅
 └── predict.py                  ✅
 
-
 WEEK 5
+Full-Stack Recommendation Engine Integration
+├── FastAPI Backend Endpoint           ✅
+├── React Frontend UI                  ✅
+├── User Preferences (Genre/Artist)    ✅
+└── ML to Recommendation Pipeline      ✅
+
+
+WEEK 6
 Model Improvement & Deployment Preparation
 ├── Model Performance Analysis          ⬅️
 ├── Hyperparameter Tuning               ⬅️
@@ -128,3 +135,4 @@ Model Improvement & Deployment Preparation
 ├── Error Analysis                      ⬅️
 ├── Save Best Model                     ⬅️
 └── Prepare Model for Integration       ⬅️
+

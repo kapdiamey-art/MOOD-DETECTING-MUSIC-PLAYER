@@ -3,8 +3,10 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
-import bcrypt
+from passlib.context import CryptContext  # type: ignore
 import os
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 from config.database import users_col
 from models.user import UserRegister, UserLogin, UserUpdate
@@ -12,9 +14,9 @@ from models.user import UserRegister, UserLogin, UserUpdate
 # ── Load environment variables ─────────────────────────────
 load_dotenv()
 
-SECRET_KEY = os.getenv("SECRET_KEY")
-ALGORITHM  = os.getenv("ALGORITHM")
-EXPIRE_MIN = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
+SECRET_KEY = os.getenv("SECRET_KEY", "temp-secret-key")
+ALGORITHM  = os.getenv("ALGORITHM", "HS256")
+EXPIRE_MIN = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60"))
 
 # ── JWT token extractor ────────────────────────────────────
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
@@ -28,14 +30,13 @@ router = APIRouter()
 # ══════════════════════════════════════════════════════════
 
 def hash_password(password: str) -> str:
-    """Hash a plain password using bcrypt."""
-    salt = bcrypt.gensalt()
-    return bcrypt.hashpw(password.encode("utf-8"), salt).decode("utf-8")
+    """Hash a plain password using bcrypt via passlib."""
+    return pwd_context.hash(password)
 
 
 def verify_password(plain: str, hashed: str) -> bool:
-    """Check if a plain password matches a bcrypt hash."""
-    return bcrypt.checkpw(plain.encode("utf-8"), hashed.encode("utf-8"))
+    """Check if a plain password matches a bcrypt hash via passlib."""
+    return pwd_context.verify(plain, hashed)
 
 
 def create_token(data: dict) -> str:
