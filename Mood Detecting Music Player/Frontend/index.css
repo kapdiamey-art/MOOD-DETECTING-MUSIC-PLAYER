@@ -6357,3 +6357,189 @@ body {
   }
 
 }
+/* =====================================================
+   GLOBAL THEME
+===================================================== */
+
+html.light,
+html.light body {
+  background: #f7f8fc;
+  color: #1f2937;
+}
+
+html.dark,
+html.dark body {
+  background: #0f1117;
+  color: #f3f4f6;
+}
+
+
+/* =====================================================
+   LOGIN PAGE - LIGHT MODE
+===================================================== */
+
+html.light .auth-page {
+  background: #f7f8fc;
+  color: #1f2937;
+}
+
+html.light .auth-card {
+  background: #ffffff;
+  color: #1f2937;
+  border-color: #e5e7eb;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+}
+
+html.light .auth-logo {
+  color: #111827;
+}
+
+html.light .auth-header h1 {
+  color: #111827;
+}
+
+html.light .auth-header p {
+  color: #6b7280;
+}
+
+html.light .auth-badge {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+html.light .form-group label {
+  color: #374151;
+}
+
+html.light .form-group input {
+  background: #ffffff;
+  color: #111827;
+  border: 1px solid #d1d5db;
+}
+
+html.light .form-group input::placeholder {
+  color: #9ca3af;
+}
+
+html.light .form-group input:focus {
+  border-color: #7c3aed;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
+}
+
+html.light .auth-switch {
+  color: #6b7280;
+}
+
+html.light .auth-switch button {
+  color: #7c3aed;
+}
+
+
+/* =====================================================
+   LOGIN PAGE - DARK MODE
+===================================================== */
+
+html.dark .auth-page {
+  background: #0f1117;
+  color: #f3f4f6;
+}
+
+html.dark .auth-card {
+  background: #181b24;
+  color: #f3f4f6;
+  border-color: #2d3340;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.35);
+}
+
+html.dark .auth-logo {
+  color: #ffffff;
+}
+
+html.dark .auth-header h1 {
+  color: #ffffff;
+}
+
+html.dark .auth-header p {
+  color: #a1a7b3;
+}
+
+html.dark .auth-badge {
+  background: #252a36;
+  color: #c4c9d4;
+}
+
+html.dark .form-group label {
+  color: #d1d5db;
+}
+
+html.dark .form-group input {
+  background: #11141b;
+  color: #ffffff;
+  border: 1px solid #363c49;
+}
+
+html.dark .form-group input::placeholder {
+  color: #737b8c;
+}
+
+html.dark .form-group input:focus {
+  border-color: #9b6cff;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(155, 108, 255, 0.15);
+}
+
+html.dark .auth-switch {
+  color: #9ca3af;
+}
+
+html.dark .auth-switch button {
+  color: #a78bfa;
+}
+
+
+/* =====================================================
+   OTP SCREEN
+===================================================== */
+
+html.light .auth-card h2 {
+  color: #111827;
+}
+
+html.dark .auth-card h2 {
+  color: #ffffff;
+}
+
+
+/* =====================================================
+   ERROR
+===================================================== */
+
+html.light .auth-error {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+html.dark .auth-error {
+  background: #351416;
+  color: #fca5a5;
+  border: 1px solid #7f1d1d;
+}
+
+
+/* =====================================================
+   SUCCESS
+===================================================== */
+
+html.light .auth-success {
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+html.dark .auth-success {
+  background: #062e23;
+  color: #6ee7b7;
+  border: 1px solid #065f46;
+}

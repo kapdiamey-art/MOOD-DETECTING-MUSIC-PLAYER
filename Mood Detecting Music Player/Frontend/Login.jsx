@@ -18,7 +18,10 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  // OTP mode is FALSE by default.
+  // Therefore the normal login screen opens first.
   const [otpMode, setOtpMode] = useState(false);
+
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
 
@@ -39,7 +42,11 @@ export default function Login() {
   };
 
   // =====================================================
-  // LOGIN WITH EMAIL + PASSWORD
+  // NORMAL LOGIN WITH EMAIL + PASSWORD
+  // =====================================================
+  // IMPORTANT:
+  // Password login does NOT send OTP.
+  // Successful password login goes directly to /mood.
   // =====================================================
 
   const handleLogin = async (e) => {
@@ -52,7 +59,7 @@ export default function Login() {
     const cleanEmail = email.trim().toLowerCase();
 
     // -------------------------------------------------
-    // VALIDATE
+    // VALIDATION
     // -------------------------------------------------
 
     if (!cleanEmail || !password) {
@@ -71,7 +78,7 @@ export default function Login() {
       console.log("Logging in:", cleanEmail);
 
       // =================================================
-      // STEP 1: FIREBASE EMAIL + PASSWORD
+      // FIREBASE EMAIL + PASSWORD LOGIN
       // =================================================
 
       const userCredential =
@@ -83,22 +90,17 @@ export default function Login() {
 
       const user = userCredential.user;
 
-      console.log(
-        "Firebase user:",
-        user.email
-      );
-
+      console.log("Firebase user:", user.email);
       console.log(
         "Email verified:",
         user.emailVerified
       );
 
       // =================================================
-      // STEP 2: CHECK EMAIL VERIFICATION
+      // CHECK EMAIL VERIFICATION
       // =================================================
 
       if (!user.emailVerified) {
-
         setError(
           "Please verify your email before continuing."
         );
@@ -108,66 +110,53 @@ export default function Login() {
         return;
       }
 
-      console.log("✅ Email verified");
-
       // =================================================
-      // STEP 3: SEND OTP
+      // PASSWORD LOGIN SUCCESS
+      // NO OTP HERE
       // =================================================
-
-      const response = await fetch(
-        "http://localhost:5000/send-otp",
-        {
-          method: "POST",
-
-          headers: {
-            "Content-Type": "application/json",
-          },
-
-          body: JSON.stringify({
-            email: cleanEmail,
-          }),
-        }
-      );
-
-      const data = await response.json();
 
       console.log(
-        "Send OTP response:",
-        data
+        "✅ Email + password login successful"
       );
 
-      if (!response.ok || !data.success) {
-        throw new Error(
-          data.message ||
-          "Failed to send OTP."
-        );
-      }
+      localStorage.setItem(
+        "moodifyLoggedIn",
+        "true"
+      );
 
-      console.log("✅ OTP sent");
+      localStorage.setItem(
+        "moodifyEmail",
+        cleanEmail
+      );
 
-      // =================================================
-      // STEP 4: SHOW OTP SCREEN
-      // =================================================
-
-      setOtpMode(true);
-      setOtpSent(true);
+      localStorage.setItem(
+        "moodifyLoginMethod",
+        "password"
+      );
 
       setMessage(
-        "OTP sent successfully! Check your email."
+        "Login successful! Redirecting..."
       );
 
-    } catch (error) {
+      // Small delay so user can see success message
+      setTimeout(() => {
+        navigate("/mood");
+      }, 500);
 
+    } catch (error) {
       console.error(
         "Login error:",
         error
       );
 
+      // =================================================
+      // FIREBASE ERROR HANDLING
+      // =================================================
+
       if (
         error.code ===
         "auth/invalid-credential"
       ) {
-
         setError(
           "Incorrect email or password."
         );
@@ -176,7 +165,6 @@ export default function Login() {
         error.code ===
         "auth/user-not-found"
       ) {
-
         setError(
           "No account found. Please register first."
         );
@@ -185,7 +173,6 @@ export default function Login() {
         error.code ===
         "auth/wrong-password"
       ) {
-
         setError(
           "Incorrect email or password."
         );
@@ -194,7 +181,6 @@ export default function Login() {
         error.code ===
         "auth/invalid-email"
       ) {
-
         setError(
           "Please enter a valid email address."
         );
@@ -203,7 +189,6 @@ export default function Login() {
         error.code ===
         "auth/too-many-requests"
       ) {
-
         setError(
           "Too many login attempts. Please try again later."
         );
@@ -212,13 +197,11 @@ export default function Login() {
         error.code ===
         "auth/user-disabled"
       ) {
-
         setError(
           "This account has been disabled."
         );
 
       } else {
-
         setError(
           error.message ||
           "Login failed. Please try again."
@@ -226,9 +209,129 @@ export default function Login() {
       }
 
     } finally {
-
       setLoading(false);
+    }
+  };
 
+  // =====================================================
+  // OPEN OTP LOGIN
+  // =====================================================
+  // This function ONLY opens the OTP screen.
+  // It does NOT send OTP yet.
+  // =====================================================
+
+  const handleOpenOTPLogin = () => {
+    setOtpMode(true);
+
+    setOtp("");
+    setOtpSent(false);
+
+    setError("");
+    setMessage("");
+    setShowResend(false);
+  };
+
+  // =====================================================
+  // SEND OTP
+  // =====================================================
+
+  const handleSendOTP = async () => {
+    setError("");
+    setMessage("");
+    setOtp("");
+
+    const cleanEmail =
+      email.trim().toLowerCase();
+
+    // -------------------------------------------------
+    // VALIDATE EMAIL
+    // -------------------------------------------------
+
+    if (!cleanEmail) {
+      setError(
+        "Please enter your email address."
+      );
+      return;
+    }
+
+    if (!isValidEmail(cleanEmail)) {
+      setError(
+        "Please enter a valid email address."
+      );
+      return;
+    }
+
+    try {
+      setOtpLoading(true);
+
+      console.log(
+        "Sending OTP to:",
+        cleanEmail
+      );
+
+      // =================================================
+      // SEND OTP TO BACKEND
+      // =================================================
+
+      const response = await fetch(
+        "http://localhost:5000/send-otp",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+
+          body: JSON.stringify({
+            email: cleanEmail,
+          }),
+        }
+      );
+
+      const data =
+        await response.json();
+
+      console.log(
+        "Send OTP response:",
+        data
+      );
+
+      if (
+        !response.ok ||
+        !data.success
+      ) {
+        throw new Error(
+          data.message ||
+          "Failed to send OTP."
+        );
+      }
+
+      // =================================================
+      // OTP SENT
+      // =================================================
+
+      console.log("✅ OTP sent");
+
+      setOtpSent(true);
+
+      setMessage(
+        "OTP sent successfully! Check your email."
+      );
+
+    } catch (error) {
+      console.error(
+        "Send OTP error:",
+        error
+      );
+
+      setError(
+        error.message ||
+        "Failed to send OTP. Please try again."
+      );
+
+    } finally {
+      setOtpLoading(false);
     }
   };
 
@@ -237,7 +340,6 @@ export default function Login() {
   // =====================================================
 
   const handleVerifyOTP = async () => {
-
     setError("");
     setMessage("");
 
@@ -252,11 +354,16 @@ export default function Login() {
     // -------------------------------------------------
 
     if (!cleanEmail) {
-
       setError(
         "Email is required."
       );
+      return;
+    }
 
+    if (!isValidEmail(cleanEmail)) {
+      setError(
+        "Please enter a valid email address."
+      );
       return;
     }
 
@@ -265,25 +372,20 @@ export default function Login() {
     // -------------------------------------------------
 
     if (!cleanOTP) {
-
       setError(
         "Please enter the OTP."
       );
-
       return;
     }
 
     if (!/^\d{6}$/.test(cleanOTP)) {
-
       setError(
         "OTP must contain exactly 6 digits."
       );
-
       return;
     }
 
     try {
-
       setOtpLoading(true);
 
       console.log(
@@ -292,26 +394,25 @@ export default function Login() {
       );
 
       // =================================================
-      // SEND OTP + EMAIL TO BACKEND
+      // VERIFY OTP WITH BACKEND
       // =================================================
 
-      const response =
-        await fetch(
-          "http://localhost:5000/verify-otp",
-          {
-            method: "POST",
+      const response = await fetch(
+        "http://localhost:5000/verify-otp",
+        {
+          method: "POST",
 
-            headers: {
-              "Content-Type":
-                "application/json",
-            },
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
 
-            body: JSON.stringify({
-              email: cleanEmail,
-              otp: cleanOTP,
-            }),
-          }
-        );
+          body: JSON.stringify({
+            email: cleanEmail,
+            otp: cleanOTP,
+          }),
+        }
+      );
 
       const data =
         await response.json();
@@ -329,7 +430,6 @@ export default function Login() {
         !response.ok ||
         !data.success
       ) {
-
         throw new Error(
           data.message ||
           "Invalid OTP."
@@ -341,7 +441,7 @@ export default function Login() {
       );
 
       // =================================================
-      // FINAL LOGIN
+      // LOGIN SUCCESS
       // =================================================
 
       localStorage.setItem(
@@ -354,22 +454,24 @@ export default function Login() {
         cleanEmail
       );
 
-      // =================================================
-      // SUCCESS
-      // =================================================
+      localStorage.setItem(
+        "moodifyLoginMethod",
+        "otp"
+      );
 
       setMessage(
-        "OTP verified successfully!"
+        "OTP verified successfully! Redirecting..."
       );
 
-      alert(
-        "Login successful!"
-      );
+      // =================================================
+      // GO TO MOOD PAGE
+      // =================================================
 
-      navigate("/mood");
+      setTimeout(() => {
+        navigate("/mood");
+      }, 500);
 
     } catch (error) {
-
       console.error(
         "OTP verification error:",
         error
@@ -381,9 +483,7 @@ export default function Login() {
       );
 
     } finally {
-
       setOtpLoading(false);
-
     }
   };
 
@@ -392,7 +492,6 @@ export default function Login() {
   // =====================================================
 
   const handleResendOTP = async () => {
-
     setError("");
     setMessage("");
     setOtp("");
@@ -401,34 +500,35 @@ export default function Login() {
       email.trim().toLowerCase();
 
     if (!cleanEmail) {
-
       setError(
         "Email is required."
       );
-
       return;
     }
 
     try {
-
       setOtpLoading(true);
 
-      const response =
-        await fetch(
-          "http://localhost:5000/send-otp",
-          {
-            method: "POST",
+      console.log(
+        "Resending OTP to:",
+        cleanEmail
+      );
 
-            headers: {
-              "Content-Type":
-                "application/json",
-            },
+      const response = await fetch(
+        "http://localhost:5000/send-otp",
+        {
+          method: "POST",
 
-            body: JSON.stringify({
-              email: cleanEmail,
-            }),
-          }
-        );
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+
+          body: JSON.stringify({
+            email: cleanEmail,
+          }),
+        }
+      );
 
       const data =
         await response.json();
@@ -442,19 +542,19 @@ export default function Login() {
         !response.ok ||
         !data.success
       ) {
-
         throw new Error(
           data.message ||
           "Failed to resend OTP."
         );
       }
 
+      setOtpSent(true);
+
       setMessage(
         "New OTP sent successfully!"
       );
 
     } catch (error) {
-
       console.error(
         "Resend OTP error:",
         error
@@ -466,9 +566,7 @@ export default function Login() {
       );
 
     } finally {
-
       setOtpLoading(false);
-
     }
   };
 
@@ -486,16 +584,13 @@ export default function Login() {
         email.trim().toLowerCase();
 
       if (!cleanEmail || !password) {
-
         setError(
           "Enter your email and password first."
         );
-
         return;
       }
 
       try {
-
         setResending(true);
 
         const userCredential =
@@ -513,7 +608,6 @@ export default function Login() {
         // -------------------------------------------------
 
         if (user.emailVerified) {
-
           setMessage(
             "Your email is already verified. Please login again."
           );
@@ -536,7 +630,6 @@ export default function Login() {
         );
 
       } catch (error) {
-
         console.error(
           "Resend verification error:",
           error
@@ -548,28 +641,23 @@ export default function Login() {
         );
 
       } finally {
-
         setResending(false);
-
       }
     };
 
   // =====================================================
-  // BACK TO EMAIL + PASSWORD
+  // BACK TO NORMAL LOGIN
   // =====================================================
 
   const handleBack = () => {
-
     setOtpMode(false);
 
     setOtpSent(false);
-
     setOtp("");
 
     setError("");
-
     setMessage("");
-
+    setShowResend(false);
   };
 
   // =====================================================
@@ -620,7 +708,7 @@ export default function Login() {
 
 
         {/* =================================================
-            EMAIL + PASSWORD SCREEN
+            NORMAL LOGIN SCREEN
         ================================================= */}
 
         {!otpMode && (
@@ -640,15 +728,10 @@ export default function Login() {
                 placeholder="you@example.com"
                 value={email}
                 onChange={(e) => {
-
-                  setEmail(
-                    e.target.value
-                  );
-
+                  setEmail(e.target.value);
                   setError("");
                   setMessage("");
                   setShowResend(false);
-
                 }}
                 required
               />
@@ -669,15 +752,10 @@ export default function Login() {
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) => {
-
-                  setPassword(
-                    e.target.value
-                  );
-
+                  setPassword(e.target.value);
                   setError("");
                   setMessage("");
                   setShowResend(false);
-
                 }}
                 required
               />
@@ -707,11 +785,9 @@ export default function Login() {
                       width: "100%",
                     }}
                   >
-
                     {resending
                       ? "Sending..."
                       : "Resend Verification Email"}
-
                   </button>
 
                 )}
@@ -721,20 +797,20 @@ export default function Login() {
             )}
 
 
-            {/* MESSAGE */}
+            {/* SUCCESS */}
 
             {message && (
 
               <div className="auth-success">
-
                 ✅ {message}
-
               </div>
 
             )}
 
 
-            {/* LOGIN BUTTON */}
+            {/* =================================================
+                NORMAL LOGIN BUTTON
+            ================================================= */}
 
             <button
               type="submit"
@@ -748,20 +824,103 @@ export default function Login() {
 
             </button>
 
+
+            {/* =================================================
+                DIVIDER
+            ================================================= */}
+
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                margin: "20px 0",
+                color: "#888",
+              }}
+            >
+
+              <div
+                style={{
+                  flex: 1,
+                  height: "1px",
+                  background: "#ddd",
+                }}
+              />
+
+              <span>
+                OR
+              </span>
+
+              <div
+                style={{
+                  flex: 1,
+                  height: "1px",
+                  background: "#ddd",
+                }}
+              />
+
+            </div>
+
+
+            {/* =================================================
+                LOGIN WITH OTP BUTTON
+            ================================================= */}
+
+            <button
+              type="button"
+              className="auth-submit"
+              onClick={handleOpenOTPLogin}
+              disabled={loading}
+              style={{
+                background: "transparent",
+                color: "inherit",
+                border: "1px solid currentColor",
+              }}
+            >
+
+              Login with OTP
+
+            </button>
+
           </form>
 
         )}
 
 
         {/* =================================================
-            OTP SCREEN
+            OTP LOGIN SCREEN
         ================================================= */}
 
         {otpMode && (
 
           <div>
 
-            {/* EMAIL DISPLAY */}
+            {/* =================================================
+                OTP HEADER
+            ================================================= */}
+
+            <div
+              style={{
+                marginBottom: "20px",
+                textAlign: "center",
+              }}
+            >
+
+              <h2>
+                Login with OTP
+              </h2>
+
+              <p>
+                Enter your email to receive a
+                6-digit OTP.
+              </p>
+
+            </div>
+
+
+            {/* =================================================
+                EMAIL
+            ================================================= */}
 
             <div className="form-group">
 
@@ -771,14 +930,46 @@ export default function Login() {
 
               <input
                 type="email"
+                placeholder="you@example.com"
                 value={email}
-                disabled
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setError("");
+                  setMessage("");
+                  setOtpSent(false);
+                  setOtp("");
+                }}
+                disabled={otpSent}
               />
 
             </div>
 
 
-            {/* OTP MESSAGE */}
+            {/* =================================================
+                SEND OTP BUTTON
+            ================================================= */}
+
+            {!otpSent && (
+
+              <button
+                type="button"
+                className="auth-submit"
+                onClick={handleSendOTP}
+                disabled={otpLoading}
+              >
+
+                {otpLoading
+                  ? "Sending OTP..."
+                  : "Send OTP →"}
+
+              </button>
+
+            )}
+
+
+            {/* =================================================
+                OTP SENT MESSAGE
+            ================================================= */}
 
             {otpSent && !error && (
 
@@ -796,105 +987,123 @@ export default function Login() {
             )}
 
 
-            {/* OTP INPUT */}
+            {/* =================================================
+                OTP INPUT
+            ================================================= */}
 
-            <div className="form-group">
+            {otpSent && (
 
-              <label>
-                Enter OTP
-              </label>
+              <>
 
-              <input
-                type="text"
-                inputMode="numeric"
-                maxLength={6}
-                placeholder="Enter 6-digit OTP"
-                value={otp}
+                <div className="form-group">
 
-                onChange={(e) => {
+                  <label>
+                    Enter OTP
+                  </label>
 
-                  const value =
-                    e.target.value.replace(
-                      /\D/g,
-                      ""
-                    );
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={6}
+                    placeholder="Enter 6-digit OTP"
+                    value={otp}
+                    onChange={(e) => {
 
-                  setOtp(value);
-                  setError("");
+                      const value =
+                        e.target.value.replace(
+                          /\D/g,
+                          ""
+                        );
 
-                }}
+                      setOtp(value);
+                      setError("");
+                      setMessage("");
 
-                required
-              />
+                    }}
+                  />
 
-            </div>
+                </div>
 
 
-            {/* ERROR */}
+                {/* =================================================
+                    ERROR
+                ================================================= */}
 
-            {error && (
+                {error && (
 
-              <div className="auth-error">
+                  <div className="auth-error">
 
-                ⚠️ {error}
+                    ⚠️ {error}
 
-              </div>
+                  </div>
+
+                )}
+
+
+                {/* =================================================
+                    SUCCESS
+                ================================================= */}
+
+                {message && (
+
+                  <div className="auth-success">
+
+                    ✅ {message}
+
+                  </div>
+
+                )}
+
+
+                {/* =================================================
+                    VERIFY OTP
+                ================================================= */}
+
+                <button
+                  type="button"
+                  className="auth-submit"
+                  onClick={handleVerifyOTP}
+                  disabled={
+                    otpLoading ||
+                    otp.length !== 6
+                  }
+                >
+
+                  {otpLoading
+                    ? "Verifying..."
+                    : "Verify OTP →"}
+
+                </button>
+
+
+                {/* =================================================
+                    RESEND OTP
+                ================================================= */}
+
+                <button
+                  type="button"
+                  className="auth-submit"
+                  onClick={handleResendOTP}
+                  disabled={otpLoading}
+                  style={{
+                    marginTop: "10px",
+                  }}
+                >
+
+                  {otpLoading
+                    ? "Sending..."
+                    : "Resend OTP"}
+
+                </button>
+
+              </>
 
             )}
 
 
-            {/* SUCCESS */}
-
-            {message && (
-
-              <div className="auth-success">
-
-                ✅ {message}
-
-              </div>
-
-            )}
-
-
-            {/* VERIFY OTP */}
-
-            <button
-              type="button"
-              className="auth-submit"
-              onClick={handleVerifyOTP}
-              disabled={
-                otpLoading ||
-                otp.length !== 6
-              }
-            >
-
-              {otpLoading
-                ? "Verifying..."
-                : "Verify OTP →"}
-
-            </button>
-
-
-            {/* RESEND OTP */}
-
-            <button
-              type="button"
-              className="auth-submit"
-              onClick={handleResendOTP}
-              disabled={otpLoading}
-              style={{
-                marginTop: "10px",
-              }}
-            >
-
-              {otpLoading
-                ? "Sending..."
-                : "Resend OTP"}
-
-            </button>
-
-
-            {/* BACK */}
+            {/* =================================================
+                BACK TO NORMAL LOGIN
+            ================================================= */}
 
             <button
               type="button"
