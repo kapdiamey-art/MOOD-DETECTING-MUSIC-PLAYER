@@ -1,9 +1,14 @@
 # Environment variables
 .env
+**/.env
 
 # macOS
 .DS_Store
 **/.DS_Store
+
+# Node modules
+node_modules/
+**/node_modules/
 
 # R
 .Rhistory
