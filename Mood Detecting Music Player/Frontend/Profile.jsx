@@ -1,6 +1,5 @@
-import {
-  useNavigate
-} from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 
 export default function Profile() {
@@ -8,18 +7,26 @@ export default function Profile() {
   const navigate = useNavigate();
 
 
-  const savedUser =
-    JSON.parse(
-      localStorage.getItem("moodifyUser")
-    );
+  const [user, setUser] = useState({ name: "User", email: "" });
+
+  useEffect(() => {
+    const token = localStorage.getItem("moodifyToken");
+    if (!token) return;
+    fetch("http://localhost:8000/auth/me", {
+      headers: { "Authorization": `Bearer ${token}` }
+    })
+    .then(r => r.json())
+    .then(data => setUser(data))
+    .catch(err => console.log(err));
+  }, []);
 
 
   const userName =
-    savedUser?.name || "User";
+    user.name;
 
 
   const userEmail =
-    savedUser?.email || "";
+    user.email;
 
 
   const userInitial =

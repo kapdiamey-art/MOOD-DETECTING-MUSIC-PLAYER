@@ -11,17 +11,13 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 from config.database import users_col
 from models.user import UserRegister, UserLogin, UserUpdate
 
-# ── Load environment variables ─────────────────────────────
 load_dotenv()
 
-SECRET_KEY = os.getenv("SECRET_KEY", "temp-secret-key")
-ALGORITHM  = os.getenv("ALGORITHM", "HS256")
-EXPIRE_MIN = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60"))
+SECRET_KEY = os.getenv("SECRET_KEY")
+ALGORITHM  = os.getenv("ALGORITHM")
+EXPIRE_MIN = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
 
-# ── JWT token extractor ────────────────────────────────────
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
-
-# ── Router ─────────────────────────────────────────────────
 router = APIRouter()
 
 
@@ -39,199 +35,107 @@ def verify_password(plain: str, hashed: str) -> bool:
     return pwd_context.verify(plain, hashed)
 
 
-def create_token(data: dict) -> str:
-    """Create a signed JWT token with an expiry."""
-    to_encode = data.copy()
-    expire = datetime.utcnow() + timedelta(minutes=EXPIRE_MIN)
-    to_encode.update({"exp": expire})
-    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+def create_token(data):
+    payload = data.copy()
+    payload["exp"] = datetime.utcnow() + timedelta(minutes=EXPIRE_MIN)
+    return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
 
 async def get_current_user(token: str = Depends(oauth2_scheme)):
-    """
-    Dependency — extracts and validates the JWT token.
-    Any endpoint that needs the logged-in user uses:
-        current_user = Depends(get_current_user)
-    """
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        email: str = payload.get("sub")
-        if email is None:
+        email = payload.get("sub")
+        if not email:
             raise HTTPException(status_code=401, detail="Invalid token")
         user = await users_col.find_one({"email": email})
-        if user is None:
+        if not user:
             raise HTTPException(status_code=401, detail="User not found")
         return user
     except JWTError:
-        raise HTTPException(status_code=401, detail="Invalid or expired token")
+        raise HTTPException(status_code=401, detail="Token expired or invalid")
 
-
-# ══════════════════════════════════════════════════════════
-#  ENDPOINT 1 — REGISTER
-#  POST /auth/register
-#  Used by: Register.jsx
-# ══════════════════════════════════════════════════════════
 
 @router.post("/register")
 async def register(data: UserRegister):
-    # 1. Check passwords match
     if data.password != data.confirmPassword:
-        raise HTTPException(status_code=400, detail="Passwords do not match")
+        raise HTTPException(400, "Passwords do not match")
 
-    # 2. Check email is not already registered
-    existing = await users_col.find_one({"email": data.email})
-    if existing:
-        raise HTTPException(status_code=400, detail="This email is already registered")
+    if await users_col.find_one({"email": data.email}):
+        raise HTTPException(400, "Email already registered")
 
-    # 3. Hash the password (NEVER store plain text)
-    hashed = hash_password(data.password)
-
-    # 4. Build user document
     user = {
-        "name":           data.name,
-        "email":          data.email,
-        "password":       hashed,
+        "name": data.name,
+        "email": data.email,
+        "password": hash_password(data.password),
         "favorite_genre": [],
-        "favorite_mood":  "",
-        "created_at":     datetime.utcnow()
+        "favorite_mood": "",
+        "created_at": datetime.utcnow()
     }
-
-    # 5. Save to MongoDB users collection
     await users_col.insert_one(user)
+    return {"message": "Account created! Please login."}
 
-    return {"message": "Account created successfully! Please login."}
-
-
-# ══════════════════════════════════════════════════════════
-#  ENDPOINT 2 — LOGIN
-#  POST /auth/login
-#  Used by: Login.jsx
-# ══════════════════════════════════════════════════════════
 
 @router.post("/login")
 async def login(data: UserLogin):
-    # 1. Find user by email in MongoDB
     user = await users_col.find_one({"email": data.email})
-    if not user:
-        raise HTTPException(status_code=400, detail="Incorrect email or password")
+    if not user or not verify_password(data.password, user["password"]):
+        raise HTTPException(400, "Incorrect email or password")
 
-    # 2. Verify password against stored hash
-    if not verify_password(data.password, user["password"]):
-        raise HTTPException(status_code=400, detail="Incorrect email or password")
-
-    # 3. Create JWT token (contains user email as identifier)
     token = create_token({"sub": user["email"]})
-
-    # 4. Return token + user info to frontend
     return {
         "access_token": token,
-        "token_type":   "bearer",
-        "user": {
-            "name":  user["name"],
-            "email": user["email"]
-        }
+        "token_type": "bearer",
+        "user": {"name": user["name"], "email": user["email"]}
     }
 
-
-# ══════════════════════════════════════════════════════════
-#  ENDPOINT 3 — FORGOT PASSWORD
-#  POST /auth/forgot-password
-#  Used by: ForgotPassword.jsx
-# ══════════════════════════════════════════════════════════
 
 @router.post("/forgot-password")
 async def forgot_password(data: dict):
     email = data.get("email")
     if not email:
-        raise HTTPException(status_code=400, detail="Email is required")
+        raise HTTPException(400, "Email is required")
+    if not await users_col.find_one({"email": email}):
+        raise HTTPException(404, "No account found with this email")
+    # TODO: hook up email service later
+    return {"message": "Reset link sent if email exists"}
 
-    user = await users_col.find_one({"email": email})
-    if not user:
-        raise HTTPException(status_code=404, detail="No account found with this email")
-
-    # In a real app, you would send a reset email here
-    # For now, we return success (email integration can be added later)
-    return {"message": "If this email exists, a reset link has been sent"}
-
-
-# ══════════════════════════════════════════════════════════
-#  ENDPOINT 4 — LOGOUT
-#  POST /auth/logout
-#  Used by: Profile.jsx (logout button)
-# ══════════════════════════════════════════════════════════
 
 @router.post("/logout")
 async def logout():
-    # JWT is stateless — actual logout happens on frontend
-    # (frontend deletes the token from localStorage)
-    return {"message": "Logged out successfully"}
+    # token cleared on frontend
+    return {"message": "Logged out"}
 
-
-# ══════════════════════════════════════════════════════════
-#  ENDPOINT 5 — GET MY PROFILE
-#  GET /auth/me
-#  Used by: Profile.jsx
-#  Requires: JWT token in header
-# ══════════════════════════════════════════════════════════
 
 @router.get("/me")
-async def get_me(current_user = Depends(get_current_user)):
+async def get_me(current_user=Depends(get_current_user)):
     return {
-        "name":           current_user["name"],
-        "email":          current_user["email"],
+        "name": current_user["name"],
+        "email": current_user["email"],
         "favorite_genre": current_user.get("favorite_genre", []),
-        "favorite_mood":  current_user.get("favorite_mood", ""),
-        "created_at":     str(current_user.get("created_at", ""))
+        "favorite_mood": current_user.get("favorite_mood", ""),
+        "created_at": str(current_user.get("created_at", ""))
     }
 
 
-# ══════════════════════════════════════════════════════════
-#  ENDPOINT 6 — UPDATE MY PROFILE
-#  PUT /auth/me
-#  Used by: Profile.jsx (Edit Profile button)
-#  Requires: JWT token in header
-# ══════════════════════════════════════════════════════════
-
 @router.put("/me")
-async def update_me(data: UserUpdate, current_user = Depends(get_current_user)):
-    # Only update fields that were actually provided (not None)
-    update_data = {k: v for k, v in data.dict().items() if v is not None}
+async def update_me(data: UserUpdate, current_user=Depends(get_current_user)):
+    updates = {k: v for k, v in data.dict().items() if v is not None}
+    if not updates:
+        raise HTTPException(400, "Nothing to update")
+    await users_col.update_one({"email": current_user["email"]}, {"$set": updates})
+    return {"message": "Profile updated"}
 
-    if not update_data:
-        raise HTTPException(status_code=400, detail="No data provided to update")
-
-    await users_col.update_one(
-        {"email": current_user["email"]},
-        {"$set": update_data}
-    )
-    return {"message": "Profile updated successfully"}
-
-
-# ══════════════════════════════════════════════════════════
-#  ENDPOINT 7 — CHANGE PASSWORD
-#  PUT /auth/change-password
-#  Used by: Profile.jsx (Change Password button)
-#  Requires: JWT token in header
-# ══════════════════════════════════════════════════════════
 
 @router.put("/change-password")
-async def change_password(data: dict, current_user = Depends(get_current_user)):
-    old_password = data.get("old_password")
-    new_password = data.get("new_password")
-
-    if not old_password or not new_password:
-        raise HTTPException(status_code=400, detail="Both old and new passwords are required")
-
-    # 1. Verify old password is correct
-    if not verify_password(old_password, current_user["password"]):
-        raise HTTPException(status_code=400, detail="Old password is incorrect")
-
-    # 2. Hash new password
-    hashed_new = hash_password(new_password)
-
-    # 3. Update in MongoDB
+async def change_password(data: dict, current_user=Depends(get_current_user)):
+    old = data.get("old_password")
+    new = data.get("new_password")
+    if not old or not new:
+        raise HTTPException(400, "Both passwords required")
+    if not verify_password(old, current_user["password"]):
+        raise HTTPException(400, "Old password is wrong")
     await users_col.update_one(
         {"email": current_user["email"]},
-        {"$set": {"password": hashed_new}}
+        {"$set": {"password": hash_password(new)}}
     )
-    return {"message": "Password changed successfully"}
+    return {"message": "Password updated"}

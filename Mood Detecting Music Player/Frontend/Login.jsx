@@ -134,6 +134,21 @@ export default function Login() {
         "password"
       );
 
+      //********************get FastAPI token and save it***********************************************************
+      try {
+        const apiRes = await fetch("http://localhost:8000/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: cleanEmail, password: password })
+        });
+        const apiData = await apiRes.json();
+        if (apiData.access_token) {
+          localStorage.setItem("moodifyToken", apiData.access_token);
+        }
+      } catch (err) {
+        console.log("FastAPI token save failed:", err);
+      }
+      
       setMessage(
         "Login successful! Redirecting..."
       );

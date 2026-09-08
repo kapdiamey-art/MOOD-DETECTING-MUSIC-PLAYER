@@ -1,6 +1,40 @@
+import { useState, useEffect } from "react";
+
 import AppLayout from "./AppLayout";
 
 export default function MyMusic() {
+
+  const [stats, setStats] = useState({ liked_songs: 0, playlists: 0, recently_played: 0, listening_hours: 0 });
+
+  // *******************************************c*******************************************
+  // LIKED SONGS STATE — fetched from MongoDB backend via GET /mymusic/liked
+  const [likedSongs, setLikedSongs] = useState([]);
+  // *******************************************c*******************************************
+
+  useEffect(() => {
+    const token = localStorage.getItem("moodifyToken");
+    if (!token) return;
+
+    // Fetch stats
+    fetch("http://localhost:8000/mymusic/stats", {
+      headers: { "Authorization": `Bearer ${token}` }
+    })
+    .then(r => r.json())
+    .then(data => setStats(data))
+    .catch(err => console.log(err));
+
+    // *******************************************c*******************************************
+    // FETCH LIKED SONGS — loads real songs saved to MongoDB
+    fetch("http://localhost:8000/mymusic/liked", {
+      headers: { "Authorization": `Bearer ${token}` }
+    })
+    .then(r => r.json())
+    .then(data => setLikedSongs(Array.isArray(data) ? data : []))
+    .catch(err => console.log("Liked songs fetch error:", err));
+    // *******************************************c*******************************************
+
+  }, []);
+
 
   return (
     <AppLayout>
@@ -20,7 +54,7 @@ export default function MyMusic() {
             Liked Songs
           </div>
           <div className="stat-value">
-            128
+            {stats.liked_songs}
           </div>
         </div>
 
@@ -29,7 +63,7 @@ export default function MyMusic() {
             Playlists
           </div>
           <div className="stat-value">
-            12
+            {stats.playlists}
           </div>
         </div>
 
@@ -38,7 +72,7 @@ export default function MyMusic() {
             Recently Played
           </div>
           <div className="stat-value">
-            46
+            {stats.recently_played}
           </div>
         </div>
 
@@ -47,7 +81,7 @@ export default function MyMusic() {
             Listening Hours
           </div>
           <div className="stat-value">
-            32h
+            {stats.listening_hours}h
           </div>
         </div>
 
@@ -75,6 +109,49 @@ export default function MyMusic() {
         </button>
 
       </div>
+
+      {/* ──────────────────────────────────────────────── */}
+      {/* *******************************************c******************************************* */}
+      {/* LIKED SONGS SECTION — real data from MongoDB backend */}
+      <div className="section-header" style={{ marginTop: "30px" }}>
+        <h2>❤️ Liked Songs</h2>
+        <span className="artist">{likedSongs.length} songs</span>
+      </div>
+
+      {likedSongs.length > 0 ? (
+        <div className="song-grid">
+          {likedSongs.map((song, idx) => (
+            <div className="song-card" key={idx}>
+
+              <div className="song-cover">
+                <div style={{
+                  height: "100%",
+                  display: "grid",
+                  placeItems: "center",
+                  fontSize: "55px"
+                }}>
+                  🎵
+                </div>
+              </div>
+
+              <div className="song-info">
+                <div className="song-title">{song.song_title}</div>
+                <div className="artist">{song.artist}</div>
+                <div style={{ fontSize: "0.8rem", color: "var(--primary)", marginTop: "4px", fontWeight: "600" }}>
+                  {song.mood_tag}
+                </div>
+              </div>
+
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="dashboard-hero" style={{ textAlign: "center", padding: "20px" }}>
+          <p>No liked songs yet. Go to Recommendations and ❤️ your favourite songs!</p>
+        </div>
+      )}
+      {/* *******************************************c******************************************* */}
+      {/* ──────────────────────────────────────────────── */}
 
       <div className="section-header">
         <h2>Your playlists</h2>

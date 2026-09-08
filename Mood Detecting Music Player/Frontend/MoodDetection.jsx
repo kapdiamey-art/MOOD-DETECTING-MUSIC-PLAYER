@@ -32,9 +32,15 @@ export default function MoodDetection() {
     setRecommendations([]);
 
     try {
+      const token = localStorage.getItem("moodifyToken");
+
+      // ── STEP 1: Detect mood ──
       const response = await fetch("http://localhost:8000/mood/detect", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
         body: JSON.stringify({
           text,
           genre:  genre.trim()  || undefined,
@@ -47,16 +53,34 @@ export default function MoodDetection() {
       const data     = await response.json();
       const moodData = MOOD_MAPPING[data.emotion] || MOOD_MAPPING.joy;
 
-      setMood({
+      const detectedMood = {
         emoji:       moodData.emoji,
         name:        moodData.name,
         description: moodData.description,
-        confidence:  Math.round(data.confidence * 100),
+        confidence:  data.confidence,
         gradient:    moodData.gradient,
         color:       moodData.color,
-      });
+      };
 
-      setRecommendations(data.recommendations || []);
+      setMood(detectedMood);
+
+      // ── STEP 2: Fetch recommendations for detected mood ──
+      try {
+        const recoRes = await fetch(
+          `http://localhost:8000/recommendations?mood=${encodeURIComponent(data.mood)}`,
+          {
+            headers: { "Authorization": `Bearer ${token}` }
+          }
+        );
+        if (recoRes.ok) {
+          const recoData = await recoRes.json();
+          setRecommendations(recoData.songs || []);
+        }
+      } catch (recoErr) {
+        console.warn("Could not fetch recommendations:", recoErr);
+        setRecommendations([]);
+      }
+
     } catch (error) {
       console.error(error);
       alert("Error analyzing mood. Make sure the backend is running!");

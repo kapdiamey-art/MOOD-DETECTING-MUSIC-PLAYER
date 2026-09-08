@@ -20,6 +20,11 @@ export default function Recommendations() {
   const [mood, setMood] = useState(null);
   const [songs, setSongs] = useState([]);
 
+  // *******************************************c*******************************************
+  // LIKED SONGS STATE — tracks which songs the user has liked in this session
+  const [likedSongs, setLikedSongs] = useState({});
+  // *******************************************c*******************************************
+
   useEffect(() => {
     // Read data saved by MoodDetection page
     const savedMood  = localStorage.getItem("moodify_mood");
@@ -28,6 +33,42 @@ export default function Recommendations() {
     if (savedMood)  setMood(JSON.parse(savedMood));
     if (savedSongs) setSongs(JSON.parse(savedSongs));
   }, []);
+
+  // *******************************************c*******************************************
+  // LIKE SONG FUNCTION — sends song data to backend MongoDB via POST /recommendations/like
+  const likeSong = async (song, idx) => {
+    const token = localStorage.getItem("moodifyToken");
+    if (!token) { alert("Please login first."); return; }
+
+    // Toggle off if already liked
+    if (likedSongs[idx]) {
+      setLikedSongs(prev => ({ ...prev, [idx]: false }));
+      return;
+    }
+
+    try {
+      const res = await fetch("http://localhost:8000/recommendations/like", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          song_title: song.title,
+          artist:     song.artist,
+          mood_tag:   song.mood_tag || (mood ? mood.name : "Unknown")
+        })
+      });
+
+      if (res.ok || res.status === 400) {
+        // 400 = already liked — still mark as liked in UI
+        setLikedSongs(prev => ({ ...prev, [idx]: true }));
+      }
+    } catch (err) {
+      console.error("Like failed:", err);
+    }
+  };
+  // *******************************************c*******************************************
 
   return (
     <AppLayout>
@@ -183,41 +224,30 @@ export default function Recommendations() {
                     </button>
                   </div>
 
-                  <div className="song-info">
-                    <div className="song-title" style={{ color: isCurrent ? "var(--primary)" : undefined }}>
-                      {song.track_name}
-                    </div>
-                    <div className="artist">{song.artists}</div>
-                    
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "8px" }}>
-                      <span style={{ fontSize: "0.78rem", color: "var(--primary)", fontWeight: "600" }}>
-                        {song.final_score ? `${Math.round(song.final_score * 100)}% Match` : "Recommended"}
-                      </span>
-
-                      <a
-                        href={spotifyLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        title="Open track on Spotify"
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: "4px",
-                          padding: "3px 8px",
-                          borderRadius: "999px",
-                          background: "rgba(30, 215, 96, 0.15)",
-                          color: "#1ed760",
-                          fontSize: "0.72rem",
-                          fontWeight: "600",
-                          textDecoration: "none",
-                          border: "1px solid rgba(30, 215, 96, 0.3)"
-                        }}
-                      >
-                        Spotify ↗
-                      </a>
-                    </div>
+                <div className="song-info">
+                  <div className="song-title">{song.track_name}</div>
+                  <div className="artist">{song.artists}</div>
+                  <div style={{ fontSize: "0.8rem", color: "var(--primary)", marginTop: "4px", fontWeight: "600" }}>
+                    {Math.round(song.final_score * 100)}% Match
                   </div>
+                  {/* *******************************************c******************************************* */}
+                  {/* LIKE BUTTON — saves song to MongoDB backend */}
+                  <button
+                    onClick={() => likeSong(song, idx)}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      fontSize: "1.3rem",
+                      marginTop: "6px",
+                      transition: "transform 0.2s",
+                      transform: likedSongs[idx] ? "scale(1.3)" : "scale(1)"
+                    }}
+                    title={likedSongs[idx] ? "Liked!" : "Like this song"}
+                  >
+                    {likedSongs[idx] ? "❤️" : "🤍"}
+                  </button>
+                  {/* *******************************************c******************************************* */}
                 </div>
               );
             })}

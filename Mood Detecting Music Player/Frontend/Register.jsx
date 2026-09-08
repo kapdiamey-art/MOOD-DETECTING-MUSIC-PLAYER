@@ -335,6 +335,29 @@ export default function Register() {
       );
 
       // =================================================
+      // STEP 2.5
+      // ALSO REGISTER IN FASTAPI BACKEND (MongoDB)
+      // So that Login.jsx can get a JWT token later
+      // =================================================
+
+      try {
+        await fetch("http://localhost:8000/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: name,
+            email: email,
+            password: form.password,
+            confirmPassword: form.confirmPassword
+          })
+        });
+        console.log("Backend registration done.");
+      } catch (backendErr) {
+        // Non-fatal — Firebase account was created successfully
+        console.log("Backend register failed (non-fatal):", backendErr);
+      }
+
+      // =================================================
       // STEP 3
       // SAVE USER INFORMATION
       // =================================================

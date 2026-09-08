@@ -9,10 +9,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
     "firebase": "^12.17.1",
+    "nodemailer": "^10.0.1",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-    "react-router-dom": "^7.18.2"
+    "react-router-dom": "^7.18.2",
+    "twilio": "^6.1.0"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.4",
