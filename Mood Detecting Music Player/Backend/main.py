@@ -6,6 +6,7 @@ from routes.mood import router as mood_router
 from routes.recommendations import router as reco_router
 from routes.mymusic import router as mymusic_router
 from routes.analytics import router as analytics_router
+from routes.spotify import router as spotify_router
 
 # Create FastAPI app
 app = FastAPI(
@@ -27,6 +28,7 @@ app.add_middleware(
 # Register all routers
 app.include_router(auth_router,      prefix="/auth",      tags=["Auth"])
 app.include_router(mood_router,      prefix="/mood",      tags=["Mood"])
+app.include_router(spotify_router,   prefix="/spotify",   tags=["Spotify"])
 app.include_router(reco_router,                           tags=["Recommendations"])
 app.include_router(mymusic_router,   prefix="/mymusic",   tags=["My Music"])
 app.include_router(analytics_router, prefix="/analytics", tags=["Analytics"])

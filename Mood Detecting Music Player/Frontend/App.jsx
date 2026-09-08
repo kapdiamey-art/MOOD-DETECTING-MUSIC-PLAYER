@@ -13,6 +13,7 @@ import Register from "./Register";
 import ForgotPassword from "./ForgotPassword";
 
 import ThemeToggle from "./ThemeToggle";
+import { PlayerProvider } from "./PlayerContext";
 
 import MoodDetection from "./MoodDetection";
 import Recommendations from "./Recommendations";
@@ -40,15 +41,16 @@ export default function App() {
   return (
 
     <BrowserRouter>
+      <PlayerProvider>
 
-      {/* =========================
-          LIGHT / DARK MODE BUTTON
-      ========================= */}
+        {/* =========================
+            LIGHT / DARK MODE BUTTON
+        ========================= */}
 
-      <ThemeToggle />
+        <ThemeToggle />
 
 
-      <Routes>
+        <Routes>
 
         {/* =========================
             PUBLIC PAGES
@@ -146,6 +148,7 @@ export default function App() {
         />
 
       </Routes>
+      </PlayerProvider>
 
     </BrowserRouter>
   );

@@ -612,6 +612,9 @@ def enrich_with_spotify(
 
     recency_scores = []
     spotify_ids = []
+    album_images = []
+    preview_urls = []
+    spotify_urls = []
 
     for _, row in data.iterrows():
 
@@ -623,48 +626,37 @@ def enrich_with_spotify(
         if metadata:
 
             try:
-
                 recency = float(
                     metadata.get(
                         "recency_score",
                         0.5
                     )
                 )
-
             except (
                 ValueError,
                 TypeError
             ):
-
                 recency = 0.5
 
-            recency_scores.append(
-                recency
-            )
-
-            spotify_ids.append(
-                metadata.get(
-                    "spotify_id"
-                )
-            )
+            recency_scores.append(recency)
+            spotify_ids.append(metadata.get("spotify_id"))
+            album_images.append(metadata.get("album_image"))
+            preview_urls.append(metadata.get("preview_url"))
+            spotify_urls.append(metadata.get("spotify_url"))
 
         else:
 
-            recency_scores.append(
-                0.5
-            )
+            recency_scores.append(0.5)
+            spotify_ids.append(None)
+            album_images.append(None)
+            preview_urls.append(None)
+            spotify_urls.append(None)
 
-            spotify_ids.append(
-                None
-            )
-
-    data["recency_score"] = (
-        recency_scores
-    )
-
-    data["spotify_id"] = (
-        spotify_ids
-    )
+    data["recency_score"] = recency_scores
+    data["spotify_id"] = spotify_ids
+    data["album_image"] = album_images
+    data["preview_url"] = preview_urls
+    data["spotify_url"] = spotify_urls
 
     return data
 
@@ -1391,23 +1383,13 @@ def recommend(
     # Spotify recency
     # -----------------------------------------------------
 
-    if use_spotify:
+    candidates[
+        "recency_score"
+    ] = 0.5
 
-        candidates = (
-            enrich_with_spotify(
-                candidates
-            )
-        )
-
-    else:
-
-        candidates[
-            "recency_score"
-        ] = 0.0
-
-        candidates[
-            "spotify_id"
-        ] = None
+    candidates[
+        "spotify_id"
+    ] = None
 
 
     # -----------------------------------------------------
@@ -1633,7 +1615,15 @@ def recommend(
 
         "recency_score",
 
-        "final_score"
+        "final_score",
+
+        "spotify_id",
+
+        "album_image",
+
+        "preview_url",
+
+        "spotify_url"
     ]
 
     result_columns = [
@@ -1642,14 +1632,28 @@ def recommend(
         if column in candidates.columns
     ]
 
-
-    return (
+    top_recs = (
         candidates[
             result_columns
         ]
         .head(n)
         .reset_index(drop=True)
     )
+
+    # Ensure Spotify media metadata columns exist
+    for col in ["album_image", "preview_url", "spotify_url", "spotify_id"]:
+        if col not in top_recs.columns:
+            top_recs[col] = None
+
+    for idx, row in top_recs.iterrows():
+        meta = get_track_metadata(row["track_name"], row["artists"])
+        if meta:
+            top_recs.at[idx, "album_image"] = meta.get("album_image")
+            top_recs.at[idx, "preview_url"] = meta.get("preview_url")
+            top_recs.at[idx, "spotify_url"] = meta.get("spotify_url")
+            top_recs.at[idx, "spotify_id"] = meta.get("spotify_id")
+
+    return top_recs
 
 
 # ---------------------------------------------------------

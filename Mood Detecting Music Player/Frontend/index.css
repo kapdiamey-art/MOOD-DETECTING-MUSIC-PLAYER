@@ -6843,3 +6843,42 @@ html.dark .auth-success {
   color: #6ee7b7;
   border: 1px solid #065f46;
 }
+
+/* =====================================================
+   ACTIVE SONG CARD & MUSIC PLAYER ENHANCEMENTS
+===================================================== */
+
+.song-card-active {
+  border-color: #8b5cf6 !important;
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.35) !important;
+  transform: translateY(-2px);
+}
+
+.song-card:hover .play-small {
+  opacity: 1 !important;
+  transform: scale(1.08) !important;
+}
+
+.play-small {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.play-small:hover {
+  transform: scale(1.15) !important;
+}
+
+.player-play {
+  transition: all 0.2s ease;
+}
+
+.player-play:hover {
+  transform: scale(1.08);
+}
+
+.progress {
+  transition: background 0.2s ease;
+}
+
+.progress:hover .progress-fill {
+  filter: brightness(1.2);
+}

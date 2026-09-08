@@ -3,6 +3,7 @@ import {
   useLocation,
   useNavigate
 } from "react-router-dom";
+import { usePlayer } from "./PlayerContext";
 
 export default function AppLayout({ children }) {
 
@@ -24,6 +25,28 @@ export default function AppLayout({ children }) {
 
   const userInitial =
     userName.charAt(0).toUpperCase();
+
+  // ================= MUSIC PLAYER STATE =================
+  const {
+    currentTrack,
+    isPlaying,
+    currentTime,
+    duration,
+    togglePlay,
+    playNext,
+    playPrev,
+    seek
+  } = usePlayer();
+
+  const formatTime = (seconds) => {
+    if (isNaN(seconds) || seconds === null) return "0:00";
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
+  };
+
+  const progressPercent =
+    duration > 0 ? Math.min(100, Math.max(0, (currentTime / duration) * 100)) : 0;
 
 
   // ================= NAVIGATION =================
@@ -235,39 +258,121 @@ export default function AppLayout({ children }) {
 
       <div className="music-player glass">
 
-        <div className="now-playing">
+        <div className="now-playing" style={{ display: "flex", alignItems: "center", gap: "12px", minWidth: "220px" }}>
 
-          <div className="player-cover">
-            🎵
+          <div
+            className="player-cover"
+            style={{
+              width: "48px",
+              height: "48px",
+              borderRadius: "8px",
+              overflow: "hidden",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: "rgba(255,255,255,0.05)",
+              fontSize: "24px",
+              flexShrink: 0
+            }}
+          >
+            {currentTrack?.album_image ? (
+              <img
+                src={currentTrack.album_image}
+                alt="cover"
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                onError={(e) => {
+                  e.target.style.display = "none";
+                }}
+              />
+            ) : (
+              "🎵"
+            )}
           </div>
 
-          <div>
+          <div style={{ overflow: "hidden", maxWidth: "160px" }}>
 
-            <div className="song-name">
-              Midnight Dreams
+            <div
+              className="song-name"
+              style={{
+                fontSize: "0.92rem",
+                fontWeight: "600",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis"
+              }}
+              title={currentTrack?.track_name}
+            >
+              {currentTrack?.track_name || "No track playing"}
             </div>
 
-            <div className="artist">
-              Luna Waves
+            <div
+              className="artist"
+              style={{
+                fontSize: "0.78rem",
+                color: "var(--muted)",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis"
+              }}
+              title={currentTrack?.artists}
+            >
+              {currentTrack?.artists || "Select a song from Recommendations"}
             </div>
 
           </div>
+
+          {currentTrack && (
+            <a
+              href={
+                currentTrack.spotify_url ||
+                `https://open.spotify.com/search/${encodeURIComponent(
+                  `${currentTrack.track_name} ${currentTrack.artists}`
+                )}`
+              }
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Open track on Spotify"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                padding: "4px 8px",
+                borderRadius: "999px",
+                background: "rgba(30, 215, 96, 0.15)",
+                color: "#1ed760",
+                fontSize: "0.72rem",
+                fontWeight: "700",
+                textDecoration: "none",
+                border: "1px solid rgba(30, 215, 96, 0.3)",
+                flexShrink: 0
+              }}
+            >
+              Spotify ↗
+            </a>
+          )}
 
         </div>
 
 
         <div className="player-controls">
 
-          <button>
-            ↶
+          <button onClick={playPrev} title="Previous song">
+            ⏮
           </button>
 
-          <button className="player-play">
-            ▶
+          <button
+            className="player-play"
+            onClick={togglePlay}
+            title={isPlaying ? "Pause" : "Play"}
+            style={{
+              background: isPlaying ? "#22c55e" : undefined,
+              color: "#fff"
+            }}
+          >
+            {isPlaying ? "❚❚" : "▶"}
           </button>
 
-          <button>
-            ↷
+          <button onClick={playNext} title="Next song">
+            ⏭
           </button>
 
         </div>
@@ -275,23 +380,34 @@ export default function AppLayout({ children }) {
 
         <div className="player-progress">
 
-          <span>
-            1:24
+          <span style={{ fontSize: "0.75rem", minWidth: "32px", textAlign: "right" }}>
+            {formatTime(currentTime)}
           </span>
 
-          <div className="progress">
+          <div
+            className="progress"
+            style={{ cursor: "pointer", position: "relative" }}
+            onClick={(e) => {
+              const rect = e.currentTarget.getBoundingClientRect();
+              const clickX = e.clientX - rect.left;
+              const ratio = Math.max(0, Math.min(1, clickX / rect.width));
+              seek(ratio * duration);
+            }}
+            title="Click to seek"
+          >
 
             <div
               className="progress-fill"
               style={{
-                width: "42%"
+                width: `${progressPercent}%`,
+                transition: "width 0.1s linear"
               }}
             />
 
           </div>
 
-          <span>
-            3:42
+          <span style={{ fontSize: "0.75rem", minWidth: "32px" }}>
+            {formatTime(duration)}
           </span>
 
         </div>

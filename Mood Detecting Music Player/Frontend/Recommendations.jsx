@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import AppLayout from "./AppLayout";
 import { useNavigate } from "react-router-dom";
+import { usePlayer } from "./PlayerContext";
 
 const MOOD_EMOJIS = {
   joy:      "🤩",
@@ -14,6 +15,7 @@ const MOOD_EMOJIS = {
 export default function Recommendations() {
 
   const navigate = useNavigate();
+  const { currentTrack, isPlaying, playTrack, togglePlay, errorMsg } = usePlayer();
 
   const [mood, setMood] = useState(null);
   const [songs, setSongs] = useState([]);
@@ -70,37 +72,155 @@ export default function Recommendations() {
       {/* ── Song List ── */}
       {songs.length > 0 ? (
         <>
-          <div className="section-header">
+          <div className="section-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <h2>Recommended for you</h2>
-            <span className="artist">{songs.length} songs</span>
+            <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+              <span className="artist">{songs.length} songs</span>
+              <button
+                className="primary-btn"
+                style={{ padding: "8px 16px", fontSize: "0.85rem" }}
+                onClick={() => playTrack(songs[0], songs)}
+              >
+                ▶ Play All
+              </button>
+            </div>
           </div>
 
+          {/* Error / skip notice */}
+          {errorMsg && (
+            <div style={{
+              background: "rgba(239,68,68,0.12)",
+              border: "1px solid rgba(239,68,68,0.3)",
+              borderRadius: "10px",
+              padding: "10px 16px",
+              marginBottom: "14px",
+              fontSize: "0.82rem",
+              color: "#f87171",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px"
+            }}>
+              ⚠️ {errorMsg}
+            </div>
+          )}
+
           <div className="song-grid">
-            {songs.map((song, idx) => (
-              <div className="song-card" key={idx}>
+            {songs.map((song, idx) => {
+              const isCurrent = currentTrack?.track_name === song.track_name && currentTrack?.artists === song.artists;
+              const isCurrentPlaying = isCurrent && isPlaying;
+              const hasPreview = !!song.preview_url;
+              const spotifyLink = song.spotify_url || `https://open.spotify.com/search/${encodeURIComponent(`${song.track_name} ${song.artists}`)}`;
 
-                <div className="song-cover">
-                  <div style={{
-                    height: "100%",
-                    display: "grid",
-                    placeItems: "center",
-                    fontSize: "55px"
-                  }}>
-                    🎵
+              return (
+                <div
+                  className={`song-card ${isCurrent ? "song-card-active" : ""}`}
+                  key={idx}
+                  onClick={() => {
+                    if (isCurrent) {
+                      togglePlay();
+                    } else {
+                      playTrack(song, songs);
+                    }
+                  }}
+                  style={{
+                    cursor: "pointer",
+                    position: "relative",
+                    transition: "all 0.2s ease"
+                  }}
+                >
+                  <div className="song-cover" style={{ position: "relative", overflow: "hidden" }}>
+                    {song.album_image ? (
+                      <img
+                        src={song.album_image}
+                        alt={song.track_name}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                          borderRadius: "12px",
+                          display: "block"
+                        }}
+                        onError={(e) => {
+                          e.target.style.display = "none";
+                          e.target.nextSibling.style.display = "grid";
+                        }}
+                      />
+                    ) : null}
+                    <div
+                      style={{
+                        height: "100%",
+                        display: song.album_image ? "none" : "grid",
+                        placeItems: "center",
+                        fontSize: "50px",
+                        background: "rgba(255,255,255,0.04)",
+                        borderRadius: "12px"
+                      }}
+                    >
+                      🎵
+                    </div>
+
+                    <button
+                      className="play-small"
+                      title={hasPreview ? (isCurrentPlaying ? "Pause" : "Play preview") : "No preview – opens Spotify"}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (isCurrent) {
+                          togglePlay();
+                        } else {
+                          playTrack(song, songs);
+                        }
+                      }}
+                      style={{
+                        background: isCurrentPlaying ? "#22c55e" : hasPreview ? undefined : "rgba(30,215,96,0.2)",
+                        color: "#fff",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        boxShadow: "0 4px 12px rgba(0,0,0,0.3)"
+                      }}
+                    >
+                      {isCurrentPlaying ? "❚❚" : hasPreview ? "▶" : "↗"}
+                    </button>
                   </div>
-                  <button className="play-small">▶</button>
-                </div>
 
-                <div className="song-info">
-                  <div className="song-title">{song.track_name}</div>
-                  <div className="artist">{song.artists}</div>
-                  <div style={{ fontSize: "0.8rem", color: "var(--primary)", marginTop: "4px", fontWeight: "600" }}>
-                    {Math.round(song.final_score * 100)}% Match
+                  <div className="song-info">
+                    <div className="song-title" style={{ color: isCurrent ? "var(--primary)" : undefined }}>
+                      {song.track_name}
+                    </div>
+                    <div className="artist">{song.artists}</div>
+                    
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "8px" }}>
+                      <span style={{ fontSize: "0.78rem", color: "var(--primary)", fontWeight: "600" }}>
+                        {song.final_score ? `${Math.round(song.final_score * 100)}% Match` : "Recommended"}
+                      </span>
+
+                      <a
+                        href={spotifyLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        title="Open track on Spotify"
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "4px",
+                          padding: "3px 8px",
+                          borderRadius: "999px",
+                          background: "rgba(30, 215, 96, 0.15)",
+                          color: "#1ed760",
+                          fontSize: "0.72rem",
+                          fontWeight: "600",
+                          textDecoration: "none",
+                          border: "1px solid rgba(30, 215, 96, 0.3)"
+                        }}
+                      >
+                        Spotify ↗
+                      </a>
+                    </div>
                   </div>
                 </div>
-
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           <div className="dashboard-hero" style={{ marginTop: "35px" }}>
