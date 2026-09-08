@@ -205,14 +205,16 @@ export default function AppLayout({ children }) {
 
         <div className="topbar">
 
-          <div className="search">
+          <div className="search-bar">
 
-            <span>
-              🔎
+            <span className="search-icon">
+              🔍
             </span>
 
             <input
-              placeholder="Search music..."
+              type="text"
+              className="search-input"
+              placeholder="Search songs, artists, or playlists..."
             />
 
           </div>

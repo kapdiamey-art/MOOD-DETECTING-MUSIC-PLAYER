@@ -116,7 +116,7 @@ export default function MoodDetection() {
         .md-hero h1 {
           font-size: clamp(2.2rem, 5vw, 3.8rem);
           font-weight: 800;
-          color: #fff;
+          color: var(--text);
           line-height: 1.1;
           letter-spacing: -2px;
           margin-bottom: 14px;
@@ -128,7 +128,7 @@ export default function MoodDetection() {
           background-clip: text;
         }
         .md-hero p {
-          color: rgba(255,255,255,0.45);
+          color: var(--text-secondary);
           font-size: 1.05rem;
           max-width: 500px;
           margin: 0 auto;
@@ -162,10 +162,10 @@ export default function MoodDetection() {
         .md-textarea {
           width: 100%;
           min-height: 140px;
-          background: rgba(255,255,255,0.04);
-          border: 1px solid rgba(255,255,255,0.1);
+          background: var(--input-bg);
+          border: 1px solid var(--input-border);
           border-radius: 16px;
-          color: #fff;
+          color: var(--input-text);
           font-size: 1rem;
           padding: 18px;
           resize: vertical;
@@ -178,14 +178,14 @@ export default function MoodDetection() {
           border-color: rgba(139,92,246,0.5);
           box-shadow: 0 0 0 3px rgba(139,92,246,0.12);
         }
-        .md-textarea::placeholder { color: rgba(255,255,255,0.25); }
+        .md-textarea::placeholder { color: var(--input-placeholder); }
         .md-textarea-footer {
           display: flex;
           justify-content: space-between;
           align-items: center;
           padding: 8px 4px 0;
           font-size: 0.8rem;
-          color: rgba(255,255,255,0.35);
+          color: var(--text-secondary);
         }
 
         /* ── Preference Inputs ── */
@@ -197,10 +197,10 @@ export default function MoodDetection() {
         }
         @media (max-width: 520px) { .md-prefs { grid-template-columns: 1fr; } }
         .md-pref-input {
-          background: rgba(255,255,255,0.04);
-          border: 1px solid rgba(255,255,255,0.08);
+          background: var(--input-bg);
+          border: 1px solid var(--input-border);
           border-radius: 12px;
-          color: #fff;
+          color: var(--input-text);
           font-size: 0.9rem;
           padding: 12px 16px;
           outline: none;
@@ -211,7 +211,7 @@ export default function MoodDetection() {
         .md-pref-input:focus {
           border-color: rgba(139,92,246,0.4);
         }
-        .md-pref-input::placeholder { color: rgba(255,255,255,0.25); }
+        .md-pref-input::placeholder { color: var(--input-placeholder); }
 
         /* ── Analyze button ── */
         .md-analyze-btn {
@@ -290,11 +290,11 @@ export default function MoodDetection() {
         .md-result-name {
           font-size: 1.6rem;
           font-weight: 800;
-          color: #fff;
+          color: var(--text);
           margin-bottom: 4px;
         }
         .md-result-desc {
-          color: rgba(255,255,255,0.45);
+          color: var(--text-secondary);
           font-size: 0.9rem;
           line-height: 1.6;
         }
@@ -302,7 +302,7 @@ export default function MoodDetection() {
           display: flex;
           justify-content: space-between;
           font-size: 0.82rem;
-          color: rgba(255,255,255,0.4);
+          color: var(--muted);
           margin-bottom: 8px;
         }
         .md-conf-track {
@@ -320,9 +320,9 @@ export default function MoodDetection() {
         .md-playlist-btn {
           width: 100%;
           padding: 14px;
-          background: rgba(255,255,255,0.05);
-          border: 1px solid rgba(255,255,255,0.1);
-          color: #fff;
+          background: var(--input-bg);
+          border: 1px solid var(--input-border);
+          color: var(--text);
           border-radius: 12px;
           font-size: 1rem;
           font-weight: 600;
@@ -363,14 +363,69 @@ export default function MoodDetection() {
         .md-feature h3 {
           font-size: 0.95rem;
           font-weight: 700;
-          color: #fff;
+          color: var(--text);
           margin-bottom: 4px;
         }
         .md-feature p {
           font-size: 0.82rem;
-          color: rgba(255,255,255,0.35);
+          color: var(--text-secondary);
           line-height: 1.5;
         }
+        /* ── Light mode overrides (inside same <style> to win cascade) ── */
+        html.light .md-hero h1 { color: #17131f; }
+        html.light .md-hero p { color: #52525b; }
+        html.light .md-badge {
+          color: #7c3aed;
+          background: #f3e8ff;
+          border-color: #ddd6fe;
+        }
+        html.light .md-card {
+          background: #ffffff;
+          border-color: rgba(0,0,0,0.08);
+          box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+        }
+        html.light .md-card-glow {
+          background: radial-gradient(ellipse at top left, rgba(139,92,246,0.04), transparent 60%);
+        }
+        html.light .md-textarea {
+          background: #f9f9fb;
+          border-color: #d4d4d8;
+          color: #17131f;
+        }
+        html.light .md-textarea::placeholder { color: #a1a1aa; }
+        html.light .md-textarea-footer { color: #71717a; }
+        html.light .md-pref-input {
+          background: #f4f4f5;
+          border-color: #d4d4d8;
+          color: #17131f;
+        }
+        html.light .md-pref-input::placeholder { color: #a1a1aa; }
+        html.light .md-result {
+          background: #ffffff;
+          border-color: rgba(0,0,0,0.08);
+          box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        }
+        html.light .md-result-name { color: #17131f; }
+        html.light .md-result-desc { color: #52525b; }
+        html.light .md-conf-label { color: #71717a; }
+        .md-conf-value { color: #ffffff; font-weight: 700; }
+        html.light .md-conf-value { color: #17131f; }
+        html.light .md-conf-track { background: rgba(0,0,0,0.08); }
+        html.light .md-playlist-btn {
+          background: #f4f4f5;
+          border-color: #d4d4d8;
+          color: #17131f;
+        }
+        html.light .md-playlist-btn:hover {
+          background: rgba(139,92,246,0.08);
+          border-color: rgba(139,92,246,0.3);
+        }
+        html.light .md-feature {
+          background: #f4f4f5;
+          border-color: rgba(0,0,0,0.07);
+        }
+        html.light .md-feature h3 { color: #17131f; }
+        html.light .md-feature p  { color: #71717a; }
       `}</style>
 
       {/* Ambient orbs */}
@@ -476,7 +531,7 @@ export default function MoodDetection() {
 
               <div className="md-conf-label">
                 <span>AI Confidence</span>
-                <strong style={{ color: "#fff" }}>{mood.confidence}%</strong>
+                <strong className="md-conf-value">{mood.confidence}%</strong>
               </div>
               <div className="md-conf-track">
                 <div

@@ -67,7 +67,16 @@ img {
   --border: rgba(255, 255, 255, 0.09);
 
   --text: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.5);
   --muted: #92919f;
+
+  --input-bg: rgba(255, 255, 255, 0.06);
+  --input-border: rgba(255, 255, 255, 0.12);
+  --input-text: #ffffff;
+  --input-placeholder: rgba(255, 255, 255, 0.3);
+
+  --surface: rgba(255, 255, 255, 0.04);
+  --surface-border: rgba(255, 255, 255, 0.07);
 
   --purple: #8b5cf6;
   --pink: #ec4899;
@@ -106,8 +115,23 @@ body {
 
 html.light,
 html.light body {
-  background: #f7f7fb;
+  background: #f0f0f8;
   color: #17131f;
+
+  --text: #17131f;
+  --text-secondary: #52525b;
+  --muted: #71717a;
+
+  --card: rgba(255, 255, 255, 0.85);
+  --border: rgba(0, 0, 0, 0.08);
+
+  --input-bg: #ffffff;
+  --input-border: #d4d4d8;
+  --input-text: #17131f;
+  --input-placeholder: #a1a1aa;
+
+  --surface: #ffffff;
+  --surface-border: rgba(0, 0, 0, 0.07);
 }
 
 
@@ -941,32 +965,54 @@ html.light body {
   margin-bottom: 25px;
 }
 
-.search {
+/* =========================================================
+   SEARCH BAR
+========================================================= */
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
   width: 100%;
+  max-width: 440px;
 
-  max-width: 400px;
+  padding: 0 18px;
+  height: 46px;
 
-  min-width: 0;
+  border-radius: 99px;
 
-  position: relative;
+  background: var(--input-bg);
+  border: 1.5px solid var(--input-border);
+
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-.search input {
-  width: 100%;
+.search-bar:focus-within {
+  border-color: rgba(139, 92, 246, 0.5);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.12);
+}
 
-  padding: 13px 18px 13px 42px;
+.search-icon {
+  font-size: 16px;
+  opacity: 0.5;
+  flex-shrink: 0;
+  line-height: 1;
+}
 
-  border-radius: 13px;
-
-  border:
-    1px solid var(--border);
-
-  background:
-    rgba(255, 255, 255, 0.04);
-
-  color: white;
-
+.search-input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
   outline: none;
+  font-size: 0.92rem;
+  color: var(--input-text);
+  font-family: inherit;
+}
+
+.search-input::placeholder {
+  color: var(--input-placeholder);
 }
 
 
@@ -2361,7 +2407,7 @@ html.light body {
   padding: 15px 0;
 
   border-bottom:
-    1px solid rgba(255, 255, 255, 0.06);
+    1px solid var(--surface-border);
 }
 
 .profile-field span,
@@ -2395,12 +2441,12 @@ html.light body {
 
   background: none;
 
-  color: white;
+  color: var(--text);
 
   border: none;
 
   border-bottom:
-    1px solid rgba(255, 255, 255, 0.06);
+    1px solid var(--surface-border);
 
   text-align: left;
 
@@ -3729,19 +3775,27 @@ html.light .topbar {
   border-bottom: 1px solid #e5e7eb !important;
 }
 
-html.light .search {
-  background: #f5f5f5 !important;
-  color: #111827 !important;
-  border: 1px solid #e5e7eb !important;
+html.light .search-bar {
+  background: #ffffff !important;
+  border: 1.5px solid #d4d4d8 !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06) !important;
 }
 
-html.light .search input {
-  background: transparent !important;
+html.light .search-bar:focus-within {
+  border-color: rgba(139, 92, 246, 0.45) !important;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1) !important;
+}
+
+html.light .search-icon {
+  opacity: 0.45 !important;
+}
+
+html.light .search-input {
   color: #111827 !important;
 }
 
-html.light .search input::placeholder {
-  color: #777 !important;
+html.light .search-input::placeholder {
+  color: #9ca3af !important;
 }
 
 html.light .avatar {
@@ -4002,6 +4056,252 @@ html.light .result-title p {
 
 html.light .confidence-heading {
   color: #111827 !important;
+}
+
+
+/* =====================================================
+   LIGHT MODE - PROFILE PAGE
+===================================================== */
+
+html.light .profile-card {
+  background: #ffffff !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.07) !important;
+}
+
+html.light .profile-section {
+  background: #ffffff !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05) !important;
+}
+
+html.light .profile-section h2 {
+  color: #17131f !important;
+}
+
+html.light .profile-main-info h1 {
+  color: #17131f !important;
+}
+
+html.light .profile-main-info p {
+  color: #52525b !important;
+}
+
+html.light .profile-member {
+  color: #7c3aed !important;
+}
+
+html.light .profile-status {
+  color: #16a34a !important;
+}
+
+html.light .profile-edit-btn {
+  background: #f4f4f5 !important;
+  color: #17131f !important;
+  border: 1px solid rgba(0,0,0,0.1) !important;
+}
+
+html.light .profile-field span,
+html.light .profile-preference span {
+  color: #71717a !important;
+}
+
+html.light .profile-field strong,
+html.light .profile-preference strong {
+  color: #17131f !important;
+}
+
+html.light .settings-list button {
+  color: #17131f !important;
+}
+
+html.light .settings-list button b {
+  color: #a1a1aa !important;
+}
+
+html.light .profile-logout {
+  color: #dc2626 !important;
+  background: rgba(220, 38, 38, 0.06) !important;
+  border: 1px solid rgba(220, 38, 38, 0.15) !important;
+}
+
+
+/* =====================================================
+   LIGHT MODE - MOOD DETECTION INLINE CLASSES
+===================================================== */
+
+/* Hero text */
+html.light .md-hero h1 {
+  color: #17131f !important;
+}
+
+html.light .md-hero p {
+  color: #52525b !important;
+}
+
+html.light .md-badge {
+  color: #7c3aed !important;
+  background: #f3e8ff !important;
+  border: 1px solid #ddd6fe !important;
+}
+
+/* Card */
+html.light .md-card {
+  background: #ffffff !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.08) !important;
+}
+
+/* Textarea */
+html.light .md-textarea {
+  background: #f9f9fb !important;
+  border: 1.5px solid #d4d4d8 !important;
+  color: #17131f !important;
+}
+
+html.light .md-textarea:focus {
+  border-color: rgba(139,92,246,0.4) !important;
+}
+
+html.light .md-textarea::placeholder {
+  color: #a1a1aa !important;
+}
+
+html.light .md-textarea-footer {
+  color: #71717a !important;
+}
+
+/* Pref inputs */
+html.light .md-pref-input {
+  background: #f4f4f5 !important;
+  border: 1.5px solid #d4d4d8 !important;
+  color: #17131f !important;
+}
+
+html.light .md-pref-input::placeholder {
+  color: #a1a1aa !important;
+}
+
+html.light .md-pref-input:focus {
+  border-color: rgba(139,92,246,0.4) !important;
+}
+
+/* Result card */
+html.light .md-result {
+  background: #ffffff !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06) !important;
+}
+
+html.light .md-result-name {
+  color: #17131f !important;
+}
+
+html.light .md-result-desc {
+  color: #52525b !important;
+}
+
+html.light .md-conf-label {
+  color: #71717a !important;
+}
+
+html.light .md-conf-track {
+  background: rgba(0,0,0,0.07) !important;
+}
+
+/* Playlist button */
+html.light .md-playlist-btn {
+  background: #f4f4f5 !important;
+  border: 1.5px solid #d4d4d8 !important;
+  color: #17131f !important;
+}
+
+html.light .md-playlist-btn:hover {
+  background: rgba(139,92,246,0.08) !important;
+  border-color: rgba(139,92,246,0.3) !important;
+}
+
+/* Feature strip */
+html.light .md-feature {
+  background: #f9f9fb !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+}
+
+html.light .md-feature h3 {
+  color: #17131f !important;
+}
+
+html.light .md-feature p {
+  color: #71717a !important;
+}
+
+/* Page title / description used by all inner pages */
+html.light .page-title {
+  color: #17131f !important;
+}
+
+html.light .page-description {
+  color: #52525b !important;
+}
+
+/* Dashboard hero / stat cards */
+html.light .dashboard-hero {
+  background: #ffffff !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06) !important;
+}
+
+html.light .dashboard-hero h2 {
+  color: #17131f !important;
+}
+
+html.light .dashboard-hero p {
+  color: #52525b !important;
+}
+
+html.light .stat-card {
+  background: #ffffff !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05) !important;
+}
+
+html.light .stat-label {
+  color: #71717a !important;
+}
+
+html.light .stat-value {
+  color: #17131f !important;
+}
+
+/* Song cards */
+html.light .song-card {
+  background: #ffffff !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05) !important;
+}
+
+html.light .song-title {
+  color: #17131f !important;
+}
+
+/* Section headers */
+html.light .section-header h2 {
+  color: #17131f !important;
+}
+
+/* Analytics card */
+html.light .analytics-card {
+  background: #ffffff !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05) !important;
+}
+
+html.light .analytics-card h2 {
+  color: #17131f !important;
+}
+
+html.light .mood-row span {
+  color: #52525b !important;
 }
 
 
