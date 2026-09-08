@@ -1,5 +1,6 @@
 import os
 import sys
+import pandas as pd
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Optional
@@ -22,11 +23,17 @@ except ImportError as e:
 router = APIRouter()
 
 
+class MoodRequest(BaseModel):
+    text: str
+    genre: Optional[str] = None
+    artist: Optional[str] = None
+
+
 @router.post("/detect")
 def detect_mood(request: MoodRequest):
     if recommend_from_text is None:
         raise HTTPException(status_code=500, detail="Recommendation engine not loaded.")
-    
+
     if not request.text.strip():
         raise HTTPException(status_code=400, detail="Text cannot be empty.")
 
@@ -35,7 +42,7 @@ def detect_mood(request: MoodRequest):
         preferences["genres"] = [request.genre]
     if request.artist:
         preferences["artists"] = [request.artist]
-    
+
     if not preferences:
         preferences = None
 
@@ -44,12 +51,13 @@ def detect_mood(request: MoodRequest):
             request.text,
             n=5,
             preferences=preferences,
-            use_spotify=False
+            use_spotify=True
         )
-        
-        # Convert DataFrame to list of dicts
-        recommendations = recommendations_df.to_dict(orient="records")
-        
+
+        # Clean NaN values so FastAPI can serialize to JSON without error
+        clean_df = recommendations_df.where(pd.notnull(recommendations_df), None)
+        recommendations = clean_df.to_dict(orient="records")
+
         return {
             "emotion": emotion,
             "confidence": confidence,

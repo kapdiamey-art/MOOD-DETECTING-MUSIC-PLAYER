@@ -12,10 +12,10 @@ if RECOMMENDATION_SRC_DIR not in sys.path:
     sys.path.insert(0, RECOMMENDATION_SRC_DIR)
 
 try:
-    from spotify_api import get_track_metadata, search_track
+    from spotify_api import get_track_metadata, search_track  # type: ignore  # noqa: E402
 except ImportError as e:
-    get_track_metadata = None
-    search_track = None
+    get_track_metadata = None  # type: ignore
+    search_track = None  # type: ignore
     print(f"Warning: spotify_api could not be imported: {e}")
 
 router = APIRouter()

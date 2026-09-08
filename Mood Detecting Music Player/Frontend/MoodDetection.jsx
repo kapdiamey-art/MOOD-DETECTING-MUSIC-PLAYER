@@ -57,29 +57,20 @@ export default function MoodDetection() {
         emoji:       moodData.emoji,
         name:        moodData.name,
         description: moodData.description,
-        confidence:  data.confidence,
+        confidence:  Math.floor(data.confidence * 10000) / 100,  // 0.9999 → 99.99
         gradient:    moodData.gradient,
         color:       moodData.color,
       };
 
       setMood(detectedMood);
 
-      // ── STEP 2: Fetch recommendations for detected mood ──
-      try {
-        const recoRes = await fetch(
-          `http://localhost:8000/recommendations?mood=${encodeURIComponent(data.mood)}`,
-          {
-            headers: { "Authorization": `Bearer ${token}` }
-          }
-        );
-        if (recoRes.ok) {
-          const recoData = await recoRes.json();
-          setRecommendations(recoData.songs || []);
-        }
-      } catch (recoErr) {
-        console.warn("Could not fetch recommendations:", recoErr);
-        setRecommendations([]);
-      }
+      // ── STEP 2: Use recommendations from the detect response directly ──
+      const recs = data.recommendations || [];
+      setRecommendations(recs);
+
+      // Save to localStorage immediately so Recommendations page can read them
+      localStorage.setItem("moodify_mood",            JSON.stringify(detectedMood));
+      localStorage.setItem("moodify_recommendations", JSON.stringify(recs));
 
     } catch (error) {
       console.error(error);
@@ -566,11 +557,7 @@ export default function MoodDetection() {
 
               <button
                 className="md-playlist-btn"
-                onClick={() => {
-                  localStorage.setItem("moodify_mood",            JSON.stringify(mood));
-                  localStorage.setItem("moodify_recommendations", JSON.stringify(recommendations));
-                  navigate("/recommendations");
-                }}
+                onClick={() => navigate("/recommendations")}
               >
                 Create My Mood Playlist →
               </button>

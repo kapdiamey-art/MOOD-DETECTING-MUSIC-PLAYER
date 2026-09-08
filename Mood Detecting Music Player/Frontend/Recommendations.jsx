@@ -4,12 +4,12 @@ import { useNavigate } from "react-router-dom";
 import { usePlayer } from "./PlayerContext";
 
 const MOOD_EMOJIS = {
-  joy:      "🤩",
-  sadness:  "😢",
-  anger:    "😡",
-  fear:     "😨",
-  love:     "🥰",
-  surprise: "😲",
+  joy:       "🤩",
+  sadness:   "😢",
+  anger:     "😡",
+  fear:      "😨",
+  love:      "🥰",
+  surprise:  "😲",
 };
 
 export default function Recommendations() {
@@ -20,10 +20,8 @@ export default function Recommendations() {
   const [mood, setMood] = useState(null);
   const [songs, setSongs] = useState([]);
 
-  // *******************************************c*******************************************
   // LIKED SONGS STATE — tracks which songs the user has liked in this session
   const [likedSongs, setLikedSongs] = useState({});
-  // *******************************************c*******************************************
 
   useEffect(() => {
     // Read data saved by MoodDetection page
@@ -34,7 +32,6 @@ export default function Recommendations() {
     if (savedSongs) setSongs(JSON.parse(savedSongs));
   }, []);
 
-  // *******************************************c*******************************************
   // LIKE SONG FUNCTION — sends song data to backend MongoDB via POST /recommendations/like
   const likeSong = async (song, idx) => {
     const token = localStorage.getItem("moodifyToken");
@@ -54,8 +51,8 @@ export default function Recommendations() {
           "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify({
-          song_title: song.title,
-          artist:     song.artist,
+          song_title: song.track_name || song.title,
+          artist:     song.artists || song.artist,
           mood_tag:   song.mood_tag || (mood ? mood.name : "Unknown")
         })
       });
@@ -68,7 +65,6 @@ export default function Recommendations() {
       console.error("Like failed:", err);
     }
   };
-  // *******************************************c*******************************************
 
   return (
     <AppLayout>
@@ -150,7 +146,6 @@ export default function Recommendations() {
               const isCurrent = currentTrack?.track_name === song.track_name && currentTrack?.artists === song.artists;
               const isCurrentPlaying = isCurrent && isPlaying;
               const hasPreview = !!song.preview_url;
-              const spotifyLink = song.spotify_url || `https://open.spotify.com/search/${encodeURIComponent(`${song.track_name} ${song.artists}`)}`;
 
               return (
                 <div
@@ -183,7 +178,7 @@ export default function Recommendations() {
                         }}
                         onError={(e) => {
                           e.target.style.display = "none";
-                          e.target.nextSibling.style.display = "grid";
+                          if (e.target.nextSibling) e.target.nextSibling.style.display = "grid";
                         }}
                       />
                     ) : null}
@@ -224,30 +219,32 @@ export default function Recommendations() {
                     </button>
                   </div>
 
-                <div className="song-info">
-                  <div className="song-title">{song.track_name}</div>
-                  <div className="artist">{song.artists}</div>
-                  <div style={{ fontSize: "0.8rem", color: "var(--primary)", marginTop: "4px", fontWeight: "600" }}>
-                    {Math.round(song.final_score * 100)}% Match
+                  <div className="song-info">
+                    <div className="song-title">{song.track_name}</div>
+                    <div className="artist">{song.artists}</div>
+                    <div style={{ fontSize: "0.8rem", color: "var(--primary)", marginTop: "4px", fontWeight: "600" }}>
+                      {Math.round((song.final_score || 0) * 100)}% Match
+                    </div>
+                    {/* LIKE BUTTON — saves song to MongoDB backend */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        likeSong(song, idx);
+                      }}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                        fontSize: "1.3rem",
+                        marginTop: "6px",
+                        transition: "transform 0.2s",
+                        transform: likedSongs[idx] ? "scale(1.3)" : "scale(1)"
+                      }}
+                      title={likedSongs[idx] ? "Liked!" : "Like this song"}
+                    >
+                      {likedSongs[idx] ? "❤️" : "🤍"}
+                    </button>
                   </div>
-                  {/* *******************************************c******************************************* */}
-                  {/* LIKE BUTTON — saves song to MongoDB backend */}
-                  <button
-                    onClick={() => likeSong(song, idx)}
-                    style={{
-                      background: "none",
-                      border: "none",
-                      cursor: "pointer",
-                      fontSize: "1.3rem",
-                      marginTop: "6px",
-                      transition: "transform 0.2s",
-                      transform: likedSongs[idx] ? "scale(1.3)" : "scale(1)"
-                    }}
-                    title={likedSongs[idx] ? "Liked!" : "Like this song"}
-                  >
-                    {likedSongs[idx] ? "❤️" : "🤍"}
-                  </button>
-                  {/* *******************************************c******************************************* */}
                 </div>
               );
             })}
