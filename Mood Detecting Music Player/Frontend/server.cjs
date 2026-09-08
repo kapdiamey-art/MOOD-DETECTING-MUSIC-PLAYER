@@ -1,441 +1,391 @@
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
-const twilio = require("twilio");
+const nodemailer = require("nodemailer");
 
 dotenv.config();
 
 const app = express();
-
-// ==========================================
-// MIDDLEWARE
-// ==========================================
-
-app.use(cors());
-app.use(express.json());
-
-// ==========================================
-// PORT
-// ==========================================
-
 const PORT = 5000;
 
-// ==========================================
-// CHECK ENVIRONMENT VARIABLES
-// ==========================================
+// =====================================================
+// MIDDLEWARE
+// =====================================================
 
-if (!process.env.TWILIO_ACCOUNT_SID) {
-  console.error(
-    "❌ TWILIO_ACCOUNT_SID is missing in .env"
-  );
-}
-
-if (!process.env.TWILIO_AUTH_TOKEN) {
-  console.error(
-    "❌ TWILIO_AUTH_TOKEN is missing in .env"
-  );
-}
-
-if (!process.env.TWILIO_VERIFY_SERVICE_SID) {
-  console.error(
-    "❌ TWILIO_VERIFY_SERVICE_SID is missing in .env"
-  );
-}
-
-// ==========================================
-// TWILIO CLIENT
-// ==========================================
-
-const twilioClient = twilio(
-  process.env.TWILIO_ACCOUNT_SID,
-  process.env.TWILIO_AUTH_TOKEN
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST"],
+    allowedHeaders: ["Content-Type"],
+  })
 );
 
-// ==========================================
-// TEST SERVER
-// ==========================================
+app.use(express.json());
+
+// =====================================================
+// OTP STORAGE
+// =====================================================
+
+const otpStore = new Map();
+
+const OTP_EXPIRY = 5 * 60 * 1000;
+const MAX_ATTEMPTS = 5;
+
+// =====================================================
+// BREVO SMTP
+// =====================================================
+
+const transporter = nodemailer.createTransport({
+  host: process.env.BREVO_SMTP_HOST,
+  port: Number(process.env.BREVO_SMTP_PORT || 587),
+  secure: false,
+
+  auth: {
+    user: process.env.BREVO_SMTP_USER,
+    pass: process.env.BREVO_SMTP_PASS,
+  },
+
+  tls: {
+    rejectUnauthorized: true,
+  },
+});
+
+// =====================================================
+// CHECK SMTP
+// =====================================================
+
+transporter.verify((error) => {
+  if (error) {
+    console.error("❌ Brevo SMTP connection failed:");
+    console.error(error.message);
+  } else {
+    console.log("✅ Brevo SMTP connection successful.");
+  }
+});
+
+// =====================================================
+// EMAIL VALIDATION
+// =====================================================
+
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+// =====================================================
+// NORMALIZE EMAIL
+// =====================================================
+
+function normalizeEmail(email) {
+  return String(email || "")
+    .trim()
+    .toLowerCase();
+}
+
+// =====================================================
+// GENERATE OTP
+// =====================================================
+
+function generateOTP() {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+// =====================================================
+// TEST ROUTE
+// =====================================================
 
 app.get("/", (req, res) => {
   res.json({
     success: true,
-    message: "Moodify Twilio Backend is running!",
+    message: "Moodify OTP Backend is running!",
   });
 });
 
-// ==========================================
-// PHONE NUMBER VALIDATION
-// ==========================================
-
-function isValidPhone(phone) {
-  return /^\+\d{10,15}$/.test(phone);
-}
-
-// ==========================================
+// =====================================================
 // SEND OTP
-// ==========================================
+// =====================================================
 
 app.post("/send-otp", async (req, res) => {
   try {
-    const { phone } = req.body;
+    const email = normalizeEmail(req.body.email);
 
-    // ------------------------------------------
-    // CHECK PHONE
-    // ------------------------------------------
-
-    if (!phone) {
+    // Validate email
+    if (!email) {
       return res.status(400).json({
         success: false,
-        message: "Phone number is required.",
+        message: "Email is required.",
       });
     }
 
-    // ------------------------------------------
-    // CLEAN PHONE
-    // ------------------------------------------
-
-    const cleanPhone = String(phone).replace(
-      /\s/g,
-      ""
-    );
-
-    console.log(
-      "📱 Sending OTP to:",
-      cleanPhone
-    );
-
-    // ------------------------------------------
-    // VALIDATE PHONE
-    // ------------------------------------------
-
-    if (!isValidPhone(cleanPhone)) {
+    if (!isValidEmail(email)) {
       return res.status(400).json({
         success: false,
-        message:
-          "Invalid phone number. Use country code, for example +919850365997.",
+        message: "Please enter a valid email address.",
       });
     }
 
-    // ------------------------------------------
-    // SEND OTP THROUGH TWILIO VERIFY
-    // ------------------------------------------
+    // Check environment variables
+    if (
+      !process.env.BREVO_SMTP_HOST ||
+      !process.env.BREVO_SMTP_USER ||
+      !process.env.BREVO_SMTP_PASS ||
+      !process.env.EMAIL_FROM
+    ) {
+      console.error("❌ Brevo environment variables are missing.");
 
-    const verification =
-      await twilioClient.verify.v2
-        .services(
-          process.env.TWILIO_VERIFY_SERVICE_SID
-        )
-        .verifications.create({
-          to: cleanPhone,
-          channel: "sms",
-        });
+      return res.status(500).json({
+        success: false,
+        message: "Email server configuration is incomplete.",
+      });
+    }
 
-    console.log(
-      "✅ Twilio status:",
-      verification.status
-    );
+    // Generate OTP
+    const otp = generateOTP();
 
-    console.log(
-      "✅ OTP destination:",
-      cleanPhone
-    );
+    // Store OTP
+    otpStore.set(email, {
+      otp,
+      expiresAt: Date.now() + OTP_EXPIRY,
+      attempts: 0,
+    });
 
-    return res.status(200).json({
+    // Send email
+    await transporter.sendMail({
+      from: `"Moodify" <${process.env.EMAIL_FROM}>`,
+      to: email,
+      subject: "Moodify - Your Login OTP",
+
+      text: `
+Your Moodify login verification OTP is:
+
+${otp}
+
+This OTP will expire in 5 minutes.
+
+If you did not request this OTP, please ignore this email.
+`,
+
+      html: `
+<!DOCTYPE html>
+
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>Moodify OTP</title>
+</head>
+
+<body
+  style="
+    margin:0;
+    padding:0;
+    background:#f5f3ff;
+    font-family:Arial,sans-serif;
+  "
+>
+
+<div
+  style="
+    max-width:500px;
+    margin:40px auto;
+    background:white;
+    padding:30px;
+    border-radius:15px;
+    text-align:center;
+    box-shadow:0 5px 20px rgba(0,0,0,0.08);
+  "
+>
+
+<h1>🎵 Moodify</h1>
+
+<h2>Your Login OTP</h2>
+
+<p>
+Use the following OTP to continue:
+</p>
+
+<div
+  style="
+    font-size:36px;
+    font-weight:bold;
+    letter-spacing:8px;
+    padding:20px;
+    margin:20px 0;
+    background:#f3f0ff;
+    border-radius:10px;
+  "
+>
+${otp}
+</div>
+
+<p>
+This OTP will expire in
+<strong>5 minutes</strong>.
+</p>
+
+<p
+  style="
+    color:#777;
+    font-size:13px;
+  "
+>
+If you did not request this OTP,
+you can safely ignore this email.
+</p>
+
+</div>
+
+</body>
+
+</html>
+`,
+    });
+
+    console.log(`✅ OTP sent to ${email}`);
+
+    return res.json({
       success: true,
-      message:
-        "OTP sent successfully.",
-      status: verification.status,
-      phone: cleanPhone,
+      message: "OTP sent successfully!",
     });
 
   } catch (error) {
-
-    console.error(
-      "❌ SEND OTP ERROR:"
-    );
-
-    console.error(
-      "Code:",
-      error.code
-    );
-
-    console.error(
-      "Message:",
-      error.message
-    );
-
-    // ==========================================
-    // TWILIO TRIAL ACCOUNT
-    // ==========================================
-
-    if (error.code === 21608) {
-      return res.status(403).json({
-        success: false,
-        message:
-          "This phone number is not verified in your Twilio Trial account. Verify this recipient number in Twilio Console first.",
-        twilioCode: error.code,
-      });
-    }
-
-    // ==========================================
-    // INVALID PHONE
-    // ==========================================
-
-    if (
-      error.code === 21211 ||
-      error.code === 60200
-    ) {
-      return res.status(400).json({
-        success: false,
-        message:
-          "The phone number is invalid. Please enter a valid number with country code.",
-        twilioCode: error.code,
-      });
-    }
-
-    // ==========================================
-    // AUTHENTICATION ERROR
-    // ==========================================
-
-    if (error.code === 20003) {
-      return res.status(500).json({
-        success: false,
-        message:
-          "Twilio authentication failed. Check TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN in .env.",
-        twilioCode: error.code,
-      });
-    }
-
-    // ==========================================
-    // SERVICE NOT FOUND
-    // ==========================================
-
-    if (error.code === 20404) {
-      return res.status(500).json({
-        success: false,
-        message:
-          "Twilio Verify Service was not found. Check TWILIO_VERIFY_SERVICE_SID in .env.",
-        twilioCode: error.code,
-      });
-    }
-
-    // ==========================================
-    // GENERAL ERROR
-    // ==========================================
+    console.error("❌ Send OTP error:");
+    console.error(error);
 
     return res.status(500).json({
       success: false,
-      message:
-        error.message ||
-        "Failed to send OTP. Please try again.",
-      twilioCode:
-        error.code || null,
+      message: "Failed to send OTP.",
     });
   }
 });
 
-// ==========================================
+// =====================================================
 // VERIFY OTP
-// ==========================================
+// =====================================================
 
 app.post("/verify-otp", async (req, res) => {
   try {
-    const { phone, otp } = req.body;
+    const email = normalizeEmail(req.body.email);
+    const otp = String(req.body.otp || "").trim();
 
-    // ------------------------------------------
-    // CHECK INPUTS
-    // ------------------------------------------
-
-    if (!phone || !otp) {
+    // Validate email
+    if (!email) {
       return res.status(400).json({
         success: false,
-        message:
-          "Phone number and OTP are required.",
+        message: "Email is required.",
       });
     }
 
-    // ------------------------------------------
-    // CLEAN PHONE
-    // ------------------------------------------
-
-    const cleanPhone = String(phone).replace(
-      /\s/g,
-      ""
-    );
-
-    // ------------------------------------------
-    // VALIDATE PHONE
-    // ------------------------------------------
-
-    if (!isValidPhone(cleanPhone)) {
+    if (!isValidEmail(email)) {
       return res.status(400).json({
         success: false,
-        message:
-          "Invalid phone number.",
+        message: "Invalid email address.",
       });
     }
 
-    // ------------------------------------------
-    // VALIDATE OTP
-    // ------------------------------------------
-
-    const cleanOTP = String(otp).trim();
-
-    if (!/^\d{6}$/.test(cleanOTP)) {
+    // Validate OTP
+    if (!otp) {
       return res.status(400).json({
         success: false,
-        message:
-          "OTP must contain exactly 6 digits.",
+        message: "OTP is required.",
       });
     }
 
-    console.log(
-      "🔐 Checking OTP for:",
-      cleanPhone
-    );
-
-    // ------------------------------------------
-    // VERIFY OTP
-    // ------------------------------------------
-
-    const verificationCheck =
-      await twilioClient.verify.v2
-        .services(
-          process.env.TWILIO_VERIFY_SERVICE_SID
-        )
-        .verificationChecks.create({
-          to: cleanPhone,
-          code: cleanOTP,
-        });
-
-    console.log(
-      "Twilio verification status:",
-      verificationCheck.status
-    );
-
-    // ------------------------------------------
-    // OTP APPROVED
-    // ------------------------------------------
-
-    if (
-      verificationCheck.status ===
-      "approved"
-    ) {
-      console.log(
-        "✅ OTP verified for:",
-        cleanPhone
-      );
-
-      return res.status(200).json({
-        success: true,
-        message:
-          "OTP verified successfully.",
-        phone: cleanPhone,
+    if (!/^\d{6}$/.test(otp)) {
+      return res.status(400).json({
+        success: false,
+        message: "OTP must contain exactly 6 digits.",
       });
     }
 
-    // ------------------------------------------
-    // OTP NOT APPROVED
-    // ------------------------------------------
+    // Get stored OTP
+    const stored = otpStore.get(email);
 
-    return res.status(400).json({
-      success: false,
-      message:
-        "Invalid or expired OTP.",
-      status:
-        verificationCheck.status,
+    if (!stored) {
+      return res.status(400).json({
+        success: false,
+        message: "OTP not found. Please request a new OTP.",
+      });
+    }
+
+    // Check expiry
+    if (Date.now() > stored.expiresAt) {
+      otpStore.delete(email);
+
+      return res.status(400).json({
+        success: false,
+        message: "OTP expired. Please request a new OTP.",
+      });
+    }
+
+    // Check attempts
+    if (stored.attempts >= MAX_ATTEMPTS) {
+      otpStore.delete(email);
+
+      return res.status(429).json({
+        success: false,
+        message:
+          "Too many incorrect attempts. Please request a new OTP.",
+      });
+    }
+
+    // Check OTP
+    if (stored.otp !== otp) {
+      stored.attempts++;
+
+      return res.status(400).json({
+        success: false,
+        message: "Invalid OTP.",
+      });
+    }
+
+    // OTP correct
+    otpStore.delete(email);
+
+    console.log(`✅ OTP verified for ${email}`);
+
+    return res.json({
+      success: true,
+      verified: true,
+      email,
+      message: "OTP verified successfully!",
     });
 
   } catch (error) {
-
-    console.error(
-      "❌ VERIFY OTP ERROR:"
-    );
-
-    console.error(
-      "Code:",
-      error.code
-    );
-
-    console.error(
-      "Message:",
-      error.message
-    );
-
-    // ==========================================
-    // OTP ALREADY USED / EXPIRED
-    // ==========================================
-
-    if (error.code === 20404) {
-      return res.status(400).json({
-        success: false,
-        message:
-          "This OTP has expired or has already been used. Please request a new OTP.",
-        twilioCode: error.code,
-      });
-    }
-
-    // ==========================================
-    // INVALID OTP
-    // ==========================================
-
-    if (
-      error.code === 60202 ||
-      error.code === 60203
-    ) {
-      return res.status(400).json({
-        success: false,
-        message:
-          "Invalid OTP. Please check the code and try again.",
-        twilioCode: error.code,
-      });
-    }
-
-    // ==========================================
-    // AUTH ERROR
-    // ==========================================
-
-    if (error.code === 20003) {
-      return res.status(500).json({
-        success: false,
-        message:
-          "Twilio authentication failed. Check your .env credentials.",
-        twilioCode: error.code,
-      });
-    }
-
-    // ==========================================
-    // GENERAL ERROR
-    // ==========================================
+    console.error("❌ Verify OTP error:");
+    console.error(error);
 
     return res.status(500).json({
       success: false,
-      message:
-        error.message ||
-        "OTP verification failed.",
-      twilioCode:
-        error.code || null,
+      message: "Failed to verify OTP.",
     });
   }
 });
 
-// ==========================================
+// =====================================================
+// CLEAN EXPIRED OTPs
+// =====================================================
+
+setInterval(() => {
+  const now = Date.now();
+
+  for (const [email, data] of otpStore.entries()) {
+    if (now > data.expiresAt) {
+      otpStore.delete(email);
+    }
+  }
+}, 60 * 1000);
+
+// =====================================================
 // START SERVER
-// ==========================================
+// =====================================================
 
 app.listen(PORT, () => {
-  console.log(
-    "=========================================="
-  );
-
-  console.log(
-    `🚀 Moodify backend running at http://localhost:${PORT}`
-  );
-
-  console.log(
-    "📱 SMS OTP service: Twilio Verify"
-  );
-
-  console.log(
-    "=========================================="
-  );
+  console.log("");
+  console.log("==========================================");
+  console.log("🎵 MOODIFY OTP BACKEND");
+  console.log("==========================================");
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`🌐 http://localhost:${PORT}`);
+  console.log("==========================================");
+  console.log("");
 });
