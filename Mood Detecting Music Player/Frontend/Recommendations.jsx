@@ -4,12 +4,12 @@ import { useNavigate } from "react-router-dom";
 import { usePlayer } from "./PlayerContext";
 
 const MOOD_EMOJIS = {
-  joy:       "🤩",
-  sadness:   "😢",
-  anger:     "😡",
-  fear:      "😨",
-  love:      "🥰",
-  surprise:  "😲",
+  joy: "🤩",
+  sadness: "😢",
+  anger: "😡",
+  fear: "😨",
+  love: "🥰",
+  surprise: "😲",
 };
 
 export default function Recommendations() {
@@ -25,10 +25,10 @@ export default function Recommendations() {
 
   useEffect(() => {
     // Read data saved by MoodDetection page
-    const savedMood  = localStorage.getItem("moodify_mood");
+    const savedMood = localStorage.getItem("moodify_mood");
     const savedSongs = localStorage.getItem("moodify_recommendations");
 
-    if (savedMood)  setMood(JSON.parse(savedMood));
+    if (savedMood) setMood(JSON.parse(savedMood));
     if (savedSongs) setSongs(JSON.parse(savedSongs));
   }, []);
 
@@ -51,9 +51,13 @@ export default function Recommendations() {
           "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify({
-          song_title: song.track_name || song.title,
-          artist:     song.artists || song.artist,
-          mood_tag:   song.mood_tag || (mood ? mood.name : "Unknown")
+          song_title:  song.track_name  || song.title,
+          artist:      song.artists     || song.artist,
+          mood_tag:    song.mood_tag    || (mood ? mood.name : "Unknown"),
+          // Playback fields — saved to MongoDB so MyMusic can play songs directly
+          preview_url: song.preview_url || null,
+          album_image: song.album_image || null,
+          spotify_url: song.spotify_url || null,
         })
       });
 

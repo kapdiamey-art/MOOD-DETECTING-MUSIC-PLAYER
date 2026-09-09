@@ -101,6 +101,24 @@ export function PlayerProvider({ children }) {
       } catch {}
     }
 
+    // Save to recently_played in MongoDB whenever a track is played
+    const saveRecentlyPlayed = (t) => {
+      const token = localStorage.getItem("moodifyToken");
+      if (!token || !t) return;
+      fetch("http://localhost:8000/mymusic/recently-played", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          song_title: t.track_name || t.title || "Unknown",
+          artist:     t.artists   || t.artist || "Unknown",
+          mood_tag:   t.mood_tag  || "",
+        })
+      }).catch(() => {}); // silent — never break playback
+    };
+
     // If this track has no preview, auto-skip to the nearest playable one
     if (!track.preview_url) {
       const idx = resolvedPlaylist.findIndex(
@@ -115,7 +133,7 @@ export function PlayerProvider({ children }) {
         const audio = audioRef.current;
         audio.src = next.preview_url;
         audio.currentTime = 0;
-        audio.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
+        audio.play().then(() => { setIsPlaying(true); saveRecentlyPlayed(next); }).catch(() => setIsPlaying(false));
         return;
       } else {
         // No previews anywhere – set track for display, open Spotify
@@ -138,7 +156,7 @@ export function PlayerProvider({ children }) {
     audio.currentTime = 0;
     audio
       .play()
-      .then(() => setIsPlaying(true))
+      .then(() => { setIsPlaying(true); saveRecentlyPlayed(track); })
       .catch((err) => {
         console.warn("Autoplay blocked or playback error:", err);
         setIsPlaying(false);

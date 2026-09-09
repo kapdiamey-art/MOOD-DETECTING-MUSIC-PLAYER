@@ -21,6 +21,13 @@ export default function MoodDetection() {
 
   const navigate = useNavigate();
 
+  const userInitial = (() => {
+    const name = localStorage.getItem("moodifyUserName") || "";
+    const email = localStorage.getItem("moodifyEmail") || "";
+    const effective = name || (email ? email.split("@")[0] : "User");
+    return (effective.trim().charAt(0) || "U").toUpperCase();
+  })();
+
   const detectMood = async () => {
     if (!text.trim()) {
       alert("Please tell us how you are feeling first.");
@@ -461,8 +468,13 @@ export default function MoodDetection() {
           <button onClick={() => navigate("/analytics")}>📊 Analytics</button>
           <button onClick={() => navigate("/profile")}>👤 Profile</button>
         </nav>
-        <div className="mood-user">
-          <div className="mood-avatar">A</div>
+        <div
+          className="mood-user"
+          onClick={() => navigate("/profile")}
+          style={{ cursor: "pointer" }}
+          title="Go to Profile"
+        >
+          <div className="mood-avatar">{userInitial}</div>
         </div>
       </header>
 

@@ -5,6 +5,7 @@ export default function Analytics() {
 
   const [stats,        setStats       ] = useState({ total_sessions: 0, top_mood: "-", songs_played: 0, listening_hours: 0 });
   const [insight,      setInsight     ] = useState("Loading your mood insight...");
+  const [loading,      setLoading     ] = useState(true);
 
   // *******************************************c*******************************************
   // REAL DATA STATES — fetched from backend analytics endpoints
@@ -14,30 +15,74 @@ export default function Analytics() {
 
   useEffect(() => {
     const token = localStorage.getItem("moodifyToken");
-    if (!token) return;
+    if (!token) {
+      setInsight("Please log in to see your analytics.");
+      setLoading(false);
+      return;
+    }
     const h = { "Authorization": `Bearer ${token}` };
 
-    fetch("http://localhost:8000/analytics/stats", { headers: h })
-      .then(r => r.json()).then(setStats).catch(console.log);
-
-    fetch("http://localhost:8000/analytics/insight", { headers: h })
-      .then(r => r.json()).then(d => setInsight(d.insight)).catch(console.log);
+    // Safe fetch: throws if response is not OK so bad JSON error bodies don't overwrite state
+    const safeFetch = (url) =>
+      fetch(url, { headers: h }).then(r => {
+        if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
+        return r.json();
+      });
 
     // *******************************************c*******************************************
-    // FETCH REAL MOOD DISTRIBUTION — replaces hardcoded mood percentages
-    fetch("http://localhost:8000/analytics/mood-distribution", { headers: h })
-      .then(r => r.json())
-      .then(data => { if (Array.isArray(data)) setDistribution(data); })
-      .catch(console.log);
+    // Run all four requests in parallel and handle each independently
+    Promise.allSettled([
+      safeFetch("http://localhost:8000/analytics/stats"),
+      safeFetch("http://localhost:8000/analytics/insight"),
+      safeFetch("http://localhost:8000/analytics/mood-distribution"),
+      safeFetch("http://localhost:8000/analytics/mood-activity"),
+    ]).then(([statsRes, insightRes, distRes, actRes]) => {
 
-    // FETCH REAL MOOD ACTIVITY — replaces hardcoded chart bars
-    fetch("http://localhost:8000/analytics/mood-activity", { headers: h })
-      .then(r => r.json())
-      .then(data => { if (Array.isArray(data)) setActivity(data); })
-      .catch(console.log);
+      // Stats — safely merge only the fields we need so an error body never wipes defaults
+      if (statsRes.status === "fulfilled" && statsRes.value) {
+        const d = statsRes.value;
+        setStats({
+          total_sessions:  d.total_sessions  ?? 0,
+          top_mood:        d.top_mood        ?? "-",
+          songs_played:    d.songs_played    ?? 0,
+          listening_hours: d.listening_hours ?? 0,
+        });
+      } else {
+        console.warn("[Analytics] /stats failed:", statsRes.reason);
+      }
+
+      // Insight
+      if (insightRes.status === "fulfilled" && insightRes.value?.insight) {
+        setInsight(insightRes.value.insight);
+      } else {
+        console.warn("[Analytics] /insight failed:", insightRes.reason);
+        setInsight("Could not load insight. Detect your mood at least once to get started!");
+      }
+
+      // Mood distribution
+      if (distRes.status === "fulfilled" && Array.isArray(distRes.value)) {
+        setDistribution(distRes.value);
+      } else {
+        console.warn("[Analytics] /mood-distribution failed:", distRes.reason);
+      }
+
+      // Mood activity
+      if (actRes.status === "fulfilled" && Array.isArray(actRes.value)) {
+        setActivity(actRes.value);
+      } else {
+        console.warn("[Analytics] /mood-activity failed:", actRes.reason);
+      }
+
+      setLoading(false);
+    });
     // *******************************************c*******************************************
 
   }, []);
+
+  // Compute max sessions once (avoids recalculating inside every map iteration)
+  const maxSessions = activity.length > 0
+    ? Math.max(...activity.map(d => d.sessions))
+    : 1;
 
   return (
     <AppLayout>
@@ -57,7 +102,7 @@ export default function Analytics() {
             Mood Sessions
           </div>
           <div className="stat-value">
-            {stats.total_sessions}
+            {loading ? "—" : stats.total_sessions}
           </div>
         </div>
 
@@ -66,7 +111,7 @@ export default function Analytics() {
             Most Detected
           </div>
           <div className="stat-value">
-            {stats.top_mood}
+            {loading ? "—" : stats.top_mood}
           </div>
         </div>
 
@@ -75,7 +120,7 @@ export default function Analytics() {
             Songs Played
           </div>
           <div className="stat-value">
-            {stats.songs_played}
+            {loading ? "—" : stats.songs_played}
           </div>
         </div>
 
@@ -84,7 +129,7 @@ export default function Analytics() {
             Listening Time
           </div>
           <div className="stat-value">
-            {stats.listening_hours}h
+            {loading ? "—" : `${stats.listening_hours}h`}
           </div>
         </div>
 
@@ -100,31 +145,35 @@ export default function Analytics() {
           {/* REAL ACTIVITY CHART — data from /analytics/mood-activity, with day labels */}
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
             <div className="chart">
-              {activity.length > 0
-                ? activity.map((day, index) => {
-                    const maxSessions = Math.max(...activity.map(d => d.sessions), 1);
-                    const heightPct   = Math.round((day.sessions / maxSessions) * 100);
-                    return (
-                      <div
-                        key={index}
-                        className="chart-bar"
-                        style={{
-                          height:   heightPct > 0 ? `${heightPct}%` : "4px",
-                          opacity:  heightPct > 0 ? 1 : 0.15,
-                          minHeight: "4px"
-                        }}
-                        title={`${day.day}: ${day.sessions} session(s)`}
-                      />
-                    );
-                  })
-                : [55,75,40,90,65,80,58,85].map((h, i) => (
-                    <div key={i} className="chart-bar" style={{ height: `${h}%`, opacity: 0.3 }} />
+              {loading
+                // Faint skeleton bars while loading
+                ? [55,75,40,90,65,80,58,85].map((h, i) => (
+                    <div key={i} className="chart-bar" style={{ height: `${h}%`, opacity: 0.15 }} />
                   ))
-            }
+                : activity.length > 0
+                  ? activity.map((day, index) => {
+                      const heightPct = maxSessions > 0 ? Math.round((day.sessions / maxSessions) * 100) : 0;
+                      return (
+                        <div
+                          key={day.day + index}
+                          className="chart-bar"
+                          style={{
+                            height:    heightPct > 0 ? `${heightPct}%` : "4px",
+                            opacity:   heightPct > 0 ? 1 : 0.15,
+                            minHeight: "4px"
+                          }}
+                          title={`${day.day}: ${day.sessions} session(s)`}
+                        />
+                      );
+                    })
+                  : [55,75,40,90,65,80,58,85].map((h, i) => (
+                      <div key={i} className="chart-bar" style={{ height: `${h}%`, opacity: 0.3 }} />
+                    ))
+              }
             </div>
 
             {/* Day labels row below bars */}
-            {activity.length > 0 && (
+            {activity.length > 0 && !loading && (
               <div style={{
                 display: "flex",
                 justifyContent: "space-around",
@@ -133,9 +182,15 @@ export default function Analytics() {
                 paddingTop: "4px"
               }}>
                 {activity.map((day, i) => (
-                  <span key={i} style={{ textAlign: "center", flex: 1 }}>{day.day}</span>
+                  <span key={day.day + i} style={{ textAlign: "center", flex: 1 }}>{day.day}</span>
                 ))}
               </div>
+            )}
+
+            {!loading && activity.length === 0 && (
+              <p style={{ color: "var(--text-secondary)", fontSize: "0.85rem", textAlign: "center", marginTop: "8px" }}>
+                No activity in the last 8 days. Start detecting your mood!
+              </p>
             )}
           </div>
           {/* *******************************************c******************************************* */}
@@ -149,19 +204,21 @@ export default function Analytics() {
           {/* *******************************************c******************************************* */}
           {/* REAL MOOD DISTRIBUTION — data from /analytics/mood-distribution */}
           <div className="mood-list">
-            {distribution.length > 0
-              ? distribution.map(({ mood, percentage }) => (
-                  <div className="mood-row" key={mood}>
-                    <span>{mood}</span>
-                    <div className="mood-progress">
-                      <span style={{ width: `${percentage}%` }} />
+            {loading
+              ? <p style={{ color: "var(--text-secondary)", fontSize: "0.9rem" }}>Loading…</p>
+              : distribution.length > 0
+                ? distribution.map(({ mood, percentage }) => (
+                    <div className="mood-row" key={mood}>
+                      <span>{mood}</span>
+                      <div className="mood-progress">
+                        <span style={{ width: `${percentage}%` }} />
+                      </div>
+                      <span>{percentage}%</span>
                     </div>
-                    <span>{percentage}%</span>
-                  </div>
-                ))
-              : <p style={{ color: "var(--text-secondary)", fontSize: "0.9rem" }}>
-                  No mood data yet. Detect your mood first!
-                </p>
+                  ))
+                : <p style={{ color: "var(--text-secondary)", fontSize: "0.9rem" }}>
+                    No mood data yet. Detect your mood first!
+                  </p>
             }
           </div>
           {/* *******************************************c******************************************* */}

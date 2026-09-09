@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import {
   Link,
   useLocation,
@@ -11,20 +12,50 @@ export default function AppLayout({ children }) {
   const navigate = useNavigate();
 
   // ================= USER =================
+  const [userInfo, setUserInfo] = useState(() => {
+    const email = localStorage.getItem("moodifyEmail") || "";
+    let name = localStorage.getItem("moodifyUserName");
+    if (!name) {
+      try {
+        const saved = JSON.parse(localStorage.getItem("moodifyUser"));
+        name = saved?.name;
+      } catch {}
+    }
+    return {
+      name: name || (email ? email.split("@")[0] : "User"),
+      email: email
+    };
+  });
 
-  const savedUser =
-    JSON.parse(
-      localStorage.getItem("moodifyUser")
-    );
+  useEffect(() => {
+    const token = localStorage.getItem("moodifyToken");
+    if (!token) return;
+    fetch("http://localhost:8000/auth/me", {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        if (data && (data.email || data.name)) {
+          const localName = localStorage.getItem("moodifyUserName");
+          const isEmailPrefix = data.name && data.email && data.name.toLowerCase() === data.email.split("@")[0].toLowerCase();
+          const resolvedName = (localName && isEmailPrefix) ? localName : (data.name || localName || "User");
 
-  const userName =
-    savedUser?.name || "User";
+          const freshUser = {
+            name: resolvedName,
+            email: data.email || localStorage.getItem("moodifyEmail") || ""
+          };
+          setUserInfo(freshUser);
+          if (freshUser.name) localStorage.setItem("moodifyUserName", freshUser.name);
+          if (freshUser.email) localStorage.setItem("moodifyEmail", freshUser.email);
+          localStorage.setItem("moodifyUser", JSON.stringify(freshUser));
+        }
+      })
+      .catch((err) => console.log("Profile sync error:", err));
+  }, []);
 
-  const userEmail =
-    savedUser?.email || "";
-
-  const userInitial =
-    userName.charAt(0).toUpperCase();
+  const userName = userInfo.name;
+  const userEmail = userInfo.email;
+  const userInitial = (userName.charAt(0) || "U").toUpperCase();
 
   // ================= MUSIC PLAYER STATE =================
   const {
@@ -32,6 +63,8 @@ export default function AppLayout({ children }) {
     isPlaying,
     currentTime,
     duration,
+    volume,
+    setVolume,
     togglePlay,
     playNext,
     playPrev,
@@ -69,15 +102,17 @@ export default function AppLayout({ children }) {
 
 
   // ================= LOGOUT =================
-
   const handleLogout = () => {
-
-    localStorage.removeItem(
-      "moodifyLoggedIn"
-    );
-
+    localStorage.removeItem("moodifyLoggedIn");
+    localStorage.removeItem("moodifyToken");
+    localStorage.removeItem("moodifyUser");
+    localStorage.removeItem("moodifyUserName");
+    localStorage.removeItem("moodifyEmail");
+    localStorage.removeItem("moodifyLoginMethod");
+    localStorage.removeItem("moodify_mood");
+    localStorage.removeItem("moodify_recommendations");
+    localStorage.removeItem("moodify_current_track");
     navigate("/login");
-
   };
 
 
@@ -148,32 +183,16 @@ export default function AppLayout({ children }) {
 
         {/* USER */}
 
+        {/* USER - ONLY FIRST LETTER CIRCULAR AVATAR */}
         <div
           className="top-user"
-
-          onClick={() =>
-            navigate("/profile")
-          }
-
+          onClick={() => navigate("/profile")}
           title={userName}
+          style={{ cursor: "pointer" }}
         >
-
           <div className="top-user-avatar">
             {userInitial}
           </div>
-
-          <div className="top-user-info">
-
-            <strong>
-              {userName}
-            </strong>
-
-            <small>
-              {userEmail}
-            </small>
-
-          </div>
-
         </div>
 
       </nav>
@@ -258,23 +277,9 @@ export default function AppLayout({ children }) {
 
       <div className="music-player glass">
 
-        <div className="now-playing" style={{ display: "flex", alignItems: "center", gap: "12px", minWidth: "220px" }}>
-
-          <div
-            className="player-cover"
-            style={{
-              width: "48px",
-              height: "48px",
-              borderRadius: "8px",
-              overflow: "hidden",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              background: "rgba(255,255,255,0.05)",
-              fontSize: "24px",
-              flexShrink: 0
-            }}
-          >
+        {/* 1. LEFT: NOW PLAYING */}
+        <div className="now-playing">
+          <div className="player-cover">
             {currentTrack?.album_image ? (
               <img
                 src={currentTrack.album_image}
@@ -289,36 +294,20 @@ export default function AppLayout({ children }) {
             )}
           </div>
 
-          <div style={{ overflow: "hidden", maxWidth: "160px" }}>
-
+          <div className="player-track-info">
             <div
-              className="song-name"
-              style={{
-                fontSize: "0.92rem",
-                fontWeight: "600",
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis"
-              }}
-              title={currentTrack?.track_name}
+              className="player-track-title"
+              title={currentTrack?.track_name || "No track playing"}
             >
               {currentTrack?.track_name || "No track playing"}
             </div>
 
             <div
-              className="artist"
-              style={{
-                fontSize: "0.78rem",
-                color: "var(--muted)",
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis"
-              }}
-              title={currentTrack?.artists}
+              className="player-track-artist"
+              title={currentTrack?.artists || "Select a song to play"}
             >
               {currentTrack?.artists || "Select a song from Recommendations"}
             </div>
-
           </div>
 
           {currentTrack && (
@@ -331,85 +320,111 @@ export default function AppLayout({ children }) {
               }
               target="_blank"
               rel="noopener noreferrer"
+              className="player-spotify-link"
               title="Open track on Spotify"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                padding: "4px 8px",
-                borderRadius: "999px",
-                background: "rgba(30, 215, 96, 0.15)",
-                color: "#1ed760",
-                fontSize: "0.72rem",
-                fontWeight: "700",
-                textDecoration: "none",
-                border: "1px solid rgba(30, 215, 96, 0.3)",
-                flexShrink: 0
-              }}
             >
               Spotify ↗
             </a>
           )}
-
         </div>
 
+        {/* 2. CENTER: CONTROLS & SCRUBBER */}
+        <div className="player-center">
+          <div className="player-controls">
+            <button
+              className="player-control-btn"
+              onClick={playPrev}
+              title="Previous song"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
+              </svg>
+            </button>
 
-        <div className="player-controls">
+            <button
+              className={`player-play ${isPlaying ? "playing" : ""}`}
+              onClick={togglePlay}
+              title={isPlaying ? "Pause" : "Play"}
+            >
+              {isPlaying ? (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                </svg>
+              ) : (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style={{ marginLeft: "2px" }}>
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+              )}
+            </button>
 
-          <button onClick={playPrev} title="Previous song">
-            ⏮
-          </button>
-
-          <button
-            className="player-play"
-            onClick={togglePlay}
-            title={isPlaying ? "Pause" : "Play"}
-            style={{
-              background: isPlaying ? "#22c55e" : undefined,
-              color: "#fff"
-            }}
-          >
-            {isPlaying ? "❚❚" : "▶"}
-          </button>
-
-          <button onClick={playNext} title="Next song">
-            ⏭
-          </button>
-
-        </div>
-
-
-        <div className="player-progress">
-
-          <span style={{ fontSize: "0.75rem", minWidth: "32px", textAlign: "right" }}>
-            {formatTime(currentTime)}
-          </span>
-
-          <div
-            className="progress"
-            style={{ cursor: "pointer", position: "relative" }}
-            onClick={(e) => {
-              const rect = e.currentTarget.getBoundingClientRect();
-              const clickX = e.clientX - rect.left;
-              const ratio = Math.max(0, Math.min(1, clickX / rect.width));
-              seek(ratio * duration);
-            }}
-            title="Click to seek"
-          >
-
-            <div
-              className="progress-fill"
-              style={{
-                width: `${progressPercent}%`,
-                transition: "width 0.1s linear"
-              }}
-            />
-
+            <button
+              className="player-control-btn"
+              onClick={playNext}
+              title="Next song"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
+              </svg>
+            </button>
           </div>
 
-          <span style={{ fontSize: "0.75rem", minWidth: "32px" }}>
-            {formatTime(duration)}
-          </span>
+          <div className="player-progress-row">
+            <span className="player-time">
+              {formatTime(currentTime)}
+            </span>
 
+            <div
+              className="player-progress-bar"
+              onClick={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                const clickX = e.clientX - rect.left;
+                const ratio = Math.max(0, Math.min(1, clickX / rect.width));
+                seek(ratio * (duration || 30));
+              }}
+              title="Click to seek"
+            >
+              <div
+                className="player-progress-fill"
+                style={{ width: `${progressPercent}%` }}
+              >
+                <span className="player-progress-thumb" />
+              </div>
+            </div>
+
+            <span className="player-time">
+              {formatTime(duration)}
+            </span>
+          </div>
+        </div>
+
+        {/* 3. RIGHT: VOLUME */}
+        <div className="player-right-actions">
+          <button
+            className="player-vol-icon"
+            onClick={() => setVolume(volume > 0 ? 0 : 0.8)}
+            title={volume === 0 ? "Unmute" : "Mute"}
+          >
+            {volume === 0 ? (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+              </svg>
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+              </svg>
+            )}
+          </button>
+
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            value={volume}
+            onChange={(e) => setVolume(parseFloat(e.target.value))}
+            className="player-vol-slider"
+            title={`Volume: ${Math.round(volume * 100)}%`}
+          />
         </div>
 
       </div>

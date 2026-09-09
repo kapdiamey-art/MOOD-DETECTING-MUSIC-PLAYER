@@ -4,7 +4,8 @@ import { useNavigate } from "react-router-dom";
 import {
   createUserWithEmailAndPassword,
   sendEmailVerification,
-  signOut
+  signOut,
+  updateProfile
 } from "firebase/auth";
 
 import { auth } from "./firebase";
@@ -319,6 +320,15 @@ export default function Register() {
         user.email
       );
 
+      // Set display name in Firebase Auth
+      if (name) {
+        try {
+          await updateProfile(user, { displayName: name });
+        } catch (profileErr) {
+          console.log("Setting display name failed:", profileErr);
+        }
+      }
+
       // =================================================
       // STEP 2
       // SEND FIREBASE EMAIL VERIFICATION
@@ -335,42 +345,13 @@ export default function Register() {
       );
 
       // =================================================
-      // STEP 2.5
-      // ALSO REGISTER IN FASTAPI BACKEND (MongoDB)
-      // So that Login.jsx can get a JWT token later
-      // =================================================
-
-      try {
-        await fetch("http://localhost:8000/auth/register", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: name,
-            email: email,
-            password: form.password,
-            confirmPassword: form.confirmPassword
-          })
-        });
-        console.log("Backend registration done.");
-      } catch (backendErr) {
-        // Non-fatal — Firebase account was created successfully
-        console.log("Backend register failed (non-fatal):", backendErr);
-      }
-
-      // =================================================
       // STEP 3
       // SAVE USER INFORMATION
       // =================================================
 
-      localStorage.setItem(
-        "moodifyUserName",
-        name
-      );
-
-      localStorage.setItem(
-        "moodifyEmail",
-        email
-      );
+      localStorage.setItem("moodifyUserName", name);
+      localStorage.setItem("moodifyEmail", email);
+      localStorage.setItem("moodifyUser", JSON.stringify({ name: name, email: email }));
 
       // User is NOT logged in yet
       localStorage.removeItem(

@@ -42,19 +42,22 @@ async def like_song(data: LikedSong, current_user=Depends(get_current_user)):
     now = datetime.utcnow()
 
     result = await liked_songs_col.insert_one({
-        "user_id": user_id,
-        "song_title": data.song_title,
-        "artist": data.artist,
-        "mood_tag": data.mood_tag,
-        "liked_at": now
+        "user_id":     user_id,
+        "song_title":  data.song_title,
+        "artist":      data.artist,
+        "mood_tag":    data.mood_tag,
+        "preview_url": data.preview_url,
+        "album_image": data.album_image,
+        "spotify_url": data.spotify_url,
+        "liked_at":    now
     })
 
     await recently_played_col.insert_one({
-        "user_id": user_id,
+        "user_id":    user_id,
         "song_title": data.song_title,
-        "artist": data.artist,
-        "mood_tag": data.mood_tag,
-        "played_at": now
+        "artist":     data.artist,
+        "mood_tag":   data.mood_tag,
+        "played_at":  now
     })
 
     return {"message": "Song liked!", "song_id": str(result.inserted_id)}

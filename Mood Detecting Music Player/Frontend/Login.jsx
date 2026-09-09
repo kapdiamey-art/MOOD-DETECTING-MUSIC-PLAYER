@@ -119,35 +119,23 @@ export default function Login() {
         "✅ Email + password login successful"
       );
 
-      localStorage.setItem(
-        "moodifyLoggedIn",
-        "true"
-      );
+      const resolvedName = user.displayName || (localStorage.getItem("moodifyEmail") === cleanEmail ? localStorage.getItem("moodifyUserName") : null) || cleanEmail.split("@")[0];
 
-      localStorage.setItem(
-        "moodifyEmail",
-        cleanEmail
-      );
+      localStorage.setItem("moodifyLoggedIn", "true");
+      localStorage.setItem("moodifyEmail", cleanEmail);
+      localStorage.setItem("moodifyUserName", resolvedName);
+      localStorage.setItem("moodifyUser", JSON.stringify({ name: resolvedName, email: cleanEmail }));
+      localStorage.setItem("moodifyLoginMethod", "password");
 
-      localStorage.setItem(
-        "moodifyLoginMethod",
-        "password"
-      );
-
-      //********************get FastAPI token and save it***********************************************************
+      // *******************************************c*******************************************
+      // FIREBASE ID TOKEN — Authentication handled directly by Firebase
       try {
-        const apiRes = await fetch("http://localhost:8000/auth/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: cleanEmail, password: password })
-        });
-        const apiData = await apiRes.json();
-        if (apiData.access_token) {
-          localStorage.setItem("moodifyToken", apiData.access_token);
-        }
+        const firebaseToken = await user.getIdToken();
+        localStorage.setItem("moodifyToken", firebaseToken);
       } catch (err) {
-        console.log("FastAPI token save failed:", err);
+        console.log("Firebase token retrieval failed:", err);
       }
+      // *******************************************c*******************************************
       
       setMessage(
         "Login successful! Redirecting..."

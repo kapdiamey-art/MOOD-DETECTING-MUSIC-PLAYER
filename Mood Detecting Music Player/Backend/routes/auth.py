@@ -1,116 +1,153 @@
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi.security import OAuth2PasswordBearer
-from jose import JWTError, jwt
+import jwt
+from jwt import PyJWKClient
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
-from passlib.context import CryptContext  # type: ignore
 import os
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+from typing import Optional
 
 from config.database import users_col
 from models.user import UserRegister, UserLogin, UserUpdate
 
 load_dotenv()
 
-SECRET_KEY = os.getenv("SECRET_KEY")
-ALGORITHM  = os.getenv("ALGORITHM")
+# =========================================================================
+# FIREBASE CONFIGURATION & JWKS CLIENT
+# =========================================================================
+FIREBASE_PROJECT_ID = os.getenv("FIREBASE_PROJECT_ID", "myis-f3dd6")
+JWKS_URL = "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com"
+jwks_client = PyJWKClient(JWKS_URL)
+
+SECRET_KEY = os.getenv("SECRET_KEY", "moodify_super_secret_key_change_this")
+ALGORITHM  = os.getenv("ALGORITHM", "HS256")
 EXPIRE_MIN = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "1440"))
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login", auto_error=False)
 router = APIRouter()
 
 
 # ══════════════════════════════════════════════════════════
-#  HELPER FUNCTIONS
+#  HELPER FUNCTIONS FOR FIREBASE TOKEN VERIFICATION
 # ══════════════════════════════════════════════════════════
 
-def hash_password(password: str) -> str:
-    """Hash a plain password using bcrypt via passlib."""
-    return pwd_context.hash(password)
+def decode_firebase_token(token: str) -> dict:
+    """Verify and decode a Firebase ID Token using Google's public JWKS."""
+    signing_key = jwks_client.get_signing_key_from_jwt(token)
+    return jwt.decode(
+        token,
+        signing_key.key,
+        algorithms=["RS256"],
+        audience=FIREBASE_PROJECT_ID,
+        issuer=f"https://securetoken.google.com/{FIREBASE_PROJECT_ID}",
+    )
 
 
-def verify_password(plain: str, hashed: str) -> bool:
-    """Check if a plain password matches a bcrypt hash via passlib."""
-    return pwd_context.verify(plain, hashed)
+async def resolve_user_from_token(token: str) -> Optional[dict]:
+    """
+    Resolves user identity from a Firebase ID token.
+    Falls back to legacy JWT for development/testing if needed.
+    """
+    if not token:
+        return None
 
+    # 1. Verify via Firebase ID Token (Primary Authentication)
+    try:
+        payload = decode_firebase_token(token)
+        uid = payload.get("user_id") or payload.get("sub")
+        email = payload.get("email", "")
+        name = payload.get("name") or (email.split("@")[0] if email else "User")
 
-def create_token(data):
-    payload = data.copy()
-    payload["exp"] = datetime.utcnow() + timedelta(minutes=EXPIRE_MIN)
-    return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+        profile = None
+        if users_col is not None:
+            profile = await users_col.find_one({"$or": [{"firebase_uid": uid}, {"email": email}]})
 
+        return {
+            "_id": uid,
+            "uid": uid,
+            "email": email,
+            "name": (profile.get("name") if profile else None) or name,
+            "favorite_genre": profile.get("favorite_genre", []) if profile else [],
+            "favorite_mood": profile.get("favorite_mood", "") if profile else "",
+            "created_at": str(profile.get("created_at", "")) if profile else ""
+        }
+    except Exception:
+        pass
 
-async def get_current_user(token: str = Depends(oauth2_scheme)):
+    # 2. Fallback to local JWT (For internal dev/tests)
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         email = payload.get("sub")
         if not email:
-            raise HTTPException(status_code=401, detail="Invalid token")
-        user = await users_col.find_one({"email": email})
-        if not user:
-            raise HTTPException(status_code=401, detail="User not found")
-        return user
-    except JWTError:
-        raise HTTPException(status_code=401, detail="Token expired or invalid")
+            return None
+        user = await users_col.find_one({"email": email}) if users_col is not None else None
+        if user:
+            return user
+        return {
+            "_id": email,
+            "uid": email,
+            "email": email,
+            "name": email.split("@")[0],
+            "favorite_genre": [],
+            "favorite_mood": "",
+            "created_at": ""
+        }
+    except Exception:
+        return None
 
+
+async def get_current_user(token: str = Depends(oauth2_scheme)):
+    """FastAPI dependency to extract the currently authenticated user."""
+    if not token:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    user = await resolve_user_from_token(token)
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+    return user
+
+
+# ══════════════════════════════════════════════════════════
+#  ENDPOINTS
+# ══════════════════════════════════════════════════════════
 
 @router.post("/register")
 async def register(data: UserRegister):
-    if data.password != data.confirmPassword:
-        raise HTTPException(400, "Passwords do not match")
-
-    if await users_col.find_one({"email": data.email}):
-        raise HTTPException(400, "Email already registered")
-
-    user = {
-        "name": data.name,
-        "email": data.email,
-        "password": hash_password(data.password),
-        "favorite_genre": [],
-        "favorite_mood": "",
-        "created_at": datetime.utcnow()
+    """
+    Account registration is handled directly by Firebase Auth on the client.
+    User credentials and passwords are not stored in MongoDB.
+    """
+    return {
+        "message": "Registration is handled directly by Firebase Auth.",
+        "firebase_managed": True
     }
-    await users_col.insert_one(user)
-    return {"message": "Account created! Please login."}
 
 
 @router.post("/login")
 async def login(data: UserLogin):
-    user = await users_col.find_one({"email": data.email})
-    if not user or not verify_password(data.password, user["password"]):
-        raise HTTPException(400, "Incorrect email or password")
-
-    token = create_token({"sub": user["email"]})
+    """
+    Account authentication is handled directly by Firebase Auth on the client.
+    """
     return {
-        "access_token": token,
-        "token_type": "bearer",
-        "user": {"name": user["name"], "email": user["email"]}
+        "message": "Authentication is handled directly by Firebase Auth.",
+        "firebase_managed": True
     }
 
 
 @router.post("/forgot-password")
 async def forgot_password(data: dict):
-    email = data.get("email")
-    if not email:
-        raise HTTPException(400, "Email is required")
-    if not await users_col.find_one({"email": email}):
-        raise HTTPException(404, "No account found with this email")
-    # TODO: hook up email service later
-    return {"message": "Reset link sent if email exists"}
+    return {"message": "Password reset is handled directly via Firebase Auth."}
 
 
 @router.post("/logout")
 async def logout():
-    # token cleared on frontend
     return {"message": "Logged out"}
 
 
 @router.get("/me")
 async def get_me(current_user=Depends(get_current_user)):
     return {
-        "name": current_user["name"],
-        "email": current_user["email"],
+        "name": current_user.get("name", "User"),
+        "email": current_user.get("email", ""),
         "favorite_genre": current_user.get("favorite_genre", []),
         "favorite_mood": current_user.get("favorite_mood", ""),
         "created_at": str(current_user.get("created_at", ""))
@@ -119,23 +156,25 @@ async def get_me(current_user=Depends(get_current_user)):
 
 @router.put("/me")
 async def update_me(data: UserUpdate, current_user=Depends(get_current_user)):
+    """Update profile preferences in MongoDB (no passwords stored)."""
     updates = {k: v for k, v in data.dict().items() if v is not None}
     if not updates:
         raise HTTPException(400, "Nothing to update")
-    await users_col.update_one({"email": current_user["email"]}, {"$set": updates})
+
+    uid = str(current_user["_id"])
+    email = current_user.get("email", "")
+
+    if users_col is not None:
+        await users_col.update_one(
+            {"$or": [{"firebase_uid": uid}, {"email": email}]},
+            {"$set": {**updates, "firebase_uid": uid, "email": email, "updated_at": datetime.utcnow()}},
+            upsert=True
+        )
     return {"message": "Profile updated"}
 
 
 @router.put("/change-password")
 async def change_password(data: dict, current_user=Depends(get_current_user)):
-    old = data.get("old_password")
-    new = data.get("new_password")
-    if not old or not new:
-        raise HTTPException(400, "Both passwords required")
-    if not verify_password(old, current_user["password"]):
-        raise HTTPException(400, "Old password is wrong")
-    await users_col.update_one(
-        {"email": current_user["email"]},
-        {"$set": {"password": hash_password(new)}}
-    )
-    return {"message": "Password updated"}
+    return {
+        "message": "Passwords are managed securely by Firebase. Please use Firebase password reset."
+    }
