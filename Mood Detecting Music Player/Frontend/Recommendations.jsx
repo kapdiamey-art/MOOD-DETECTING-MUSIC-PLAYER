@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import AppLayout from "./AppLayout";
 import { useNavigate } from "react-router-dom";
 import { usePlayer } from "./PlayerContext";
 
@@ -71,7 +70,7 @@ export default function Recommendations() {
   };
 
   return (
-    <AppLayout>
+      <>
 
       <h1 className="page-title">
         Made for your mood ✨
@@ -278,6 +277,6 @@ export default function Recommendations() {
         </div>
       )}
 
-    </AppLayout>
+    </>
   );
 }

@@ -1,5 +1,3 @@
-import AppLayout from "./AppLayout";
-
 const categories = [
   ["🔥", "Trending"],
   ["😊", "Feel Good"],
@@ -12,7 +10,7 @@ const categories = [
 export default function Discover() {
 
   return (
-    <AppLayout>
+      <>
 
       <h1 className="page-title">
         Discover 🎵
@@ -76,6 +74,6 @@ export default function Discover() {
 
       </div>
 
-    </AppLayout>
+    </>
   );
 }

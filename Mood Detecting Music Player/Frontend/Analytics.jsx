@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import AppLayout from "./AppLayout";
 
 export default function Analytics() {
 
@@ -85,7 +84,7 @@ export default function Analytics() {
     : 1;
 
   return (
-    <AppLayout>
+      <>
 
       <h1 className="page-title">
         Your Mood Journey 📊
@@ -235,6 +234,6 @@ export default function Analytics() {
       </div>
       {/* *******************************************c******************************************* */}
 
-    </AppLayout>
+    </>
   );
 }

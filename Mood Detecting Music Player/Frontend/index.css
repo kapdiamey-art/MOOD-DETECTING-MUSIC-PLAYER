@@ -35,9 +35,27 @@ body {
 button,
 input,
 textarea,
-select {
+select,
+option {
   font-family: inherit;
   max-width: 100%;
+}
+
+select,
+select option {
+  color: var(--text);
+  background: var(--input-bg);
+}
+
+select option {
+  color: var(--text);
+  background: var(--bg);
+}
+
+select:focus,
+select option:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--mood-primary) 40%, transparent);
 }
 
 button {
@@ -60,6 +78,8 @@ img {
 ========================================================= */
 
 :root {
+  --mood-primary: #8b5cf6;
+  --mood-secondary: #ec4899;
   --bg: #07070d;
   --bg2: #0d0c17;
 
@@ -715,7 +735,7 @@ html.light body {
 
   min-height: 100vh;
 
-  overflow-x: hidden;
+  overflow-x: visible;
 }
 
 
@@ -741,7 +761,7 @@ html.light body {
 
   width: 100% !important;
 
-  height: 94px;
+  min-height: 94px;
 
   display: flex;
 
@@ -761,6 +781,13 @@ html.light body {
     1px solid rgba(255, 255, 255, 0.08);
 
   box-sizing: border-box;
+
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.top-navigation::-webkit-scrollbar {
+  display: none;
 }
 
 .top-logo {
@@ -7162,5 +7189,215 @@ html.light .player-progress-bar {
   .now-playing {
     width: auto;
     max-width: 160px;
+  }
+}
+
+/* Mood-adaptive accents are intentionally limited to colour and motion. */
+.app-layout::before { content: ""; position: fixed; inset: -25%; pointer-events: none; z-index: -1; background: radial-gradient(circle at 80% 10%, color-mix(in srgb, var(--mood-primary) 16%, transparent), transparent 32%), radial-gradient(circle at 10% 75%, color-mix(in srgb, var(--mood-secondary) 12%, transparent), transparent 28%); animation: moodDrift 14s ease-in-out infinite alternate; }
+.primary-btn, .top-logo-icon { background: linear-gradient(135deg, var(--mood-primary), var(--mood-secondary)); }
+@keyframes moodDrift { to { transform: translate3d(2%, -1%, 0) scale(1.03); } }
+.journal-page, .journey-page { max-width: 1100px; margin: 0 auto; padding: 28px 0 110px; }
+.journal-heading h1, .journey-page h1 { margin: 6px 0; font-size: clamp(2rem, 5vw, 3.2rem); }
+.journal-heading p, .journey-page > p { color: var(--text-secondary); }
+.eyebrow { color: var(--mood-primary); font-size: .76rem; font-weight: 800; letter-spacing: .14em; margin: 0; }
+.journal-grid { display: grid; grid-template-columns: 1fr 1.1fr; gap: 18px; margin-top: 26px; }
+.journal-card { padding: 24px; border-radius: 20px; }.journal-card h2 { margin-top: 0; }
+.mood-calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+.calendar-day { min-height: 62px; border: 1px solid var(--input-border); border-radius: 12px; background: var(--input-bg); color: var(--text); cursor: pointer; display: grid; place-items: center; }.calendar-day b { font-size: 1.25rem; }.calendar-day.selected { outline: 2px solid var(--mood-primary); }.calendar-key, .journal-empty { color: var(--text-secondary); font-size: .9rem; }
+.journal-entry { display: flex; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--input-border); }.journal-entry:last-child { border: 0; }.journal-entry p { margin: 6px 0; }.journal-entry time, .journal-entry small { color: var(--text-secondary); display: block; font-size: .78rem; }.journal-emoji { font-size: 1.6rem; }
+.journal-list-card { min-height: 420px; }
+.journal-list-header { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+.journal-list-header h2 { margin: 0; }
+.show-all-button { border: 1px solid var(--input-border); border-radius: 999px; background: transparent; color: var(--text); padding: 8px 14px; cursor: pointer; transition: background 220ms ease, transform 220ms ease; }
+.show-all-button:hover { background: var(--surface); transform: translateY(-2px); }
+.journal-entry-list { display: grid; gap: 0; margin-top: 16px; }
+.journal-entry-copy { min-width: 0; }
+.journal-modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(3px); display: flex; align-items: center; justify-content: center; z-index: 99; }
+.journal-modal { width: min(680px, calc(100vw - 48px)); max-height: min(560px, calc(100vh - 96px)); overflow-y: auto; background: var(--bg); color: var(--text); border-radius: 24px; border: 1px solid var(--input-border); box-shadow: 0 24px 80px rgba(0,0,0,0.8); padding: 24px; }
+.journal-modal-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; border-bottom: 1px solid var(--input-border); padding-bottom: 12px; }
+.journal-modal-header h3 { margin: 8px 0 0; font-size: 1.4rem; }
+.journal-modal-close { width: 36px; height: 36px; border-radius: 50%; background: var(--surface); color: var(--text); border: 1px solid var(--input-border); font-size: 1.2rem; cursor: pointer; }
+.journal-modal-list { margin-top: 12px; }
+.journey-controls { margin-top: 24px; padding: 22px; border-radius: 20px; display: flex; align-items: end; gap: 16px; flex-wrap: wrap; }.journey-controls label { display: grid; gap: 7px; color: var(--text-secondary); }.journey-controls select { min-width: 170px; padding: 11px; border-radius: 10px; color: var(--text); background: var(--input-bg); border: 1px solid var(--input-border); }.journey-arrow { font-size: 2rem; color: var(--mood-primary); }.journey-songs { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin-top: 22px; }.journey-song { color: var(--text); border: 1px solid var(--input-border); text-align: left; padding: 16px; border-radius: 16px; cursor: pointer; }.journey-song span, .journey-song small { display: block; color: var(--text-secondary); font-size: .75rem; }.journey-song strong { display: block; margin: 7px 0 3px; }
+.companion { position: fixed; right: 24px; bottom: 104px; z-index: 30; }
+.companion-toggle { width: 56px; height: 56px; border: 0; border-radius: 50%; color: white; font-size: 1.4rem; cursor: pointer; background: linear-gradient(135deg, var(--mood-primary), var(--mood-secondary)); box-shadow: 0 12px 32px color-mix(in srgb, var(--mood-primary) 36%, transparent); transition: transform 240ms ease, box-shadow 240ms ease; }
+.companion-toggle:hover { transform: translateY(-2px) scale(1.04); box-shadow: 0 14px 42px color-mix(in srgb, var(--mood-primary) 50%, transparent); }
+.companion-panel {
+  position: fixed;
+  right: 24px;
+  bottom: 144px;
+  width: min(420px, calc(100vw - 48px));
+  max-height: min(560px, calc(100vh - 170px));
+  padding: 0;
+  border-radius: 24px;
+  box-shadow: 0 22px 80px rgba(0,0,0,0.8), inset 0 0 0 1px rgba(255,255,255,0.05);
+  backdrop-filter: blur(14px);
+  background: linear-gradient(180deg, rgba(30,32,49,0.98), rgba(15,18,26,0.98));
+  color: var(--text);
+  border: 1px solid var(--input-border);
+  overflow: hidden;
+}
+.companion-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px;
+  background: rgba(255,255,255,0.04);
+  border-bottom: 1px solid var(--input-border);
+}
+.companion-title-wrap { display: flex; align-items: center; gap: 12px; }
+.companion-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--mood-primary);
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--input-border);
+  font-size: 1.1rem;
+}
+.companion-title-text strong { display: block; font-size: 1.14rem; color: var(--text); }
+.companion-title-text small { display: block; color: var(--text-secondary); margin-top: 3px; font-size: 0.72rem; }
+.companion-close { background: transparent; color: var(--text); border: 0; font-size: 1.8rem; line-height: 1; cursor: pointer; padding: 8px; }
+.companion-close:hover { color: var(--mood-secondary); }
+.companion-messages { height: min(260px, 42vh); overflow-y: auto; padding: 14px 16px; background: rgba(0,0,0,0.12); }
+.companion-message-row { display: flex; width: 100%; margin: 7px 0; }
+.companion-message-row.user { justify-content: flex-end; }
+.companion-message-row.assistant { justify-content: flex-start; }
+.companion-bubble {
+  display: inline-block;
+  max-width: min(92%, 360px);
+  padding: 11px 14px;
+  border-radius: 16px 16px 16px 4px;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+}
+.companion-bubble.user {
+  border-radius: 16px 16px 4px 16px;
+  background: linear-gradient(135deg, var(--mood-primary), var(--mood-secondary));
+  color: white;
+  border: none;
+}
+.companion-bubble.assistant { background: var(--surface); }
+.companion-message-row:first-child .companion-bubble { border-radius: 16px 16px 16px 4px; }
+.companion-form { display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: rgba(255,255,255,0.035); border-top: 1px solid var(--input-border); }
+.companion-form input { flex: 1; min-width: 0; padding: 11px 12px; border-radius: 12px; color: var(--text); background: var(--input-bg); border: 1px solid var(--input-border); outline: none; }
+.companion-form input::placeholder { color: var(--input-placeholder); }
+.companion-form button { border: 0; border-radius: 12px; padding: 11px 16px; color: white; background: linear-gradient(135deg, var(--mood-primary), var(--mood-secondary)); font-weight: 800; cursor: pointer; }
+.companion-form button:disabled { opacity: 0.8; cursor: not-allowed; }
+@media (max-width: 700px) { .journal-grid { grid-template-columns: 1fr; }.journey-controls { align-items: stretch; }.journey-controls label, .journey-controls select, .journey-controls .primary-btn { width: 100%; }.journey-arrow { display: none; }.companion { right: 16px; bottom: 88px; } .companion-panel { right: 16px; left: 16px; width: auto; } }
+
+/* Make detected moods immediately visible, including pages with local styles. */
+/* Mood-state gradient surfaces and animated ambience. */
+body[data-mood="joy"] { background-image: radial-gradient(circle at 15% 10%, rgba(245,158,11,.24), transparent 32%), radial-gradient(circle at 85% 20%, rgba(249,115,22,.18), transparent 30%); }
+body[data-mood="sadness"] { background-image: radial-gradient(circle at 15% 10%, rgba(37,99,235,.28), transparent 34%), radial-gradient(circle at 85% 20%, rgba(79,70,229,.18), transparent 30%); }
+body[data-mood="anger"] { background-image: radial-gradient(circle at 15% 10%, rgba(239,68,68,.26), transparent 34%), radial-gradient(circle at 85% 20%, rgba(249,115,22,.18), transparent 30%); }
+body[data-mood="love"] { background-image: radial-gradient(circle at 15% 10%, rgba(236,72,153,.26), transparent 34%), radial-gradient(circle at 85% 20%, rgba(139,92,246,.18), transparent 30%); }
+body[data-mood="fear"] { background-image: radial-gradient(circle at 15% 10%, rgba(76,29,149,.35), transparent 34%), radial-gradient(circle at 85% 20%, rgba(124,58,237,.20), transparent 30%); }
+body[data-mood="surprise"] { background-image: radial-gradient(circle at 15% 10%, rgba(6,182,212,.28), transparent 34%), radial-gradient(circle at 85% 20%, rgba(168,85,247,.20), transparent 30%); }
+
+body[data-mood="joy"] .app-layout::before,
+body[data-mood="joy"] .mood-page::before {
+  background-image: radial-gradient(circle, rgba(255, 221, 120, 0.26) 0 2px, transparent 3px), radial-gradient(circle, rgba(255, 255, 255, 0.82) 0 1px, transparent 2px);
+  background-size: 50px 50px, 34px 34px;
+  background-position: 0 0, 18px 20px;
+  animation: joyParticles 5s linear infinite;
+}
+
+body[data-mood="sadness"] .app-layout::before,
+body[data-mood="sadness"] .mood-page::before {
+  background-image: repeating-linear-gradient(110deg, transparent, transparent 9px, rgba(160, 184, 255, 0.72) 10px);
+  background-size: 80px 80px;
+  filter: blur(0.2px);
+  opacity: 0.55;
+  animation: rainFall 1.8s linear infinite;
+}
+
+body[data-mood="love"] .app-layout::before,
+body[data-mood="love"] .mood-page::before {
+  background-image: radial-gradient(circle, rgba(255, 167, 206, 0.86) 0 2px, transparent 3px), radial-gradient(circle, rgba(255, 198, 233, 0.9) 0 2px, transparent 3px);
+  background-size: 54px 54px, 72px 72px;
+  background-position: 0 0, 12px 22px;
+  animation: loveFloat 4s ease-in-out infinite alternate;
+}
+
+body[data-mood="anger"] .app-layout::before,
+body[data-mood="anger"] .mood-page::before {
+  background-image: radial-gradient(circle, rgba(248, 113, 113, 0.75), transparent 2px);
+  background-size: 32px 32px;
+  opacity: 0.55;
+  animation: angerPulse 900ms ease-in-out infinite alternate;
+}
+
+body[data-mood="fear"] .app-layout::before,
+body[data-mood="fear"] .mood-page::before {
+  background-image: radial-gradient(circle at 50% 50%, rgba(138, 92, 246, 0.45), transparent), radial-gradient(circle, rgba(67, 56, 202, 0.48), transparent);
+  filter: blur(8px);
+  opacity: 0.72;
+  animation: fearBreath 2.8s ease-in-out infinite;
+}
+
+body[data-mood="surprise"] .app-layout::before,
+body[data-mood="surprise"] .mood-page::before {
+  background-image: radial-gradient(circle, rgba(34, 211, 238, 0.8), transparent 4px), radial-gradient(circle, rgba(236, 72, 153, 0.8), transparent 4px);
+  background-size: 46px 46px, 62px 62px;
+  background-position: 0 0, 20px 14px;
+  animation: burstPop 1.4s steps(3) infinite;
+}
+
+@keyframes joyParticles { 50% { transform: scale(1.04); filter: blur(1px); } }
+@keyframes rainFall { to { background-position: 0 60px; } }
+@keyframes loveFloat { from { transform: translateY(0); } to { transform: translateY(-12px); } }
+@keyframes angerPulse { from { transform: scale(1); opacity: 0.45; } to { transform: scale(1.08); opacity: 0.86; } }
+@keyframes fearBreath { 50% { filter: blur(12px); opacity: 0.95; } }
+@keyframes burstPop { 50% { transform: scale(1.12); filter: blur(1px); } }
+
+.md-analyze-btn { background: linear-gradient(135deg, var(--mood-primary), var(--mood-secondary)) !important; }
+.md-badge, .md-hero h1 span { color: var(--mood-primary) !important; }
+
+/* On phones the companion becomes a readable bottom sheet, not a narrow popup. */
+@media (max-width: 700px) {
+  .companion-panel { position: fixed !important; left: 12px !important; right: 12px !important; bottom: 76px !important; width: auto !important; max-width: none !important; box-sizing: border-box; }
+  .companion-messages { height: min(220px, 34vh); }
+}
+.typing-indicator {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 12px 16px;
+}
+
+.typing-indicator span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: companionTyping 1.2s infinite ease-in-out;
+}
+
+.typing-indicator span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.typing-indicator span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes companionTyping {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+
+  30% {
+    transform: translateY(-4px);
+    opacity: 1;
   }
 }

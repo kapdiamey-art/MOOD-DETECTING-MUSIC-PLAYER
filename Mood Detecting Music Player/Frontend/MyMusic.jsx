@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 
-import AppLayout from "./AppLayout";
 import { usePlayer } from "./PlayerContext";
 
 export default function MyMusic() {
@@ -58,7 +57,7 @@ export default function MyMusic() {
 
 
   return (
-    <AppLayout>
+      <>
 
       <h1 className="page-title">
         Your Music ❤️
@@ -281,6 +280,6 @@ export default function MyMusic() {
 
       </div>
 
-    </AppLayout>
+    </>
   );
 }

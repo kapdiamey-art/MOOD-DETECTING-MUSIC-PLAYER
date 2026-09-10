@@ -42,7 +42,8 @@ SONGS_PATH = os.path.join(
 # ---------------------------------------------------------
 
 songs = pd.read_csv(
-    SONGS_PATH
+    SONGS_PATH,
+    low_memory=True
 )
 
 

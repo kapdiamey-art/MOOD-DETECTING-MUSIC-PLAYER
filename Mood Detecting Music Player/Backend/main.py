@@ -1,5 +1,8 @@
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
+load_dotenv()
 
 from routes.auth import router as auth_router
 from routes.mood import router as mood_router
@@ -7,6 +10,7 @@ from routes.recommendations import router as reco_router
 from routes.mymusic import router as mymusic_router
 from routes.analytics import router as analytics_router
 from routes.spotify import router as spotify_router
+from routes.companion import router as companion_router
 
 # Create FastAPI app
 app = FastAPI(
@@ -32,6 +36,7 @@ app.include_router(spotify_router,   prefix="/spotify",   tags=["Spotify"])
 app.include_router(reco_router,                           tags=["Recommendations"])
 app.include_router(mymusic_router,   prefix="/mymusic",   tags=["My Music"])
 app.include_router(analytics_router, prefix="/analytics", tags=["Analytics"])
+app.include_router(companion_router, prefix="/companion", tags=["Companion"])
 
 # Root endpoint
 @app.get("/", tags=["Health"])

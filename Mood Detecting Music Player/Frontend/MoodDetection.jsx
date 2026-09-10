@@ -1,6 +1,7 @@
 import { useState } from "react";
 import AppLayout from "./AppLayout";
 import { useNavigate } from "react-router-dom";
+import { applyMoodTheme } from "./moodTheme";
 
 const MOOD_MAPPING = {
   joy:      { emoji: "🤩", name: "Joyful",    description: "You're radiating happiness and positive energy!",    gradient: "linear-gradient(135deg,#f59e0b,#ef4444)", color: "#f59e0b" },
@@ -18,6 +19,7 @@ export default function MoodDetection() {
   const [mood,            setMood           ] = useState(null);
   const [recommendations, setRecommendations] = useState([]);
   const [loading,         setLoading        ] = useState(false);
+  const [inlineMessage,   setInlineMessage  ] = useState("");
 
   const navigate = useNavigate();
 
@@ -30,10 +32,11 @@ export default function MoodDetection() {
 
   const detectMood = async () => {
     if (!text.trim()) {
-      alert("Please tell us how you are feeling first.");
+      setInlineMessage("Please tell us how you are feeling first.");
       return;
     }
 
+    setInlineMessage("");
     setLoading(true);
     setMood(null);
     setRecommendations([]);
@@ -58,6 +61,14 @@ export default function MoodDetection() {
       if (!response.ok) throw new Error("Failed to detect mood");
 
       const data     = await response.json();
+      if (data.status === "invalid") {
+        setInlineMessage(data.message || "Please enter a meaningful sentence describing how you feel.");
+        return;
+      }
+      if (data.emotion === "neutral") {
+        setInlineMessage("Your mood is unclear right now. Try describing how you feel in a little more detail.");
+        return;
+      }
       const moodData = MOOD_MAPPING[data.emotion] || MOOD_MAPPING.joy;
 
       const detectedMood = {
@@ -67,9 +78,11 @@ export default function MoodDetection() {
         confidence:  Math.floor(data.confidence * 10000) / 100,  // 0.9999 → 99.99
         gradient:    moodData.gradient,
         color:       moodData.color,
+        emotion:     data.emotion,
       };
 
       setMood(detectedMood);
+      applyMoodTheme(data.emotion);
 
       // ── STEP 2: Use recommendations from the detect response directly ──
       const recs = data.recommendations || [];
@@ -81,7 +94,7 @@ export default function MoodDetection() {
 
     } catch (error) {
       console.error(error);
-      alert("Error analyzing mood. Make sure the backend is running!");
+      setInlineMessage("Error analyzing mood. Make sure the backend is running!");
     } finally {
       setLoading(false);
     }
@@ -234,6 +247,19 @@ export default function MoodDetection() {
           border-color: rgba(139,92,246,0.4);
         }
         .md-pref-input::placeholder { color: var(--input-placeholder); }
+
+        /* ── Inline feedback message ── */
+        .md-inline-message {
+          margin-top: 14px;
+          padding: 12px 16px;
+          border-radius: 14px;
+          border: 1px solid rgba(139,92,246,0.36);
+          color: var(--text);
+          background: rgba(139,92,246,0.10);
+          font-size: 0.92rem;
+          line-height: 1.55;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.16);
+        }
 
         /* ── Analyze button ── */
         .md-analyze-btn {
@@ -466,6 +492,8 @@ export default function MoodDetection() {
           <button onClick={() => navigate("/discover")}>🔎 Discover</button>
           <button onClick={() => navigate("/my-music")}>❤️ My Music</button>
           <button onClick={() => navigate("/analytics")}>📊 Analytics</button>
+          <button onClick={() => navigate("/journal")}>📔 Journal</button>
+          <button onClick={() => navigate("/journey")}>✨ Journey</button>
           <button onClick={() => navigate("/profile")}>👤 Profile</button>
         </nav>
         <div
@@ -540,6 +568,12 @@ export default function MoodDetection() {
               <>✨ Analyze My Mood</>
             )}
           </button>
+
+          {inlineMessage && (
+            <div className="md-inline-message">
+              {inlineMessage}
+            </div>
+          )}
 
           {/* ── RESULT ── */}
           {mood && (

@@ -96,6 +96,10 @@ export default function AppLayout({ children }) {
 
     ["📊", "Analytics", "/analytics"],
 
+    ["📔", "Journal", "/journal"],
+
+    ["✨", "Journey", "/journey"],
+
     ["👤", "Profile", "/profile"]
 
   ];

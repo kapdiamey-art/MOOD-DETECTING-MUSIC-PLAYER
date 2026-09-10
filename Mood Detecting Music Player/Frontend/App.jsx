@@ -21,6 +21,11 @@ import Discover from "./Discover";
 import MyMusic from "./MyMusic";
 import Analytics from "./Analytics";
 import Profile from "./Profile";
+import MoodJournal from "./MoodJournal";
+import MoodJourney from "./MoodJourney";
+import Companion from "./Companion";
+import { applyMoodTheme } from "./moodTheme";
+import { useEffect } from "react";
 
 
 function ProtectedRoute({ children }) {
@@ -37,6 +42,7 @@ function ProtectedRoute({ children }) {
 
 
 export default function App() {
+  useEffect(() => { applyMoodTheme(localStorage.getItem("moodify_theme_emotion")); }, []);
 
   return (
 
@@ -48,6 +54,7 @@ export default function App() {
         ========================= */}
 
         <ThemeToggle />
+        <Companion />
 
 
         <Routes>
@@ -94,7 +101,9 @@ export default function App() {
           path="/recommendations"
           element={
             <ProtectedRoute>
-              <Recommendations />
+              <AppLayout>
+                <Recommendations />
+              </AppLayout>
             </ProtectedRoute>
           }
         />
@@ -103,7 +112,9 @@ export default function App() {
           path="/discover"
           element={
             <ProtectedRoute>
-              <Discover />
+              <AppLayout>
+                <Discover />
+              </AppLayout>
             </ProtectedRoute>
           }
         />
@@ -112,7 +123,9 @@ export default function App() {
           path="/my-music"
           element={
             <ProtectedRoute>
-              <MyMusic />
+              <AppLayout>
+                <MyMusic />
+              </AppLayout>
             </ProtectedRoute>
           }
         />
@@ -121,21 +134,45 @@ export default function App() {
           path="/analytics"
           element={
             <ProtectedRoute>
-              <Analytics />
+              <AppLayout>
+                <Analytics />
+              </AppLayout>
             </ProtectedRoute>
           }
         />
 
-      <Route
-  path="/profile"
-  element={
-    <ProtectedRoute>
-      <AppLayout>
-        <Profile />
-      </AppLayout>
-    </ProtectedRoute>
-  }
-/>
+        <Route
+          path="/journal"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <MoodJournal />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/journey"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <MoodJourney />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <Profile />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
 
 
         {/* =========================
