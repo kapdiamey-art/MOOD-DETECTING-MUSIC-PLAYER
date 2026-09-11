@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { usePlayer } from "./PlayerContext";
+import VinylPlayer from "./VinylPlayer";
+import AudioVisualizer from "./AudioVisualizer";
 
 const MOOD_EMOJIS = {
   joy: "🤩",
@@ -73,40 +75,91 @@ export default function Recommendations() {
       <>
 
       <h1 className="page-title">
-        Made for your mood ✨
+        Made for your mood
       </h1>
 
       <p className="page-description">
         Your AI-powered soundtrack for this moment.
       </p>
 
-      {/* ── Mood Summary Hero ── */}
-      <div className="dashboard-hero">
+      {/* ── Compact, Polished Mood Spotlight Hero ── */}
+      <div className="enhanced-hero">
+        <div className="hero-content-split">
+          {/* Left Side: Mood Text & CTA Group (45–48% width) */}
+          <div className="hero-text-col">
+            <div className="hero-mood-badge">
+              <span className="badge-emoji">{mood ? `${MOOD_EMOJIS[mood.name.toLowerCase()] ?? "🎵"}` : "🎵"}</span>
+              <span className="badge-text">{mood ? `Detected Mood: ${mood.name}` : "Your Playlist"}</span>
+              {isPlaying && <span className="hero-eq-bars"><span></span><span></span><span></span><span></span></span>}
+            </div>
 
-        <h2>
-          {mood
-            ? `${MOOD_EMOJIS[mood.name.toLowerCase()] ?? "🎵"} You seem ${mood.name}`
-            : "🎵 Your Mood Playlist"
-          }
-        </h2>
+            <h2 className="hero-heading">
+              {mood
+                ? `Soundtrack for your ${mood.name} vibe`
+                : "Your Personal Mood Playlist"
+              }
+            </h2>
 
-        <p>
-          {mood
-            ? `${mood.description} (AI Confidence: ${mood.confidence}%)`
-            : "We've selected music to match your current emotional state."
-          }
-        </p>
+            <p className="hero-desc">
+              {mood
+                ? mood.description
+                : "We've selected music to match your current emotional state."
+              }
+            </p>
 
-        {!mood && (
-          <button
-            className="primary-btn"
-            style={{ marginTop: "16px" }}
-            onClick={() => navigate("/mood")}
-          >
-            ← Detect My Mood First
-          </button>
-        )}
+            {mood?.confidence && (
+              <div className="hero-ai-confidence">
+                <span className="confidence-spark">✦</span>
+                <span>AI Confidence: {mood.confidence}%</span>
+              </div>
+            )}
 
+            <div className="hero-cta-row">
+              {songs.length > 0 && (
+                <button
+                  type="button"
+                  className="primary-btn hero-play-all-btn"
+                  onClick={() => playTrack(songs[0], songs)}
+                >
+                  ▶ Play All Tracks
+                </button>
+              )}
+
+              {!mood && (
+                <button
+                  type="button"
+                  className="primary-btn"
+                  onClick={() => navigate("/mood")}
+                >
+                  ← Detect My Mood First
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Right Side: Naturally Integrated Featured Track & Artwork (50–52% width) */}
+          <div className="hero-featured-player">
+            <div className="featured-sleeve-stage">
+              <VinylPlayer size={138} variant="sleeve" interactive={true} />
+            </div>
+            <div className="featured-track-meta">
+              <div className="featured-track-badge-row">
+                <span className="featured-track-badge">
+                  {isPlaying ? "NOW PLAYING" : "FEATURED TRACK"}
+                </span>
+              </div>
+              <div className="featured-track-title" title={currentTrack?.track_name || songs[0]?.track_name || "Select a song"}>
+                {currentTrack?.track_name || songs[0]?.track_name || "Select a song"}
+              </div>
+              <div className="featured-track-artist" title={currentTrack?.artists || songs[0]?.artists || "Moodify Playlist"}>
+                {currentTrack?.artists || songs[0]?.artists || "Moodify Playlist"}
+              </div>
+              <div className="featured-vis-wrap">
+                <AudioVisualizer height={24} mode="bars" glowColor="#f59e0b" />
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* ── Song List ── */}

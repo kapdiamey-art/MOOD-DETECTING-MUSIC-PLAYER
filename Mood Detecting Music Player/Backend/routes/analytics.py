@@ -8,27 +8,36 @@ from routes.auth import get_current_user
 router = APIRouter()
 
 
+def _build_user_filter(current_user: dict) -> dict:
+    uid = str(current_user.get("_id", ""))
+    email = current_user.get("email", "")
+    if uid and email and email != uid:
+        return {"$or": [{"user_id": uid}, {"user_id": email}]}
+    return {"user_id": uid or email}
+
+
 @router.get("/stats")
 async def get_stats(current_user=Depends(get_current_user)):
     if mood_sessions_col is None or liked_songs_col is None or recently_played_col is None:
         return {"total_sessions": 0, "top_mood": "-", "songs_liked": 0, "songs_played": 0, "listening_hours": 0}
 
-    uid = str(current_user["_id"])
+    user_filter = _build_user_filter(current_user)
 
-    total_sessions = await mood_sessions_col.count_documents({"user_id": uid})
-    total_liked    = await liked_songs_col.count_documents({"user_id": uid})
-    total_played   = await recently_played_col.count_documents({"user_id": uid})
+    total_sessions = await mood_sessions_col.count_documents(user_filter)
+    total_liked    = await liked_songs_col.count_documents(user_filter)
+    total_played   = await recently_played_col.count_documents(user_filter)
 
     # find top mood
     sessions = await mood_sessions_col.find(
-        {"user_id": uid}, {"detected_mood": 1, "_id": 0}
+        user_filter, {"detected_mood": 1, "_id": 0}
     ).to_list(1000)
 
     top_mood = "-"
     if sessions:
         counts = Counter(s["detected_mood"] for s in sessions if s.get("detected_mood"))
         if counts:
-            top_mood = counts.most_common(1)[0][0]
+            raw_top = counts.most_common(1)[0][0]
+            top_mood = str(raw_top).capitalize()
 
     return {
         "total_sessions": total_sessions,
@@ -44,22 +53,22 @@ async def mood_distribution(current_user=Depends(get_current_user)):
     if mood_sessions_col is None:
         return []
 
-    uid = str(current_user["_id"])
+    user_filter = _build_user_filter(current_user)
 
     sessions = await mood_sessions_col.find(
-        {"user_id": uid}, {"detected_mood": 1, "_id": 0}
+        user_filter, {"detected_mood": 1, "_id": 0}
     ).to_list(1000)
 
     if not sessions:
         return []
 
-    counts = Counter(s["detected_mood"] for s in sessions if s.get("detected_mood"))
+    counts = Counter(str(s["detected_mood"]).lower() for s in sessions if s.get("detected_mood"))
     total = sum(counts.values())
     if total == 0:
         return []
 
     return [
-        {"mood": mood, "count": count, "percentage": round((count / total) * 100, 1)}
+        {"mood": mood.capitalize(), "count": count, "percentage": round((count / total) * 100, 1)}
         for mood, count in counts.most_common()
     ]
 
@@ -74,13 +83,15 @@ async def mood_activity(current_user=Depends(get_current_user)):
             result.append({"day": day, "sessions": 0})
         return result
 
-    uid = str(current_user["_id"])
+    user_filter = _build_user_filter(current_user)
 
     # last 8 days
     since = datetime.utcnow() - timedelta(days=8)
+    activity_filter = dict(user_filter)
+    activity_filter["timestamp"] = {"$gte": since}
 
     sessions = await mood_sessions_col.find(
-        {"user_id": uid, "timestamp": {"$gte": since}},
+        activity_filter,
         {"timestamp": 1, "_id": 0}
     ).to_list(1000)
 
@@ -115,31 +126,35 @@ async def mood_insight(current_user=Depends(get_current_user)):
     if mood_sessions_col is None:
         return {"insight": "Database not connected. Please contact support."}
 
-    uid = str(current_user["_id"])
+    user_filter = _build_user_filter(current_user)
 
     sessions = await mood_sessions_col.find(
-        {"user_id": uid}, {"detected_mood": 1, "_id": 0}
+        user_filter, {"detected_mood": 1, "_id": 0}
     ).sort("timestamp", -1).limit(20).to_list(20)
 
     if not sessions:
         return {"insight": "No mood data yet. Start by telling us how you feel on the Mood Detection page!"}
 
-    counts = Counter(s["detected_mood"] for s in sessions if s.get("detected_mood"))
+    counts = Counter(str(s["detected_mood"]).lower() for s in sessions if s.get("detected_mood"))
     if not counts:
         return {"insight": "No mood data yet. Start by telling us how you feel on the Mood Detection page!"}
 
-    top_mood = counts.most_common(1)[0][0]
+    raw_top = counts.most_common(1)[0][0]
     total = len(sessions)
+    top_count = counts.get(raw_top, 0)
 
-    # simple rule-based insight
+    # comprehensive emotion insight messages
     messages = {
-        "Happy":     f"You've been feeling happy in {counts.get('Happy', 0)} of your last {total} sessions. Keep that energy going!",
-        "Sad":       f"You've had {counts.get('Sad', 0)} sad moments recently. Music can help — let us suggest something soothing.",
-        "Calm":      f"You're mostly calm lately ({counts.get('Calm', 0)}/{total} sessions). Great state of mind for focus and productivity.",
-        "Energetic": f"High energy detected in {counts.get('Energetic', 0)} sessions! You're on fire — keep it up.",
-        "Angry":     f"Seems like you've had some frustrating moments ({counts.get('Angry', 0)} sessions). Let music help you reset.",
-        "Anxious":   f"You've felt anxious {counts.get('Anxious', 0)} times recently. Try some calming music to ease your mind.",
-        "Stressed":  f"Stress detected in {counts.get('Stressed', 0)} of your sessions. Take a break and let the music do its thing.",
+        "joy":      f"You've been radiating joy in {top_count} of your last {total} sessions. Keep that positive energy going!",
+        "happy":    f"You've been feeling happy in {top_count} of your last {total} sessions. Keep that great energy going!",
+        "sadness":  f"You've had {top_count} reflective or sad moments recently. Music can help — let us suggest something soothing.",
+        "sad":      f"You've had {top_count} sad moments recently. Music can help — let us suggest something soothing.",
+        "love":     f"Love and warm vibes detected in {top_count} sessions! Enjoy the heartwarming soundtrack.",
+        "anger":    f"Seems like you've had some intense or frustrating moments ({top_count} sessions). Let music help you reset.",
+        "angry":    f"Seems like you've had some frustrating moments ({top_count} sessions). Let music help you reset.",
+        "fear":     f"You've felt anxious or fearful in {top_count} of your recent sessions. Try some grounding ambient music to ease your mind.",
+        "surprise": f"You've experienced {top_count} surprising moments recently. Let's keep exploring new sounds!",
+        "calm":     f"You're mostly calm lately ({top_count}/{total} sessions). Great state of mind for focus and productivity.",
     }
 
-    return {"insight": messages.get(top_mood, f"Your dominant mood has been {top_mood} lately.")}
+    return {"insight": messages.get(raw_top, f"Your dominant mood has been {raw_top.capitalize()} lately.")}

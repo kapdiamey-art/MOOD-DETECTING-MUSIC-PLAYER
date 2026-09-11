@@ -25,3 +25,30 @@ export function applyMoodTheme(emotion) {
 
   localStorage.setItem("moodify_theme_emotion", emotion);
 }
+
+export function applyTheme(dark) {
+  const html = document.documentElement;
+  const body = document.body;
+
+  if (dark) {
+    html.classList.add("dark");
+    html.classList.remove("light");
+    body?.classList.add("dark");
+    body?.classList.remove("light");
+    localStorage.setItem("theme", "dark");
+  } else {
+    html.classList.add("light");
+    html.classList.remove("dark");
+    body?.classList.add("light");
+    body?.classList.remove("dark");
+    localStorage.setItem("theme", "light");
+  }
+
+  const mood = localStorage.getItem("moodify_theme_emotion") || "joy";
+  const selectedMood = MOOD_META[mood] || MOOD_META.joy;
+  html.style.setProperty("--mood-primary", selectedMood.colors[0]);
+  html.style.setProperty("--mood-secondary", selectedMood.colors[1]);
+  html.style.setProperty("--theme-gradient", `linear-gradient(135deg, ${selectedMood.colors[0]}, ${selectedMood.colors[1]})`);
+
+  window.dispatchEvent(new CustomEvent("themechange", { detail: { dark } }));
+}

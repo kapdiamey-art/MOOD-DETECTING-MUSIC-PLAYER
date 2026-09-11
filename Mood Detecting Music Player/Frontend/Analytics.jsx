@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { auth } from "./firebase";
 
 export default function Analytics() {
 
@@ -13,29 +14,47 @@ export default function Analytics() {
   // *******************************************c*******************************************
 
   useEffect(() => {
-    const token = localStorage.getItem("moodifyToken");
-    if (!token) {
-      setInsight("Please log in to see your analytics.");
-      setLoading(false);
-      return;
-    }
-    const h = { "Authorization": `Bearer ${token}` };
+    async function loadData() {
+      let token = localStorage.getItem("moodifyToken");
 
-    // Safe fetch: throws if response is not OK so bad JSON error bodies don't overwrite state
-    const safeFetch = (url) =>
-      fetch(url, { headers: h }).then(r => {
-        if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
-        return r.json();
-      });
+      // Auto-refresh token if Firebase auth user is active
+      if (auth?.currentUser) {
+        try {
+          token = await auth.currentUser.getIdToken();
+          localStorage.setItem("moodifyToken", token);
+        } catch (e) {
+          console.warn("[Analytics] Could not refresh token from auth.currentUser", e);
+        }
+      }
 
-    // *******************************************c*******************************************
-    // Run all four requests in parallel and handle each independently
-    Promise.allSettled([
-      safeFetch("http://localhost:8000/analytics/stats"),
-      safeFetch("http://localhost:8000/analytics/insight"),
-      safeFetch("http://localhost:8000/analytics/mood-distribution"),
-      safeFetch("http://localhost:8000/analytics/mood-activity"),
-    ]).then(([statsRes, insightRes, distRes, actRes]) => {
+      // Fallback for email / OTP sessions
+      if (!token && localStorage.getItem("moodifyEmail")) {
+        token = localStorage.getItem("moodifyEmail");
+      }
+
+      if (!token) {
+        setInsight("Please log in to see your analytics.");
+        setLoading(false);
+        return;
+      }
+      const h = { "Authorization": `Bearer ${token}` };
+
+      // Safe fetch: throws if response is not OK so bad JSON error bodies don't overwrite state
+      const safeFetch = (url) =>
+        fetch(url, { headers: h }).then(r => {
+          if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
+          return r.json();
+        });
+
+      // *******************************************c*******************************************
+      // Run all four requests in parallel and handle each independently
+      try {
+        const [statsRes, insightRes, distRes, actRes] = await Promise.allSettled([
+          safeFetch("http://localhost:8000/analytics/stats"),
+          safeFetch("http://localhost:8000/analytics/insight"),
+          safeFetch("http://localhost:8000/analytics/mood-distribution"),
+          safeFetch("http://localhost:8000/analytics/mood-activity"),
+        ]);
 
       // Stats — safely merge only the fields we need so an error body never wipes defaults
       if (statsRes.status === "fulfilled" && statsRes.value) {
@@ -71,11 +90,15 @@ export default function Analytics() {
       } else {
         console.warn("[Analytics] /mood-activity failed:", actRes.reason);
       }
-
+    } catch (err) {
+      console.error("[Analytics] Error loading analytics:", err);
+    } finally {
       setLoading(false);
-    });
+    }
+  }
     // *******************************************c*******************************************
 
+    loadData();
   }, []);
 
   // Compute max sessions once (avoids recalculating inside every map iteration)

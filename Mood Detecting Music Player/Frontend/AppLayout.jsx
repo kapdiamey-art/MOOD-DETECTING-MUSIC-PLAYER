@@ -5,11 +5,15 @@ import {
   useNavigate
 } from "react-router-dom";
 import { usePlayer } from "./PlayerContext";
+import AmbientAurora from "./AmbientAurora";
+import AudioVisualizer from "./AudioVisualizer";
+import ZenModeModal from "./ZenModeModal";
 
 export default function AppLayout({ children }) {
 
   const location = useLocation();
   const navigate = useNavigate();
+  const [isZenOpen, setIsZenOpen] = useState(false);
 
   // ================= USER =================
   const [userInfo, setUserInfo] = useState(() => {
@@ -123,6 +127,9 @@ export default function AppLayout({ children }) {
   return (
 
     <div className="app-layout">
+
+      {/* Dynamic Fluid Mood Aurora Background */}
+      <AmbientAurora />
 
 
       {/* =================================================
@@ -429,9 +436,28 @@ export default function AppLayout({ children }) {
             className="player-vol-slider"
             title={`Volume: ${Math.round(volume * 100)}%`}
           />
+
+          {/* Mini Real-time Audio Visualizer */}
+          <div className="player-vis-container" title="Live Audio Visualizer">
+            <AudioVisualizer height={26} mode="bars" className="player-mini-vis" />
+          </div>
+
+          {/* Fullscreen Zen Mode Button */}
+          <button
+            type="button"
+            className="player-zen-btn"
+            onClick={() => setIsZenOpen(true)}
+            title="Open Fullscreen Zen Mode (Press Z)"
+          >
+            <span className="zen-sparkle">✨</span>
+            <span className="zen-label">Zen</span>
+          </button>
         </div>
 
       </div>
+
+      {/* Fullscreen Zen Sanctuary Modal */}
+      <ZenModeModal isOpen={isZenOpen} onClose={() => setIsZenOpen(false)} />
 
     </div>
 

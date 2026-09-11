@@ -26,6 +26,8 @@ import MoodJourney from "./MoodJourney";
 import Companion from "./Companion";
 import { applyMoodTheme } from "./moodTheme";
 import { useEffect } from "react";
+import { auth } from "./firebase";
+import { onIdTokenChanged } from "firebase/auth";
 
 
 function ProtectedRoute({ children }) {
@@ -42,7 +44,22 @@ function ProtectedRoute({ children }) {
 
 
 export default function App() {
-  useEffect(() => { applyMoodTheme(localStorage.getItem("moodify_theme_emotion")); }, []);
+  useEffect(() => {
+    applyMoodTheme(localStorage.getItem("moodify_theme_emotion"));
+
+    const unsubscribe = onIdTokenChanged(auth, async (user) => {
+      if (user) {
+        try {
+          const freshToken = await user.getIdToken();
+          localStorage.setItem("moodifyToken", freshToken);
+        } catch (err) {
+          console.warn("[App] Failed to auto-refresh ID token:", err);
+        }
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   return (
 
