@@ -18,7 +18,7 @@ export default function Landing() {
         </div>
 
         <div className="nav-actions">
-          <Link to="/login" className="secondary-btn">
+          <Link to="/login" className="primary-btn">
             Login
           </Link>
 

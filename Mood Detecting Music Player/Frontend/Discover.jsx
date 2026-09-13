@@ -1,79 +1,517 @@
+import { useEffect, useState } from "react";
+import { usePlayer } from "./PlayerContext";
+
+const API = "http://127.0.0.1:8000";
+
 const categories = [
-  ["🔥", "Trending"],
-  ["😊", "Feel Good"],
-  ["😌", "Chill"],
-  ["⚡", "Energy"],
-  ["🌙", "Late Night"],
-  ["💖", "Romantic"],
+  {
+    emoji: "🔥",
+    name: "Trending",
+    query: "popular songs",
+  },
+  {
+    emoji: "😊",
+    name: "Feel Good",
+    query: "happy songs",
+  },
+  {
+    emoji: "😌",
+    name: "Chill",
+    query: "chill music",
+  },
+  {
+    emoji: "⚡",
+    name: "Energy",
+    query: "workout songs",
+  },
+  {
+    emoji: "🌙",
+    name: "Late Night",
+    query: "late night music",
+  },
+  {
+    emoji: "💖",
+    name: "Romantic",
+    query: "romantic songs",
+  },
 ];
 
 export default function Discover() {
+  const {
+    currentTrack,
+    isPlaying,
+    playTrack,
+  } = usePlayer();
+
+  const [songs, setSongs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [selectedCategory, setSelectedCategory] =
+    useState("Trending");
+  const [search, setSearch] = useState("");
+
+  // =====================================================
+  // LOAD SONGS
+  // =====================================================
+
+  async function loadSongs(query) {
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch(
+        `${API}/spotify/search?q=${encodeURIComponent(query)}`
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data?.detail || "Could not load songs"
+        );
+      }
+
+      const results = Array.isArray(data?.results)
+        ? data.results
+        : [];
+
+      setSongs(results);
+
+      if (results.length === 0) {
+        setError(
+          "No songs found. Try another mood."
+        );
+      }
+    } catch (err) {
+      console.error(err);
+
+      setSongs([]);
+
+      setError(
+        "Could not load songs. Make sure your backend is running."
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // =====================================================
+  // INITIAL LOAD
+  // =====================================================
+
+  useEffect(() => {
+    loadSongs("popular songs");
+  }, []);
+
+  // =====================================================
+  // CATEGORY
+  // =====================================================
+
+  function selectCategory(category) {
+    setSelectedCategory(category.name);
+    setSearch("");
+
+    loadSongs(category.query);
+  }
+
+  // =====================================================
+  // SEARCH
+  // =====================================================
+
+  function handleSearch(e) {
+    e.preventDefault();
+
+    if (!search.trim()) return;
+
+    setSelectedCategory("");
+
+    loadSongs(search);
+  }
+
+  // =====================================================
+  // PLAY SONG
+  // =====================================================
+
+  function handlePlay(song) {
+    if (!song) return;
+
+    playTrack(song, songs);
+  }
+
+  // =====================================================
+  // RENDER
+  // =====================================================
 
   return (
-      <>
+    <div className="discover-page">
 
-      <h1 className="page-title">
-        Discover 🎵
-      </h1>
+      {/* HEADER */}
 
-      <p className="page-description">
-        Find your next favorite song.
-      </p>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: "20px",
+          flexWrap: "wrap",
+        }}
+      >
+        <div>
+          <h1 className="page-title">
+            Discover 🎵
+          </h1>
 
-      <div className="section-header">
-        <h2>Explore by mood</h2>
+          <p className="page-description">
+            Find your next favorite song.
+          </p>
+        </div>
+
+        {/* SEARCH */}
+
+        <form
+          onSubmit={handleSearch}
+          style={{
+            display: "flex",
+            gap: "8px",
+            width: "min(400px, 100%)",
+          }}
+        >
+          <input
+            value={search}
+            onChange={(e) =>
+              setSearch(e.target.value)
+            }
+            placeholder="Search songs or artists..."
+            style={{
+              flex: 1,
+              padding: "12px 15px",
+              borderRadius: "12px",
+              border:
+                "1px solid rgba(255,255,255,0.15)",
+              background:
+                "rgba(255,255,255,0.05)",
+              color: "white",
+              outline: "none",
+            }}
+          />
+
+          <button
+            type="submit"
+            style={{
+              padding: "12px 18px",
+              border: "none",
+              borderRadius: "12px",
+              background:
+                "linear-gradient(135deg,#8b5cf6,#ec4899)",
+              color: "white",
+              cursor: "pointer",
+              fontWeight: "600",
+            }}
+          >
+            Search
+          </button>
+        </form>
+      </div>
+
+      {/* MOODS */}
+
+      <div
+        className="section-header"
+        style={{
+          marginTop: "30px",
+        }}
+      >
+        <h2>
+          Explore by mood
+        </h2>
       </div>
 
       <div className="song-grid">
 
-        {categories.map(([emoji, name]) => (
+        {categories.map((category) => {
+
+          const active =
+            selectedCategory === category.name;
+
+          return (
+            <div
+              key={category.name}
+              className="glass"
+              onClick={() =>
+                selectCategory(category)
+              }
+              style={{
+                padding: "25px",
+                borderRadius: "20px",
+                cursor: "pointer",
+                border: active
+                  ? "1px solid #8b5cf6"
+                  : "1px solid rgba(255,255,255,0.08)",
+                transform: active
+                  ? "translateY(-3px)"
+                  : "none",
+                transition:
+                  "0.2s ease",
+              }}
+            >
+
+              <div
+                style={{
+                  fontSize: "42px",
+                  marginBottom: "12px",
+                }}
+              >
+                {category.emoji}
+              </div>
+
+              <h3>
+                {category.name}
+              </h3>
+
+              <p className="artist">
+                Click to explore →
+              </p>
+
+            </div>
+          );
+        })}
+
+      </div>
+
+      {/* SONG SECTION */}
+
+      <div
+        className="section-header"
+        style={{
+          marginTop: "35px",
+        }}
+      >
+        <h2>
+          {selectedCategory
+            ? `${selectedCategory} Songs`
+            : "Search Results"}
+        </h2>
+      </div>
+
+      {/* LOADING */}
+
+      {loading && (
+        <div
+          className="dashboard-hero"
+          style={{
+            textAlign: "center",
+            padding: "50px",
+          }}
+        >
+          <div style={{ fontSize: "40px" }}>
+            🎧
+          </div>
+
+          <h3>
+            Finding songs...
+          </h3>
+
+          <p>
+            Loading music for you.
+          </p>
+        </div>
+      )}
+
+      {/* ERROR */}
+
+      {!loading && error && (
+        <div
+          className="dashboard-hero"
+          style={{
+            textAlign: "center",
+            padding: "50px",
+          }}
+        >
+          <div style={{ fontSize: "40px" }}>
+            😕
+          </div>
+
+          <h3>
+            Unable to load songs
+          </h3>
+
+          <p>
+            {error}
+          </p>
+
+          <button
+            onClick={() =>
+              loadSongs("popular songs")
+            }
+            style={{
+              marginTop: "15px",
+              padding: "11px 20px",
+              border: "none",
+              borderRadius: "10px",
+              background:
+                "linear-gradient(135deg,#8b5cf6,#ec4899)",
+              color: "white",
+              cursor: "pointer",
+            }}
+          >
+            Try Again
+          </button>
+        </div>
+      )}
+
+      {/* SONG CARDS */}
+
+      {!loading &&
+        !error &&
+        songs.length > 0 && (
 
           <div
-            className="glass"
-            key={name}
             style={{
-              padding:"25px",
-              borderRadius:"20px",
-              cursor:"pointer"
+              display: "grid",
+              gridTemplateColumns:
+                "repeat(auto-fill,minmax(210px,1fr))",
+              gap: "20px",
+              paddingBottom: "130px",
             }}
           >
 
-            <div style={{
-              fontSize:"45px",
-              marginBottom:"15px"
-            }}>
-              {emoji}
-            </div>
+            {songs.map((song, index) => {
 
-            <h3>{name}</h3>
+              const title =
+                song.track_name ||
+                song.name ||
+                "Unknown Song";
 
-            <p className="artist">
-              Explore playlist →
-            </p>
+              const artist =
+                song.artists ||
+                song.artist ||
+                "Unknown Artist";
+
+              const image =
+                song.album_image ||
+                song.image ||
+                song.album_art;
+
+              const isCurrent =
+                currentTrack?.track_name ===
+                  song.track_name &&
+                currentTrack?.artists ===
+                  song.artists;
+
+              return (
+                <div
+                  className="glass"
+                  key={`${title}-${artist}-${index}`}
+                  style={{
+                    padding: "14px",
+                    borderRadius: "18px",
+                    overflow: "hidden",
+                    border: isCurrent
+                      ? "1px solid #8b5cf6"
+                      : "1px solid rgba(255,255,255,0.08)",
+                  }}
+                >
+
+                  {/* ALBUM IMAGE */}
+
+                  <div
+                    style={{
+                      width: "100%",
+                      aspectRatio: "1",
+                      borderRadius: "14px",
+                      overflow: "hidden",
+                      background:
+                        "linear-gradient(135deg,#8b5cf6,#ec4899)",
+                      marginBottom: "14px",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
+
+                    {image ? (
+                      <img
+                        src={image}
+                        alt={title}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                        }}
+                      />
+                    ) : (
+                      <span
+                        style={{
+                          fontSize: "55px",
+                        }}
+                      >
+                        🎵
+                      </span>
+                    )}
+
+                  </div>
+
+                  {/* SONG TITLE */}
+
+                  <h3
+                    style={{
+                      margin: "0 0 6px",
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
+                    title={title}
+                  >
+                    {title}
+                  </h3>
+
+                  {/* ARTIST */}
+
+                  <p
+                    className="artist"
+                    style={{
+                      margin: "0 0 15px",
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
+                    title={artist}
+                  >
+                    {artist}
+                  </p>
+
+                  {/* PLAY BUTTON */}
+
+                  <button
+                    onClick={() =>
+                      handlePlay(song)
+                    }
+                    style={{
+                      width: "100%",
+                      padding: "11px",
+                      border: "none",
+                      borderRadius: "10px",
+                      background:
+                        isCurrent && isPlaying
+                          ? "rgba(236,72,153,0.25)"
+                          : "linear-gradient(135deg,#8b5cf6,#ec4899)",
+                      color: "white",
+                      cursor: "pointer",
+                      fontWeight: "600",
+                    }}
+                  >
+                    {isCurrent && isPlaying
+                      ? "⏸ Playing"
+                      : "▶ Play Song"}
+                  </button>
+
+                </div>
+              );
+            })}
 
           </div>
+        )}
 
-        ))}
-
-      </div>
-
-      <div className="section-header">
-        <h2>Trending right now 🔥</h2>
-      </div>
-
-      <div className="dashboard-hero">
-
-        <h2>
-          The sounds everyone is playing
-        </h2>
-
-        <p>
-          Discover today's most popular music
-          across moods and genres.
-        </p>
-
-      </div>
-
-    </>
+    </div>
   );
 }
