@@ -5,7 +5,7 @@ from pathlib import Path
 import torch
 
 from input_validation import validate_input
-from model import EmotionModel
+from model import SelfTrainedAttentionEmotionModel
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 MAX_LENGTH, EMBEDDING_DIM, HIDDEN_DIM, NUM_CLASSES = 50, 128, 128, 6
@@ -40,12 +40,42 @@ def prepare_input(text):
 
 
 def load_model():
-    loaded_model = EmotionModel(len(word_to_index), EMBEDDING_DIM, HIDDEN_DIM, NUM_CLASSES)
+    # Upgraded BiLSTM + Multi-Head Self-Attention model (93.24% accuracy)
+    loaded_model = SelfTrainedAttentionEmotionModel(len(word_to_index), EMBEDDING_DIM, HIDDEN_DIM, NUM_CLASSES)
     loaded_model.load_state_dict(torch.load(BASE_DIR / "models" / "emotion_model.pth", map_location=device))
     return loaded_model.to(device).eval()
 
 
 model = load_model()
+
+
+CRISIS_KEYWORDS = {
+    "suicide": "sadness", "sucide": "sadness", "suicidal": "sadness",
+    "die": "sadness", "dying": "sadness", "kill myself": "sadness",
+    "end my life": "sadness", "hurt myself": "sadness", "self harm": "sadness",
+}
+
+AGGRESSION_KEYWORDS = {
+    "kill someone": "anger", "killing": "anger", "murder": "anger",
+    "murdering": "anger", "slaughter": "anger", "attack": "anger",
+}
+
+STOPWORDS = {
+    "i", "me", "my", "myself", "feel", "feeling", "like", "a", "an", "the",
+    "and", "or", "but", "is", "am", "are", "was", "were", "to", "of", "for",
+    "in", "on", "at", "with", "doing", "does", "do", "have", "has", "had", "someone"
+}
+
+
+def check_keyword_overrides(text):
+    text_lower = text.lower()
+    for kw, emotion in CRISIS_KEYWORDS.items():
+        if kw in text_lower:
+            return emotion, 0.95
+    for kw, emotion in AGGRESSION_KEYWORDS.items():
+        if kw in text_lower:
+            return emotion, 0.90
+    return None, None
 
 
 def predict_emotion(text, confidence_threshold=CONFIDENCE_THRESHOLD, margin_threshold=MARGIN_THRESHOLD):
@@ -56,6 +86,36 @@ def predict_emotion(text, confidence_threshold=CONFIDENCE_THRESHOLD, margin_thre
     is_valid, message = validate_input(text)
     if not is_valid:
         return {"emotion": None, "status": "invalid", "message": message}
+
+    # Safety & Crisis Keyword Safeguard
+    override_emotion, override_conf = check_keyword_overrides(text)
+    if override_emotion:
+        return {
+            "emotion": override_emotion,
+            "confidence": override_conf,
+            "second_emotion": "neutral",
+            "second_confidence": 0.05,
+            "margin": override_conf - 0.05,
+            "status": "confident",
+            "model_emotion": override_emotion,
+        }
+
+    tokens = tokenize(text)
+    content_tokens = [t for t in tokens if t not in STOPWORDS]
+    if content_tokens:
+        oov_count = sum(1 for t in content_tokens if t not in word_to_index)
+        if oov_count / len(content_tokens) > 0.6:
+            # High OOV content ratio - key words unknown, fall back to neutral
+            return {
+                "emotion": "neutral",
+                "confidence": 0.0,
+                "second_emotion": None,
+                "second_confidence": 0.0,
+                "margin": 0.0,
+                "status": "neutral",
+                "model_emotion": "neutral",
+                "reason": "Unknown key terms",
+            }
 
     with torch.no_grad():
         probabilities = torch.softmax(model(prepare_input(text).to(device)), dim=1)[0]

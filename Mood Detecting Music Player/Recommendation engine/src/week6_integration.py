@@ -58,7 +58,7 @@ if ML_SRC_DIR not in sys.path:
         ML_SRC_DIR
     )
 
-from model import EmotionModel
+from model import SelfTrainedAttentionEmotionModel
 
 
 # =========================================================
@@ -295,7 +295,7 @@ def prepare_input(text):
 # LOAD EMOTION MODEL
 # =========================================================
 
-model = EmotionModel(
+model = SelfTrainedAttentionEmotionModel(
     vocab_size=vocab_size,
     embedding_dim=EMBEDDING_DIM,
     hidden_dim=HIDDEN_DIM,
@@ -386,7 +386,8 @@ def recommend_from_text(
     n=5,
     preferences=None,
     feedback=None,
-    use_spotify=False
+    use_spotify=False,
+    language="all"
 ):
 
     if not text or not text.strip():
@@ -431,7 +432,11 @@ def recommend_from_text(
 
         feedback=feedback,
 
-        use_spotify=use_spotify
+        use_spotify=use_spotify,
+
+        text=text,
+
+        language=language
     )
 
 

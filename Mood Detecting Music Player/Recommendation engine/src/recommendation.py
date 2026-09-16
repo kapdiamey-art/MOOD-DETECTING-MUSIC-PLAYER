@@ -200,6 +200,87 @@ BASE_RANKING_WEIGHTS = {
 
 
 # ---------------------------------------------------------
+# Context & Language Matching Definitions
+# ---------------------------------------------------------
+
+CONTEXT_KEYWORDS = {
+    "driving": ["drive", "driving", "truck", "car", "road", "roadtrip", "road-trip", "cruising", "highway", "80s", "classic rock"],
+    "workout": ["workout", "gym", "running", "run", "exercise", "cardio", "training", "fitness", "pushup"],
+    "chill": ["chill", "relax", "relaxing", "lofi", "lo-fi", "bed", "sleep", "sleeping", "night", "rain", "rainy", "study", "studying", "coffee"],
+    "party": ["party", "dance", "dancing", "club", "celebrate", "nightout", "disco", "edm", "house"]
+}
+
+INDIAN_GENRES = {"indian", "bollywood", "filmi", "bhangra", "indie-pop", "punjabi", "classical", "sufi", "ghazal"}
+INDIAN_ARTISTS = {
+    "arijit singh", "lata mangeshkar", "kishore kumar", "shreya ghoshal", "neha kakkar",
+    "badshah", "yo yo honey singh", "sonu nigam", "a.r. rahman", "ar rehman", "pritam",
+    "diljit dosanjh", "jubin nautiyal", "king", "atif aslam", "alka yagnik", "udit narayan",
+    "mohit chauhan", "kk", "sunidhi chauhan", "kumar sanu", "sanam", "anuv jain", "mitraz", "local train"
+}
+
+
+def extract_context_keywords(text):
+    if not text:
+        return []
+    text_lower = str(text).lower()
+    matched = []
+    for category, keywords in CONTEXT_KEYWORDS.items():
+        if any(kw in text_lower for kw in keywords):
+            matched.append(category)
+    return matched
+
+
+def calculate_context_score(row, context_categories):
+    if not context_categories:
+        return 0.5
+
+    genre = str(row.get("track_genre", "")).lower()
+    track_name = str(row.get("track_name", "")).lower()
+    energy = float(row.get("energy", 0.5)) if pd.notna(row.get("energy")) else 0.5
+    danceability = float(row.get("danceability", 0.5)) if pd.notna(row.get("danceability")) else 0.5
+    acousticness = float(row.get("acousticness", 0.5)) if pd.notna(row.get("acousticness")) else 0.5
+
+    score = 0.5
+    for cat in context_categories:
+        if cat == "driving":
+            if genre in ["rock", "classic-rock", "pop", "synth-pop", "country", "indie-rock", "hard-rock", "alt-rock", "metal"] or energy > 0.65 or any(k in track_name for k in ["drive", "truck", "road", "highway"]):
+                score += 0.4
+        elif cat == "workout":
+            if genre in ["edm", "dance", "hip-hop", "house", "pop"] or (energy > 0.75 and danceability > 0.65):
+                score += 0.4
+        elif cat == "chill":
+            if genre in ["acoustic", "indie", "ambient", "lofi", "chilled", "singer-songwriter"] or acousticness > 0.5 or energy < 0.45:
+                score += 0.4
+        elif cat == "party":
+            if genre in ["party", "dance", "pop", "edm", "disco"] or danceability > 0.75:
+                score += 0.4
+
+    return min(1.0, max(0.0, score))
+
+
+def calculate_language_score(row, requested_language):
+    if not requested_language or str(requested_language).lower() in ["all", "any", "none", ""]:
+        return 0.5
+
+    lang = str(requested_language).lower()
+    genre = str(row.get("track_genre", "")).lower()
+    artists = str(row.get("artists", "")).lower()
+    track_name = str(row.get("track_name", ""))
+
+    is_indian = (
+        genre in INDIAN_GENRES or
+        any(ia in artists for ia in INDIAN_ARTISTS) or
+        any(ord(c) > 127 for c in track_name + artists)
+    )
+
+    if lang == "hindi":
+        return 1.0 if is_indian else 0.1
+    elif lang == "english":
+        return 0.1 if is_indian else 1.0
+    return 0.5
+
+
+# ---------------------------------------------------------
 # Values that mean "no preference"
 # ---------------------------------------------------------
 
@@ -210,6 +291,7 @@ NO_PREFERENCE_VALUES = {
     "any",
     "all"
 }
+
 
 
 # ---------------------------------------------------------
@@ -673,7 +755,9 @@ def recommend(
     preferences=None,
     confidence=1.0,
     feedback=None,
-    use_spotify=True
+    use_spotify=True,
+    text=None,
+    language="all"
 ):
 
     """
@@ -1295,33 +1379,22 @@ def recommend(
 
 
     # -----------------------------------------------------
-    # Language preference score
+    # Context & Language preference scores
     # -----------------------------------------------------
 
-    languages = preferences.get(
-        "languages",
-        []
+    input_text = text or preferences.get("text", "")
+    req_language = language or preferences.get("language", "all")
+    context_cats = extract_context_keywords(input_text)
+
+    candidates["context_score"] = candidates.apply(
+        lambda row: calculate_context_score(row, context_cats),
+        axis=1
     )
 
-    if "language" in candidates.columns:
-
-        candidates[
-            "language_score"
-        ] = candidates[
-            "language"
-        ].apply(
-            lambda x:
-            preference_score(
-                x,
-                languages
-            )
-        )
-
-    else:
-
-        candidates[
-            "language_score"
-        ] = 0.0
+    candidates["language_score"] = candidates.apply(
+        lambda row: calculate_language_score(row, req_language),
+        axis=1
+    )
 
 
     # -----------------------------------------------------
@@ -1430,11 +1503,16 @@ def recommend(
 
         +
 
-        ranking_weights[
-            "language"
-        ]
+        0.15
         * candidates[
             "language_score"
+        ]
+
+        +
+
+        0.15
+        * candidates[
+            "context_score"
         ]
 
         +

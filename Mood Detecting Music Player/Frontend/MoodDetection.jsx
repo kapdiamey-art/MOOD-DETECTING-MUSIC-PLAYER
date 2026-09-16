@@ -16,6 +16,7 @@ export default function MoodDetection() {
   const [text,            setText           ] = useState("");
   const [genre,           setGenre          ] = useState("");
   const [artist,          setArtist         ] = useState("");
+  const [language,        setLanguage       ] = useState("all");
   const [mood,            setMood           ] = useState(null);
   const [recommendations, setRecommendations] = useState([]);
   const [loading,         setLoading        ] = useState(false);
@@ -53,8 +54,9 @@ export default function MoodDetection() {
         },
         body: JSON.stringify({
           text,
-          genre:  genre.trim()  || undefined,
-          artist: artist.trim() || undefined,
+          genre:    genre.trim()  || undefined,
+          artist:   artist.trim() || undefined,
+          language: language,
         }),
       });
 
@@ -247,6 +249,49 @@ export default function MoodDetection() {
           border-color: rgba(139,92,246,0.4);
         }
         .md-pref-input::placeholder { color: var(--input-placeholder); }
+
+        /* ── Language Selector Pills ── */
+        .md-lang-wrap {
+          margin-bottom: 20px;
+        }
+        .md-lang-label {
+          font-size: 0.8rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 1.5px;
+          color: var(--text-secondary);
+          margin-bottom: 8px;
+          display: block;
+        }
+        .md-lang-group {
+          display: flex;
+          gap: 10px;
+          flex-wrap: wrap;
+        }
+        .md-lang-pill {
+          background: var(--input-bg);
+          border: 1px solid var(--input-border);
+          color: var(--text-secondary);
+          padding: 8px 18px;
+          border-radius: 99px;
+          font-size: 0.88rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+        .md-lang-pill:hover {
+          border-color: rgba(139,92,246,0.4);
+          color: var(--text);
+        }
+        .md-lang-pill.active {
+          background: linear-gradient(135deg, rgba(139,92,246,0.25), rgba(236,72,153,0.25));
+          border-color: rgba(139,92,246,0.6);
+          color: var(--text);
+          box-shadow: 0 4px 14px rgba(139,92,246,0.2);
+        }
 
         /* ── Inline feedback message ── */
         .md-inline-message {
@@ -535,6 +580,34 @@ export default function MoodDetection() {
             <div className="md-textarea-footer">
               <span>✨ AI will analyze your emotions</span>
               <span>{text.length}/500</span>
+            </div>
+          </div>
+
+          {/* Language Preference */}
+          <div className="md-lang-wrap">
+            <span className="md-lang-label">🌐 Music Language</span>
+            <div className="md-lang-group">
+              <button
+                type="button"
+                className={`md-lang-pill ${language === "all" ? "active" : ""}`}
+                onClick={() => setLanguage("all")}
+              >
+                🌐 All Languages
+              </button>
+              <button
+                type="button"
+                className={`md-lang-pill ${language === "english" ? "active" : ""}`}
+                onClick={() => setLanguage("english")}
+              >
+                🇬🇧 English
+              </button>
+              <button
+                type="button"
+                className={`md-lang-pill ${language === "hindi" ? "active" : ""}`}
+                onClick={() => setLanguage("hindi")}
+              >
+                🇮🇳 Hindi / Bollywood
+              </button>
             </div>
           </div>
 

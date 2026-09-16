@@ -41,6 +41,7 @@ class MoodRequest(BaseModel):
     text: str
     genre: Optional[str] = None
     artist: Optional[str] = None
+    language: Optional[str] = "all"
 
 
 class MoodJourneyRequest(BaseModel):
@@ -89,7 +90,8 @@ async def detect_mood(
             request.text,
             n=5,
             preferences=preferences,
-            use_spotify=True
+            use_spotify=True,
+            language=request.language or "all"
         )
 
         # Mirror the frontend display contract: neutral is an acceptable answer
