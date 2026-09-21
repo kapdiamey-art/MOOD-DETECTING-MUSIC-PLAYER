@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -21,7 +20,6 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // Normal login opens first
   const [otpMode, setOtpMode] = useState(false);
 
   const [otp, setOtp] = useState("");
@@ -47,10 +45,12 @@ export default function Login() {
   // SAVE FIREBASE SESSION
   // =====================================================
 
-  const saveFirebaseSession = async (user, cleanEmail) => {
-    // Get a fresh Firebase ID token.
-    // This token is required by the FastAPI backend.
-    const firebaseToken = await user.getIdToken(true);
+  const saveFirebaseSession = async (
+    user,
+    cleanEmail
+  ) => {
+    const firebaseToken =
+      await user.getIdToken(true);
 
     if (!firebaseToken) {
       throw new Error(
@@ -60,10 +60,11 @@ export default function Login() {
 
     const savedName =
       user.displayName ||
-      localStorage.getItem("moodifyUserName") ||
+      localStorage.getItem(
+        "moodifyUserName"
+      ) ||
       cleanEmail.split("@")[0];
 
-    // Save authentication information
     localStorage.setItem(
       "moodifyToken",
       firebaseToken
@@ -102,7 +103,7 @@ export default function Login() {
     );
 
     console.log(
-      "✅ FIREBASE LOGIN SESSION SAVED"
+      "FIREBASE LOGIN SESSION SAVED"
     );
 
     console.log(
@@ -141,7 +142,6 @@ export default function Login() {
     const cleanEmail =
       email.trim().toLowerCase();
 
-    // Validation
     if (!cleanEmail || !password) {
       setError(
         "Please enter your email and password."
@@ -163,10 +163,6 @@ export default function Login() {
         "Logging in:",
         cleanEmail
       );
-
-      // =================================================
-      // FIREBASE LOGIN
-      // =================================================
 
       const userCredential =
         await signInWithEmailAndPassword(
@@ -215,10 +211,6 @@ export default function Login() {
         "Login successful! Redirecting..."
       );
 
-      // =================================================
-      // GO TO MOOD PAGE
-      // =================================================
-
       setTimeout(() => {
         navigate("/mood");
       }, 500);
@@ -228,10 +220,6 @@ export default function Login() {
         "Login error:",
         error
       );
-
-      // =================================================
-      // FIREBASE ERROR HANDLING
-      // =================================================
 
       if (
         error.code ===
@@ -284,7 +272,7 @@ export default function Login() {
       } else {
         setError(
           error.message ||
-          "Login failed. Please try again."
+            "Login failed. Please try again."
         );
       }
 
@@ -338,7 +326,7 @@ export default function Login() {
       setOtpLoading(true);
 
       console.log(
-        "Sending OTP to:",
+        "Checking and sending OTP to:",
         cleanEmail
       );
 
@@ -372,7 +360,7 @@ export default function Login() {
       ) {
         throw new Error(
           data.message ||
-          "Failed to send OTP."
+            "Failed to send OTP."
         );
       }
 
@@ -388,9 +376,11 @@ export default function Login() {
         error
       );
 
+      setOtpSent(false);
+
       setError(
         error.message ||
-        "Failed to send OTP. Please try again."
+          "Failed to send OTP. Please try again."
       );
 
     } finally {
@@ -479,27 +469,13 @@ export default function Login() {
       ) {
         throw new Error(
           data.message ||
-          "Invalid OTP."
+            "Invalid OTP."
         );
       }
 
       console.log(
-        "✅ OTP verified successfully"
+        "OTP verified successfully"
       );
-
-      /*
-       * IMPORTANT:
-       *
-       * Your custom OTP backend only verifies
-       * the OTP. It does not create a Firebase
-       * ID token.
-       *
-       * Therefore we do NOT save fake authentication
-       * information here.
-       *
-       * Protected Moodify APIs require a Firebase
-       * ID token.
-       */
 
       setMessage(
         "OTP verified. Please use Email + Password login for the protected Moodify session."
@@ -517,7 +493,7 @@ export default function Login() {
 
       setError(
         error.message ||
-        "Invalid OTP. Please try again."
+          "Invalid OTP. Please try again."
       );
 
     } finally {
@@ -577,7 +553,7 @@ export default function Login() {
       ) {
         throw new Error(
           data.message ||
-          "Failed to resend OTP."
+            "Failed to resend OTP."
         );
       }
 
@@ -595,7 +571,7 @@ export default function Login() {
 
       setError(
         error.message ||
-        "Unable to resend OTP."
+          "Unable to resend OTP."
       );
 
     } finally {
@@ -662,7 +638,7 @@ export default function Login() {
 
         setError(
           error.message ||
-          "Could not send verification email."
+            "Could not send verification email."
         );
 
       } finally {
@@ -747,7 +723,10 @@ export default function Login() {
                 placeholder="you@example.com"
                 value={email}
                 onChange={(e) => {
-                  setEmail(e.target.value);
+                  setEmail(
+                    e.target.value
+                  );
+
                   setError("");
                   setMessage("");
                   setShowResend(false);
@@ -770,7 +749,10 @@ export default function Login() {
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) => {
-                  setPassword(e.target.value);
+                  setPassword(
+                    e.target.value
+                  );
+
                   setError("");
                   setMessage("");
                   setShowResend(false);
@@ -786,10 +768,13 @@ export default function Login() {
                   marginTop: "8px",
                 }}
               >
+
                 <button
                   type="button"
                   onClick={() =>
-                    navigate("/forgot-password")
+                    navigate(
+                      "/forgot-password"
+                    )
                   }
                   style={{
                     background: "none",
@@ -803,6 +788,7 @@ export default function Login() {
                 >
                   Forgot Password?
                 </button>
+
               </div>
 
             </div>
@@ -857,11 +843,9 @@ export default function Login() {
               className="auth-submit"
               disabled={loading}
             >
-
               {loading
                 ? "Checking..."
                 : "Login →"}
-
             </button>
 
             {/* DIVIDER */}
@@ -903,17 +887,19 @@ export default function Login() {
             <button
               type="button"
               className="auth-submit"
-              onClick={handleOpenOTPLogin}
+              onClick={
+                handleOpenOTPLogin
+              }
               disabled={loading}
               style={{
-                background: "transparent",
+                background:
+                  "transparent",
                 color: "inherit",
-                border: "1px solid currentColor",
+                border:
+                  "1px solid currentColor",
               }}
             >
-
               Login with OTP
-
             </button>
 
           </form>
@@ -959,7 +945,10 @@ export default function Login() {
                 placeholder="you@example.com"
                 value={email}
                 onChange={(e) => {
-                  setEmail(e.target.value);
+                  setEmail(
+                    e.target.value
+                  );
+
                   setError("");
                   setMessage("");
                   setOtpSent(false);
@@ -977,15 +966,30 @@ export default function Login() {
               <button
                 type="button"
                 className="auth-submit"
-                onClick={handleSendOTP}
+                onClick={
+                  handleSendOTP
+                }
                 disabled={otpLoading}
               >
-
                 {otpLoading
-                  ? "Sending OTP..."
+                  ? "Checking..."
                   : "Send OTP →"}
-
               </button>
+
+            )}
+
+            {/* ERROR */}
+
+            {error && (
+
+              <div
+                className="auth-error"
+                style={{
+                  marginTop: "15px",
+                }}
+              >
+                ⚠️ {error}
+              </div>
 
             )}
 
@@ -999,9 +1003,7 @@ export default function Login() {
                   marginBottom: "15px",
                 }}
               >
-
                 📧 OTP sent to {email}
-
               </div>
 
             )}
@@ -1041,46 +1043,22 @@ export default function Login() {
 
                 </div>
 
-                {/* ERROR */}
-
-                {error && (
-
-                  <div className="auth-error">
-
-                    ⚠️ {error}
-
-                  </div>
-
-                )}
-
-                {/* SUCCESS */}
-
-                {message && (
-
-                  <div className="auth-success">
-
-                    ✅ {message}
-
-                  </div>
-
-                )}
-
                 {/* VERIFY */}
 
                 <button
                   type="button"
                   className="auth-submit"
-                  onClick={handleVerifyOTP}
+                  onClick={
+                    handleVerifyOTP
+                  }
                   disabled={
                     otpLoading ||
                     otp.length !== 6
                   }
                 >
-
                   {otpLoading
                     ? "Verifying..."
                     : "Verify OTP →"}
-
                 </button>
 
                 {/* RESEND */}
@@ -1088,17 +1066,17 @@ export default function Login() {
                 <button
                   type="button"
                   className="auth-submit"
-                  onClick={handleResendOTP}
+                  onClick={
+                    handleResendOTP
+                  }
                   disabled={otpLoading}
                   style={{
                     marginTop: "10px",
                   }}
                 >
-
                   {otpLoading
                     ? "Sending..."
                     : "Resend OTP"}
-
                 </button>
 
               </>
@@ -1116,9 +1094,7 @@ export default function Login() {
                 marginTop: "10px",
               }}
             >
-
               ← Back to Login
-
             </button>
 
           </div>
@@ -1149,4 +1125,3 @@ export default function Login() {
     </div>
   );
 }
-
