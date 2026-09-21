@@ -267,16 +267,47 @@ def calculate_language_score(row, requested_language):
     artists = str(row.get("artists", "")).lower()
     track_name = str(row.get("track_name", ""))
 
-    is_indian = (
-        genre in INDIAN_GENRES or
-        any(ia in artists for ia in INDIAN_ARTISTS) or
-        any(ord(c) > 127 for c in track_name + artists)
+    # The dataset does not contain an explicit language column.
+    # Therefore language matching is a metadata-based heuristic.
+    #
+    # Important:
+    # "indie-pop" is intentionally NOT treated as Hindi because
+    # it also contains many English-language songs.
+
+    hindi_genres = {
+        "bollywood",
+        "filmi",
+        "indian",
+        "sufi",
+        "ghazal",
+        "desi",
+        "hindi",
+        "hindi-pop",
+        "indian-pop"
+    }
+
+    indian_artist_match = any(
+        ia in artists
+        for ia in INDIAN_ARTISTS
+    )
+
+    devanagari_present = any(
+        "\u0900" <= c <= "\u097f"
+        for c in track_name + artists
+    )
+
+    indian_metadata = (
+        genre in hindi_genres
+        or indian_artist_match
+        or devanagari_present
     )
 
     if lang == "hindi":
-        return 1.0 if is_indian else 0.1
+        return 1.0 if indian_metadata else 0.05
+
     elif lang == "english":
-        return 0.1 if is_indian else 1.0
+        return 0.95 if not indian_metadata else 0.10
+
     return 0.5
 
 
@@ -750,8 +781,8 @@ def enrich_with_spotify(
 
 def recommend(
     emotion,
-    n=10,
-    candidate_size=50,
+    n=15,
+    candidate_size=100,
     preferences=None,
     confidence=1.0,
     feedback=None,
@@ -1637,6 +1668,14 @@ def recommend(
     # -----------------------------------------------------
     # Sort recommendations
     # -----------------------------------------------------
+    #
+    # Keep recommendation quality as the main signal, but
+    # introduce a small controlled random variation.
+    #
+    # This prevents the exact same mood request from always
+    # producing the exact same order while keeping highly
+    # relevant songs near the top.
+    # -----------------------------------------------------
 
     candidates = (
         candidates
@@ -1644,7 +1683,63 @@ def recommend(
             "final_score",
             ascending=False
         )
+        .copy()
     )
+
+    if len(candidates) > n:
+
+        # Only the high-quality recommendation pool is allowed
+        # to participate in the shuffle.
+        shuffle_pool_size = min(
+            len(candidates),
+            max(n * 3, 30)
+        )
+
+        shuffle_pool = (
+            candidates
+            .head(shuffle_pool_size)
+            .copy()
+        )
+
+        # Small random variation. The recommendation score
+        # remains dominant, so low-quality songs cannot jump
+        # to the top simply because of randomness.
+        shuffle_pool["_shuffle_noise"] = np.random.uniform(
+            0.0,
+            0.015,
+            size=len(shuffle_pool)
+        )
+
+        shuffle_pool["_shuffle_score"] = (
+            shuffle_pool["final_score"]
+            + shuffle_pool["_shuffle_noise"]
+        )
+
+        shuffle_pool = (
+            shuffle_pool
+            .sort_values(
+                "_shuffle_score",
+                ascending=False
+            )
+            .drop(
+                columns=[
+                    "_shuffle_noise",
+                    "_shuffle_score"
+                ]
+            )
+        )
+
+        remaining = candidates.iloc[
+            shuffle_pool_size:
+        ].copy()
+
+        candidates = pd.concat(
+            [
+                shuffle_pool,
+                remaining
+            ],
+            ignore_index=True
+        )
 
 
     # -----------------------------------------------------
