@@ -10,6 +10,7 @@ const MOOD_MAPPING = {
   fear:     { emoji: "😨", name: "Fearful",    description: "Take a deep breath. You are safe here.",            gradient: "linear-gradient(135deg,#8b5cf6,#6366f1)", color: "#8b5cf6" },
   love:     { emoji: "🥰", name: "Loving",     description: "Love is in the air!",                               gradient: "linear-gradient(135deg,#ec4899,#f43f5e)", color: "#ec4899" },
   surprise: { emoji: "😲", name: "Surprised",  description: "Expect the unexpected!",                            gradient: "linear-gradient(135deg,#22c55e,#06b6d4)", color: "#22c55e" },
+  neutral:  { emoji: "😐", name: "Neutral / Calm", description: "Balanced and calm. Here is some easy-listening music for your day.", gradient: "linear-gradient(135deg,#9ca3af,#4b5563)", color: "#9ca3af" },
 };
 
 export default function MoodDetection() {
@@ -21,6 +22,9 @@ export default function MoodDetection() {
   const [recommendations, setRecommendations] = useState([]);
   const [loading,         setLoading        ] = useState(false);
   const [inlineMessage,   setInlineMessage  ] = useState("");
+  const [weatherContext,  setWeatherContext ] = useState(null);
+  const [detectedLocation, setDetectedLocation] = useState("Detecting location...");
+  const [customCity,       setCustomCity      ] = useState(localStorage.getItem("moodify_user_city") || "");
 
   // Voice / Whisper speech-to-text state
   const [isListening,     setIsListening    ] = useState(false);
@@ -28,6 +32,111 @@ export default function MoodDetection() {
   const recognitionRef = useRef(null);
 
   const navigate = useNavigate();
+
+  // Helper to fetch weather for a specific city name and save it to localStorage
+  const updateCityWeather = async (targetCity) => {
+    if (!targetCity.trim()) return;
+    const cleanCity = targetCity.trim();
+    try {
+      const res = await fetch(`http://localhost:8000/context/weather?city=${encodeURIComponent(cleanCity)}`);
+      if (res.ok) {
+        const data = await res.json();
+        setWeatherContext(data);
+        setDetectedLocation(`${data.city} (Active)`);
+        setCustomCity(data.city);
+        localStorage.setItem("moodify_user_city", data.city);
+      }
+    } catch (err) {
+      console.error("Error updating city weather:", err);
+    }
+  };
+
+  // Auto-detect Location & Fetch Weather Context on Load
+  useEffect(() => {
+    async function autoDetectLocationAndWeather() {
+      // 1. Check if user already set a city preference in localStorage
+      const savedCity = localStorage.getItem("moodify_user_city");
+      if (savedCity) {
+        setCustomCity(savedCity);
+        await updateCityWeather(savedCity);
+        return;
+      }
+
+      // 2. Try Browser GPS first
+      if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          async (pos) => {
+            const { latitude, longitude } = pos.coords;
+            try {
+              const res = await fetch(`http://localhost:8000/context/weather?lat=${latitude}&lon=${longitude}`);
+              if (res.ok) {
+                const data = await res.json();
+                setWeatherContext(data);
+                setDetectedLocation(`${data.city} (GPS Auto-Detected)`);
+                setCustomCity(data.city);
+                return;
+              }
+            } catch (err) {
+              console.warn("GPS weather fetch failed, falling back to IP:", err);
+            }
+            fallbackIPLocation();
+          },
+          () => {
+            fallbackIPLocation();
+          },
+          { timeout: 6000, enableHighAccuracy: true }
+        );
+      } else {
+        fallbackIPLocation();
+      }
+    }
+
+    async function fallbackIPLocation() {
+      // Try multiple IP geolocation APIs in sequence
+      const ipProviders = [
+        "https://freeipapi.com/api/json",
+        "https://ipwho.is/",
+        "https://ipapi.co/json/"
+      ];
+
+      for (const provider of ipProviders) {
+        try {
+          const ipRes = await fetch(provider);
+          if (ipRes.ok) {
+            const ipData = await ipRes.json();
+            const cityName = ipData.cityName || ipData.city;
+            if (cityName) {
+              const res = await fetch(`http://localhost:8000/context/weather?city=${encodeURIComponent(cityName)}`);
+              if (res.ok) {
+                const data = await res.json();
+                setWeatherContext(data);
+                setDetectedLocation(`${data.city} (IP Auto-Detected)`);
+                setCustomCity(data.city);
+                return;
+              }
+            }
+          }
+        } catch (e) {
+          console.warn(`IP provider ${provider} failed:`, e);
+        }
+      }
+
+      // Final default fallback if all auto-detect mechanisms fail
+      try {
+        const res = await fetch("http://localhost:8000/context/weather?city=Goa");
+        if (res.ok) {
+          const data = await res.json();
+          setWeatherContext(data);
+          setDetectedLocation("Goa (Default)");
+          setCustomCity("Goa");
+        }
+      } catch (err) {
+        console.error("Default weather fetch failed:", err);
+      }
+    }
+
+    autoDetectLocationAndWeather();
+  }, []);
 
   const userInitial = (() => {
     const name = localStorage.getItem("moodifyUserName") || "";
@@ -139,11 +248,7 @@ export default function MoodDetection() {
         setInlineMessage(data.message || "Please enter a meaningful sentence describing how you feel.");
         return;
       }
-      if (data.emotion === "neutral") {
-        setInlineMessage("Your mood is unclear right now. Try describing how you feel in a little more detail.");
-        return;
-      }
-      const moodData = MOOD_MAPPING[data.emotion] || MOOD_MAPPING.joy;
+      const moodData = MOOD_MAPPING[data.emotion] || MOOD_MAPPING.neutral;
 
       const detectedMood = {
         emoji:       moodData.emoji,
@@ -810,7 +915,7 @@ export default function MoodDetection() {
             </div>
           )}
 
-          {/* ── RESULT ── */}
+          {/* ── RESULT CARD (INTEGRATED WITH AUTO-DETECTED WEATHER & LOCATION) ── */}
           {mood && (
             <div
               className="md-result"
@@ -835,6 +940,67 @@ export default function MoodDetection() {
                   style={{ width: `${mood.confidence}%`, background: mood.gradient }}
                 />
               </div>
+
+              {/* 🌧️ INTEGRATED AUTO-DETECTED WEATHER & LOCATION BANNER */}
+              {weatherContext && (
+                <div style={{
+                  margin: "16px 0",
+                  padding: "12px 16px",
+                  background: "rgba(6, 182, 212, 0.08)",
+                  border: "1px solid rgba(6, 182, 212, 0.25)",
+                  borderRadius: "14px",
+                  fontSize: "0.82rem",
+                  color: "var(--text)"
+                }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px", flexWrap: "wrap", gap: "6px" }}>
+                    <span style={{ fontWeight: 800, color: "#38bdf8" }}>
+                      📍 Location & Environmental Context:
+                    </span>
+                    <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+                      <input
+                        style={{
+                          background: "rgba(255,255,255,0.08)",
+                          border: "1px solid rgba(255,255,255,0.2)",
+                          borderRadius: "8px",
+                          padding: "3px 8px",
+                          color: "var(--text)",
+                          fontSize: "0.78rem",
+                          width: "110px",
+                          outline: "none"
+                        }}
+                        value={customCity}
+                        onChange={(e) => setCustomCity(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && updateCityWeather(customCity)}
+                        placeholder="City (e.g. Goa)"
+                        title="Change location"
+                      />
+                      <button
+                        type="button"
+                        style={{
+                          background: "linear-gradient(135deg, #06b6d4, #3b82f6)",
+                          border: "none",
+                          borderRadius: "8px",
+                          color: "#ffffff",
+                          fontSize: "0.75rem",
+                          fontWeight: 700,
+                          padding: "4px 10px",
+                          cursor: "pointer"
+                        }}
+                        onClick={() => updateCityWeather(customCity)}
+                      >
+                        Update Location
+                      </button>
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", alignItems: "center" }}>
+                    <span>📍 <b>{weatherContext.city}</b> ({detectedLocation.includes("GPS") ? "GPS" : "Live"})</span>
+                    <span>•</span>
+                    <span>{weatherContext.icon} <b>Weather:</b> {weatherContext.condition} ({weatherContext.temp_c}°C)</span>
+                    <span>•</span>
+                    <span>{weatherContext.time_icon} <b>Time:</b> {weatherContext.time_of_day}</span>
+                  </div>
+                </div>
+              )}
 
               <button
                 className="md-playlist-btn"

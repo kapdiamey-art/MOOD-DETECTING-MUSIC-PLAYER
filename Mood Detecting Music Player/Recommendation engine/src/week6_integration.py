@@ -163,7 +163,17 @@ def recommend_from_text(
 
 
     if ml_emotion == "neutral" or ml_emotion is None:
-        return "neutral", confidence, pd.DataFrame()
+        recommendations = recommend(
+            "joy",
+            n=n,
+            preferences=preferences,
+            confidence=0.60,
+            feedback=feedback,
+            use_spotify=use_spotify,
+            text=text,
+            language=language
+        )
+        return "neutral", confidence if confidence else 0.50, recommendations
 
     # -----------------------------------------------------
     # Step 2: Convert ML label

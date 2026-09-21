@@ -6,7 +6,7 @@ export default function Companion() {
   const [messages, setMessages] = useState([
     {
       role: "assistant",
-      text: "Tell me how you feel and I’ll shape a listening direction."
+      text: "Welcome to your musical therapy session. Tell me how you feel, and I'll guide your soundtrack."
     }
   ]);
   const [loading, setLoading] = useState(false);
@@ -55,7 +55,7 @@ export default function Companion() {
       const reply =
         data.reply ||
         data.detail ||
-        "I couldn’t respond right now.";
+        "I couldn't respond right now.";
 
       setMessages((items) => [
         ...items,
@@ -66,7 +66,7 @@ export default function Companion() {
         ...items,
         {
           role: "assistant",
-          text: "I couldn’t reach the music companion right now."
+          text: "I couldn't reach your music therapist right now."
         }
       ]);
     } finally {
@@ -79,20 +79,20 @@ export default function Companion() {
       <button
         className="companion-toggle"
         onClick={() => setOpen(!open)}
-        aria-label="Open music companion"
+        aria-label="Open music therapist"
       >
-        ♫
+        🩺
       </button>
 
       {open && (
         <section className="companion-panel glass">
           <header className="companion-header">
             <div className="companion-title-wrap">
-              <span className="companion-avatar">✦</span>
+              <span className="companion-avatar">🩺</span>
 
               <div className="companion-title-text">
-                <strong>Moodify Companion</strong>
-                <small>Music-focused support</small>
+                <strong>Moodify Music Therapist</strong>
+                <small>AI Music Therapy & Wellness</small>
               </div>
             </div>
 

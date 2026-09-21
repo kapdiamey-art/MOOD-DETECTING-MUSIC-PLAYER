@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { usePlayer } from "./PlayerContext";
 import VinylPlayer from "./VinylPlayer";
+import AudioVisualizer from "./AudioVisualizer";
 import { applyTheme } from "./moodTheme";
 
 export default function ZenModeModal({ isOpen, onClose }) {

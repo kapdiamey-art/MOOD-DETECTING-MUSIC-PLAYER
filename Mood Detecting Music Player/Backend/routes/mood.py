@@ -94,17 +94,6 @@ async def detect_mood(
             language=request.language or "all"
         )
 
-        # Mirror the frontend display contract: neutral is an acceptable answer
-        # when the model confidence is below its threshold.
-        if confidence < 0.70:
-            return {
-                "status": "neutral",
-                "emotion": "neutral",
-                "confidence": float(confidence),
-                "recommendations": [],
-                "message": "Your mood is unclear right now. Try describing how you feel in a little more detail."
-            }
-
         # Clean NaN values so FastAPI can serialize to JSON without error
         clean_df = recommendations_df.where(pd.notnull(recommendations_df), None)
         recommendations = clean_df.to_dict(orient="records")

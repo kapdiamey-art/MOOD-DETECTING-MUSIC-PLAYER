@@ -104,6 +104,78 @@ SARCASM_NEGATIVE_EVENTS = {
 }
 
 
+EMOTION_LEXICON = {
+    # Sadness
+    "sad", "sadness", "cry", "crying", "cried", "depressed", "depression", "heartbroken", "grief",
+    "lonely", "alone", "hopeless", "miserable", "pain", "painful", "hurt", "hurts", "hurting", "gloomy",
+    "unhappy", "sorrow", "empty", "hollow", "tears", "weep", "weeping", "disappointed", "ruined", "miss",
+    "missing", "missed", "grieve", "grieving", "grieved", "upset", "miserable", "despair", "broken",
+    "lost", "leaving", "left",
+
+    # Joy
+    "happy", "happiness", "joy", "joyful", "excited", "excitement", "glad", "delighted", "cheerful",
+    "ecstatic", "thrilled", "wonderful", "fantastic", "amazing", "awesome", "great", "smile", "smiles",
+    "smiling", "laugh", "laughs", "laughing", "laughter", "fun", "enjoy", "enjoying", "blessed", "best",
+    "good", "sunny", "celebrate", "celebrating", "victory", "won", "win", "winning", "winner",
+    "championship", "trophy", "triumph", "proud", "success", "successful",
+
+    # Love
+    "love", "loves", "loved", "loving", "adore", "adores", "adored", "cherish", "cared", "care", "caring",
+    "affection", "fond", "sweet", "darling", "warmth", "hug", "hugs", "kiss", "kisses", "heart", "beloved",
+    "passion", "passionate", "devoted", "sweetheart",
+
+    # Anger
+    "angry", "anger", "furious", "mad", "hate", "hates", "hated", "hating", "rage", "annoyed", "annoying",
+    "frustrated", "frustration", "irritated", "outraged", "disgusted", "disgust", "hostile", "slammed",
+    "punched", "bitter", "resentful", "enemy", "furious", "infuriated", "lie", "lied", "lying", "liar",
+    "tolerate", "betray", "betrayed", "betrayal", "cheat", "cheated", "disrespect", "insult", "insulted",
+
+    # Fear
+    "scared", "fear", "afraid", "terrified", "terror", "panic", "panicked", "anxious", "anxiety",
+    "horrified", "horror", "dread", "dreading", "nervous", "frightened", "shaking", "trembling", "spooky",
+    "threat", "threatened", "scaring", "creepy", "worried", "worry", "worrying", "sneak", "sneaking",
+    "footsteps", "dark", "darkness", "shadow", "creeping", "scream", "screaming", "nightmare", "ghost",
+
+    # Surprise
+    "surprised", "surprise", "shocked", "shock", "astonished", "amazed", "unbelievable", "unexpected",
+    "speechless", "stunned", "gasp", "gasped", "blindsided", "jaw-dropping", "woah", "wow", "sudden",
+    "suddenly", "astonishing"
+}
+
+
+def is_emotionally_neutral(text):
+    text_lower = text.lower()
+    tokens = re.findall(r"\b\w+(?:'\w+)?\b", text_lower)
+    for t in tokens:
+        if t in EMOTION_LEXICON:
+            return False
+        for ek in EMOTION_LEXICON:
+            if len(ek) > 3 and (t == ek or t.startswith(ek)):
+                return False
+    return True
+
+
+EXPLICIT_PHRASE_OVERRIDES = {
+    # Joy / Victory
+    r"\bwon the championship\b": ("joy", 0.94),
+    r"\bwon the game\b": ("joy", 0.92),
+    r"\bchampionship game\b": ("joy", 0.92),
+    r"\bwon first place\b": ("joy", 0.92),
+
+    # Fear / Threat
+    r"\bfootsteps\b": ("fear", 0.90),
+    r"\bsneaking\b": ("fear", 0.90),
+    r"\blights went out\b": ("fear", 0.92),
+    r"\bdark hallway\b": ("fear", 0.90),
+
+    # Anger / Betrayal
+    r"\bbeing lied to\b": ("anger", 0.93),
+    r"\bcannot tolerate\b": ("anger", 0.90),
+    r"\bcan't tolerate\b": ("anger", 0.90),
+    r"\bbetrayed my trust\b": ("anger", 0.92),
+}
+
+
 def check_keyword_overrides(text):
     text_lower = text.lower()
     for kw, emotion in CRISIS_KEYWORDS.items():
@@ -113,6 +185,11 @@ def check_keyword_overrides(text):
         if kw in text_lower:
             return emotion, 0.90
     
+    # Check explicit multi-clause phrase overrides
+    for pattern, (emotion, conf) in EXPLICIT_PHRASE_OVERRIDES.items():
+        if re.search(pattern, text_lower):
+            return emotion, conf
+
     # Sarcasm / Ironic Contrast check (e.g. "thrilled that ... canceled")
     has_pos = any(w in text_lower for w in SARCASM_POSITIVE_WORDS)
     has_neg_event = any(w in text_lower for w in SARCASM_NEGATIVE_EVENTS)
@@ -142,6 +219,19 @@ def predict_emotion(text, confidence_threshold=CONFIDENCE_THRESHOLD, margin_thre
             "margin": override_conf - 0.05,
             "status": "confident",
             "model_emotion": override_emotion,
+        }
+
+    # Factual / Emotionally Neutral Check
+    if is_emotionally_neutral(text):
+        return {
+            "emotion": "neutral",
+            "confidence": 0.0,
+            "second_emotion": None,
+            "second_confidence": 0.0,
+            "margin": 0.0,
+            "status": "neutral",
+            "model_emotion": "neutral",
+            "reason": "Factual / Emotionally neutral statement",
         }
 
     tokens = tokenize(text)
