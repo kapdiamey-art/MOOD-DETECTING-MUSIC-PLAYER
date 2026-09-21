@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import AppLayout from "./AppLayout";
 import { useNavigate } from "react-router-dom";
 import { applyMoodTheme } from "./moodTheme";
@@ -22,6 +22,11 @@ export default function MoodDetection() {
   const [loading,         setLoading        ] = useState(false);
   const [inlineMessage,   setInlineMessage  ] = useState("");
 
+  // Voice / Whisper speech-to-text state
+  const [isListening,     setIsListening    ] = useState(false);
+  const [micError,        setMicError       ] = useState("");
+  const recognitionRef = useRef(null);
+
   const navigate = useNavigate();
 
   const userInitial = (() => {
@@ -30,6 +35,73 @@ export default function MoodDetection() {
     const effective = name || (email ? email.split("@")[0] : "User");
     return (effective.trim().charAt(0) || "U").toUpperCase();
   })();
+  // ── VOICE / WHISPER INPUT ──────────────────────────────────────────
+  const toggleVoice = () => {
+    setMicError("");
+
+    // Check browser support
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      setMicError("Your browser does not support voice input. Please use Chrome or Edge.");
+      return;
+    }
+
+    // If already listening → stop
+    if (isListening && recognitionRef.current) {
+      recognitionRef.current.stop();
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognitionRef.current = recognition;
+
+    recognition.continuous      = true;   // keep listening until stopped
+    recognition.interimResults  = true;   // show live transcript while speaking
+    recognition.lang            = "en-US";
+    recognition.maxAlternatives = 1;
+
+    let finalTranscript = text; // start from whatever is already typed
+
+    recognition.onstart = () => {
+      setIsListening(true);
+      setMicError("");
+    };
+
+    recognition.onresult = (event) => {
+      let interim = "";
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const t = event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          finalTranscript += (finalTranscript ? " " : "") + t.trim();
+          setText(finalTranscript.slice(0, 500));
+        } else {
+          interim = t;
+        }
+      }
+      // Show live preview (interim) while speaking, but clamp to 500 chars
+      if (interim) {
+        setText((finalTranscript + (finalTranscript ? " " : "") + interim).slice(0, 500));
+      }
+    };
+
+    recognition.onerror = (event) => {
+      if (event.error === "not-allowed") {
+        setMicError("Microphone access denied. Please allow microphone permissions in your browser.");
+      } else if (event.error === "no-speech") {
+        setMicError("No speech detected. Please speak clearly and try again.");
+      } else {
+        setMicError(`Voice error: ${event.error}. Please try again.`);
+      }
+      setIsListening(false);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognition.start();
+  };
+  // ───────────────────────────────────────────────────────────────────
 
   const detectMood = async () => {
     if (!text.trim()) {
@@ -204,18 +276,91 @@ export default function MoodDetection() {
           border-radius: 16px;
           color: var(--input-text);
           font-size: 1rem;
-          padding: 18px;
+          padding: 18px 60px 18px 18px;
           resize: vertical;
           outline: none;
           transition: border-color 0.2s, box-shadow 0.2s;
           font-family: inherit;
           line-height: 1.7;
         }
+        .md-textarea.listening {
+          border-color: rgba(139,92,246,0.7);
+          box-shadow: 0 0 0 3px rgba(139,92,246,0.2), 0 0 20px rgba(139,92,246,0.15);
+        }
         .md-textarea:focus {
           border-color: rgba(139,92,246,0.5);
           box-shadow: 0 0 0 3px rgba(139,92,246,0.12);
         }
         .md-textarea::placeholder { color: var(--input-placeholder); }
+
+        /* ── Mic button ── */
+        .md-mic-btn {
+          position: absolute;
+          top: 14px;
+          right: 14px;
+          width: 38px;
+          height: 38px;
+          border-radius: 50%;
+          border: none;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1.1rem;
+          transition: all 0.2s ease;
+          z-index: 2;
+          background: rgba(139,92,246,0.12);
+          color: #a78bfa;
+        }
+        .md-mic-btn:hover {
+          background: rgba(139,92,246,0.22);
+          transform: scale(1.08);
+        }
+        .md-mic-btn.active {
+          background: linear-gradient(135deg, #8b5cf6, #ec4899);
+          color: white;
+          box-shadow: 0 0 0 4px rgba(139,92,246,0.25), 0 0 16px rgba(139,92,246,0.4);
+          animation: micPulse 1.4s ease-in-out infinite;
+        }
+        @keyframes micPulse {
+          0%, 100% { box-shadow: 0 0 0 4px rgba(139,92,246,0.25), 0 0 16px rgba(139,92,246,0.4); }
+          50%       { box-shadow: 0 0 0 8px rgba(139,92,246,0.12), 0 0 28px rgba(139,92,246,0.55); }
+        }
+
+        /* ── Mic status label ── */
+        .md-mic-status {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 0.82rem;
+          font-weight: 600;
+          color: #a78bfa;
+          animation: fadeIn 0.3s ease;
+        }
+        .md-mic-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: #a78bfa;
+          animation: micDot 1s ease-in-out infinite;
+        }
+        @keyframes micDot {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50%       { opacity: 0.4; transform: scale(0.7); }
+        }
+        @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+
+        /* ── Mic error ── */
+        .md-mic-error {
+          margin-top: 8px;
+          padding: 10px 14px;
+          background: rgba(239,68,68,0.1);
+          border: 1px solid rgba(239,68,68,0.25);
+          border-radius: 10px;
+          font-size: 0.83rem;
+          color: #f87171;
+        }
+
         .md-textarea-footer {
           display: flex;
           justify-content: space-between;
@@ -568,19 +713,36 @@ export default function MoodDetection() {
         <section className="md-card">
           <div className="md-card-glow" />
 
-          {/* Textarea */}
+          {/* Textarea + Mic Button */}
           <div className="md-textarea-wrap">
             <textarea
-              className="md-textarea"
+              className={`md-textarea${isListening ? " listening" : ""}`}
               value={text}
               onChange={(e) => setText(e.target.value)}
               maxLength={500}
-              placeholder="Example: I've had a long day and I just want to relax with some peaceful music..."
+              placeholder="Example: I've had a long day and I just want to relax with some peaceful music... or click 🎤 to speak"
             />
+            {/* 🎤 Microphone / Voice Input Button */}
+            <button
+              type="button"
+              className={`md-mic-btn${isListening ? " active" : ""}`}
+              onClick={toggleVoice}
+              title={isListening ? "Stop recording" : "Speak your mood (Voice input)"}
+            >
+              {isListening ? "⏹" : "🎤"}
+            </button>
             <div className="md-textarea-footer">
-              <span>✨ AI will analyze your emotions</span>
+              {isListening ? (
+                <span className="md-mic-status">
+                  <span className="md-mic-dot" />
+                  Listening... speak now, click ⏹ to stop
+                </span>
+              ) : (
+                <span>✨ AI will analyze your emotions</span>
+              )}
               <span>{text.length}/500</span>
             </div>
+            {micError && <div className="md-mic-error">🚫 {micError}</div>}
           </div>
 
           {/* Language Preference */}
