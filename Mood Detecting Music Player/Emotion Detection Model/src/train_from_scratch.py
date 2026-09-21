@@ -116,7 +116,7 @@ def train_model():
     optimizer = optim.AdamW(model.parameters(), lr=1e-3, weight_decay=0.01)
 
     # Cosine Annealing Learning Rate Scheduler
-    epochs = 20
+    epochs = 30
     scheduler = CosineAnnealingLR(optimizer, T_max=epochs, eta_min=1e-5)
 
     best_val_acc = 0.0

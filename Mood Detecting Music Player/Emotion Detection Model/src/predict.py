@@ -10,13 +10,33 @@ from model import SelfTrainedAttentionEmotionModel
 BASE_DIR = Path(__file__).resolve().parent.parent
 MAX_LENGTH, EMBEDDING_DIM, HIDDEN_DIM, NUM_CLASSES = 50, 128, 128, 6
 # Starting values only. Use evaluate.py's coverage results to tune them.
-CONFIDENCE_THRESHOLD = 0.70
-MARGIN_THRESHOLD = 0.15
+CONFIDENCE_THRESHOLD = 0.50
+MARGIN_THRESHOLD = 0.10
 LABEL_NAMES = ["sadness", "joy", "love", "anger", "fear", "surprise"]
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 with open(BASE_DIR / "models" / "vocabulary.json", encoding="utf-8") as file:
     word_to_index = json.load(file)
+
+# Contraction expansion — runs before tokenisation so contracted forms
+# ("I'm", "can't", "don't", etc.) map to vocabulary-known words.
+CONTRACTION_MAP = {
+    r"\bi'm\b": "i am", r"\bi've\b": "i have",
+    r"\bi'll\b": "i will", r"\bi'd\b": "i would",
+    r"\byou're\b": "you are", r"\bwe're\b": "we are",
+    r"\bthey're\b": "they are", r"\bhe's\b": "he is",
+    r"\bshe's\b": "she is", r"\bit's\b": "it is",
+    r"\bthat's\b": "that is", r"\bwhat's\b": "what is",
+    r"\bcan't\b": "cannot", r"\bcannot\b": "cannot",
+    r"\bcouldn't\b": "could not", r"\bwouldn't\b": "would not",
+    r"\bshouldn't\b": "should not", r"\bwon't\b": "will not",
+    r"\bdon't\b": "do not", r"\bdoesn't\b": "does not",
+    r"\bdidn't\b": "did not", r"\bisn't\b": "is not",
+    r"\baren't\b": "are not", r"\bwasn't\b": "was not",
+    r"\bweren't\b": "were not", r"\bhadn't\b": "had not",
+    r"\bhaven't\b": "have not", r"\bhasn't\b": "has not",
+    r"\bi'm\b": "i am",  # duplicate guard
+}
 
 NEGATION_MAP = {
     r"\bnot happy\b": "not_happy", r"\bnot good\b": "not_good",
@@ -28,6 +48,10 @@ NEGATION_MAP = {
 
 
 def tokenize(text):
+    # 1. Expand contractions first so "I'm" -> "i am" (vocabulary-known)
+    for pattern, replacement in CONTRACTION_MAP.items():
+        text = re.sub(pattern, replacement, text, flags=re.IGNORECASE)
+    # 2. Apply negation phrase collapsing
     for pattern, replacement in NEGATION_MAP.items():
         text = re.sub(pattern, replacement, text, flags=re.IGNORECASE)
     return re.findall(r"\b\w+(?:'\w+)?\b", text.lower())
@@ -67,6 +91,19 @@ STOPWORDS = {
 }
 
 
+SARCASM_POSITIVE_WORDS = {
+    "thrilled", "glad", "happy", "great", "oh, great", "oh great", "wonderful", "excited",
+    "fantastic", "perfect", "love it", "awesome", "so good", "exactly how i wanted", "just what i needed"
+}
+
+SARCASM_NEGATIVE_EVENTS = {
+    "canceled", "cancelled", "delayed", "ruined", "broke", "broken",
+    "lost", "stuck", "crowded", "terrible", "worst", "disaster",
+    "failed", "fail", "late", "traffic", "accident", "crash", "crashed",
+    "couldn't have been an email", "could not have been an email", "another meeting", "more meetings"
+}
+
+
 def check_keyword_overrides(text):
     text_lower = text.lower()
     for kw, emotion in CRISIS_KEYWORDS.items():
@@ -75,6 +112,13 @@ def check_keyword_overrides(text):
     for kw, emotion in AGGRESSION_KEYWORDS.items():
         if kw in text_lower:
             return emotion, 0.90
+    
+    # Sarcasm / Ironic Contrast check (e.g. "thrilled that ... canceled")
+    has_pos = any(w in text_lower for w in SARCASM_POSITIVE_WORDS)
+    has_neg_event = any(w in text_lower for w in SARCASM_NEGATIVE_EVENTS)
+    if has_pos and has_neg_event:
+        return "anger", 0.88
+
     return None, None
 
 

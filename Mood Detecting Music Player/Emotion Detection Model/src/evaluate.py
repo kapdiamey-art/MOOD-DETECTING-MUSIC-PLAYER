@@ -5,12 +5,12 @@ import torch
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, f1_score, precision_score, recall_score
 
 from dataset import create_dataloaders
-from model import EmotionModel
+from model import SelfTrainedAttentionEmotionModel
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 BATCH_SIZE, MAX_LENGTH = 32, 50
 EMBEDDING_DIM, HIDDEN_DIM, NUM_CLASSES = 128, 128, 6
-CONFIDENCE_THRESHOLD, MARGIN_THRESHOLD = 0.70, 0.15
+CONFIDENCE_THRESHOLD, MARGIN_THRESHOLD = 0.50, 0.10
 LABEL_NAMES = ["sadness", "joy", "love", "anger", "fear", "surprise"]
 
 # Evaluation-only inputs: they are never written to, or loaded from, training data.
@@ -28,7 +28,7 @@ def evaluate():
     with open(BASE_DIR / "models" / "vocabulary.json", encoding="utf-8") as file:
         vocab_size = len(json.load(file))
     _, _, test_loader = create_dataloaders(BATCH_SIZE, MAX_LENGTH)
-    model = EmotionModel(vocab_size, EMBEDDING_DIM, HIDDEN_DIM, NUM_CLASSES).to(device)
+    model = SelfTrainedAttentionEmotionModel(vocab_size, EMBEDDING_DIM, HIDDEN_DIM, NUM_CLASSES).to(device)
     model.load_state_dict(torch.load(BASE_DIR / "models" / "emotion_model.pth", map_location=device))
     model.eval()
 
