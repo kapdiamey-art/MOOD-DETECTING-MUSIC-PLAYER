@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -7,6 +8,8 @@ import {
 } from "firebase/auth";
 
 import { auth } from "./firebase";
+
+const OTP_API = "http://localhost:5000";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -18,8 +21,7 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // OTP mode is FALSE by default.
-  // Therefore the normal login screen opens first.
+  // Normal login opens first
   const [otpMode, setOtpMode] = useState(false);
 
   const [otp, setOtp] = useState("");
@@ -42,11 +44,91 @@ export default function Login() {
   };
 
   // =====================================================
-  // NORMAL LOGIN WITH EMAIL + PASSWORD
+  // SAVE FIREBASE SESSION
   // =====================================================
-  // IMPORTANT:
-  // Password login does NOT send OTP.
-  // Successful password login goes directly to /mood.
+
+  const saveFirebaseSession = async (user, cleanEmail) => {
+    // Get a fresh Firebase ID token.
+    // This token is required by the FastAPI backend.
+    const firebaseToken = await user.getIdToken(true);
+
+    if (!firebaseToken) {
+      throw new Error(
+        "Firebase authentication token was not created."
+      );
+    }
+
+    const savedName =
+      user.displayName ||
+      localStorage.getItem("moodifyUserName") ||
+      cleanEmail.split("@")[0];
+
+    // Save authentication information
+    localStorage.setItem(
+      "moodifyToken",
+      firebaseToken
+    );
+
+    localStorage.setItem(
+      "moodifyLoggedIn",
+      "true"
+    );
+
+    localStorage.setItem(
+      "moodifyEmail",
+      cleanEmail
+    );
+
+    localStorage.setItem(
+      "moodifyUserName",
+      savedName
+    );
+
+    localStorage.setItem(
+      "moodifyUser",
+      JSON.stringify({
+        name: savedName,
+        email: cleanEmail,
+      })
+    );
+
+    localStorage.setItem(
+      "moodifyLoginMethod",
+      "password"
+    );
+
+    console.log(
+      "================================="
+    );
+
+    console.log(
+      "✅ FIREBASE LOGIN SESSION SAVED"
+    );
+
+    console.log(
+      "Email:",
+      cleanEmail
+    );
+
+    console.log(
+      "Token exists:",
+      true
+    );
+
+    console.log(
+      "Token length:",
+      firebaseToken.length
+    );
+
+    console.log(
+      "================================="
+    );
+
+    return firebaseToken;
+  };
+
+  // =====================================================
+  // NORMAL LOGIN
   // =====================================================
 
   const handleLogin = async (e) => {
@@ -56,29 +138,34 @@ export default function Login() {
     setMessage("");
     setShowResend(false);
 
-    const cleanEmail = email.trim().toLowerCase();
+    const cleanEmail =
+      email.trim().toLowerCase();
 
-    // -------------------------------------------------
-    // VALIDATION
-    // -------------------------------------------------
-
+    // Validation
     if (!cleanEmail || !password) {
-      setError("Please enter your email and password.");
+      setError(
+        "Please enter your email and password."
+      );
       return;
     }
 
     if (!isValidEmail(cleanEmail)) {
-      setError("Please enter a valid email address.");
+      setError(
+        "Please enter a valid email address."
+      );
       return;
     }
 
     try {
       setLoading(true);
 
-      console.log("Logging in:", cleanEmail);
+      console.log(
+        "Logging in:",
+        cleanEmail
+      );
 
       // =================================================
-      // FIREBASE EMAIL + PASSWORD LOGIN
+      // FIREBASE LOGIN
       // =================================================
 
       const userCredential =
@@ -88,9 +175,14 @@ export default function Login() {
           password
         );
 
-      const user = userCredential.user;
+      const user =
+        userCredential.user;
 
-      console.log("Firebase user:", user.email);
+      console.log(
+        "Firebase user:",
+        user.email
+      );
+
       console.log(
         "Email verified:",
         user.emailVerified
@@ -111,37 +203,22 @@ export default function Login() {
       }
 
       // =================================================
-      // PASSWORD LOGIN SUCCESS
-      // NO OTP HERE
+      // SAVE FIREBASE TOKEN
       // =================================================
 
-      console.log(
-        "✅ Email + password login successful"
+      await saveFirebaseSession(
+        user,
+        cleanEmail
       );
 
-      const resolvedName = user.displayName || (localStorage.getItem("moodifyEmail") === cleanEmail ? localStorage.getItem("moodifyUserName") : null) || cleanEmail.split("@")[0];
-
-      localStorage.setItem("moodifyLoggedIn", "true");
-      localStorage.setItem("moodifyEmail", cleanEmail);
-      localStorage.setItem("moodifyUserName", resolvedName);
-      localStorage.setItem("moodifyUser", JSON.stringify({ name: resolvedName, email: cleanEmail }));
-      localStorage.setItem("moodifyLoginMethod", "password");
-
-      // *******************************************c*******************************************
-      // FIREBASE ID TOKEN — Authentication handled directly by Firebase
-      try {
-        const firebaseToken = await user.getIdToken();
-        localStorage.setItem("moodifyToken", firebaseToken);
-      } catch (err) {
-        console.log("Firebase token retrieval failed:", err);
-      }
-      // *******************************************c*******************************************
-      
       setMessage(
         "Login successful! Redirecting..."
       );
 
-      // Small delay so user can see success message
+      // =================================================
+      // GO TO MOOD PAGE
+      // =================================================
+
       setTimeout(() => {
         navigate("/mood");
       }, 500);
@@ -219,9 +296,6 @@ export default function Login() {
   // =====================================================
   // OPEN OTP LOGIN
   // =====================================================
-  // This function ONLY opens the OTP screen.
-  // It does NOT send OTP yet.
-  // =====================================================
 
   const handleOpenOTPLogin = () => {
     setOtpMode(true);
@@ -246,10 +320,6 @@ export default function Login() {
     const cleanEmail =
       email.trim().toLowerCase();
 
-    // -------------------------------------------------
-    // VALIDATE EMAIL
-    // -------------------------------------------------
-
     if (!cleanEmail) {
       setError(
         "Please enter your email address."
@@ -272,12 +342,8 @@ export default function Login() {
         cleanEmail
       );
 
-      // =================================================
-      // SEND OTP TO BACKEND
-      // =================================================
-
       const response = await fetch(
-        "http://localhost:5000/send-otp",
+        `${OTP_API}/send-otp`,
         {
           method: "POST",
 
@@ -309,12 +375,6 @@ export default function Login() {
           "Failed to send OTP."
         );
       }
-
-      // =================================================
-      // OTP SENT
-      // =================================================
-
-      console.log("✅ OTP sent");
 
       setOtpSent(true);
 
@@ -352,10 +412,6 @@ export default function Login() {
     const cleanOTP =
       otp.trim();
 
-    // -------------------------------------------------
-    // VALIDATE EMAIL
-    // -------------------------------------------------
-
     if (!cleanEmail) {
       setError(
         "Email is required."
@@ -369,10 +425,6 @@ export default function Login() {
       );
       return;
     }
-
-    // -------------------------------------------------
-    // VALIDATE OTP
-    // -------------------------------------------------
 
     if (!cleanOTP) {
       setError(
@@ -396,12 +448,8 @@ export default function Login() {
         cleanEmail
       );
 
-      // =================================================
-      // VERIFY OTP WITH BACKEND
-      // =================================================
-
       const response = await fetch(
-        "http://localhost:5000/verify-otp",
+        `${OTP_API}/verify-otp`,
         {
           method: "POST",
 
@@ -425,10 +473,6 @@ export default function Login() {
         data
       );
 
-      // =================================================
-      // CHECK OTP
-      // =================================================
-
       if (
         !response.ok ||
         !data.success
@@ -443,36 +487,27 @@ export default function Login() {
         "✅ OTP verified successfully"
       );
 
-      // =================================================
-      // LOGIN SUCCESS
-      // =================================================
-
-      localStorage.setItem(
-        "moodifyLoggedIn",
-        "true"
-      );
-
-      localStorage.setItem(
-        "moodifyEmail",
-        cleanEmail
-      );
-
-      localStorage.setItem(
-        "moodifyLoginMethod",
-        "otp"
-      );
+      /*
+       * IMPORTANT:
+       *
+       * Your custom OTP backend only verifies
+       * the OTP. It does not create a Firebase
+       * ID token.
+       *
+       * Therefore we do NOT save fake authentication
+       * information here.
+       *
+       * Protected Moodify APIs require a Firebase
+       * ID token.
+       */
 
       setMessage(
-        "OTP verified successfully! Redirecting..."
+        "OTP verified. Please use Email + Password login for the protected Moodify session."
       );
 
-      // =================================================
-      // GO TO MOOD PAGE
-      // =================================================
-
-      setTimeout(() => {
-        navigate("/mood");
-      }, 500);
+      setOtpMode(false);
+      setOtpSent(false);
+      setOtp("");
 
     } catch (error) {
       console.error(
@@ -512,13 +547,8 @@ export default function Login() {
     try {
       setOtpLoading(true);
 
-      console.log(
-        "Resending OTP to:",
-        cleanEmail
-      );
-
       const response = await fetch(
-        "http://localhost:5000/send-otp",
+        `${OTP_API}/send-otp`,
         {
           method: "POST",
 
@@ -606,10 +636,6 @@ export default function Login() {
         const user =
           userCredential.user;
 
-        // -------------------------------------------------
-        // ALREADY VERIFIED
-        // -------------------------------------------------
-
         if (user.emailVerified) {
           setMessage(
             "Your email is already verified. Please login again."
@@ -619,10 +645,6 @@ export default function Login() {
 
           return;
         }
-
-        // -------------------------------------------------
-        // SEND VERIFICATION EMAIL
-        // -------------------------------------------------
 
         await sendEmailVerification(
           user
@@ -672,9 +694,7 @@ export default function Login() {
 
       <div className="auth-card">
 
-        {/* =================================================
-            LOGO
-        ================================================= */}
+        {/* LOGO */}
 
         <div className="auth-logo">
 
@@ -688,10 +708,7 @@ export default function Login() {
 
         </div>
 
-
-        {/* =================================================
-            HEADER
-        ================================================= */}
+        {/* HEADER */}
 
         <div className="auth-header">
 
@@ -709,9 +726,8 @@ export default function Login() {
 
         </div>
 
-
         {/* =================================================
-            NORMAL LOGIN SCREEN
+            NORMAL LOGIN
         ================================================= */}
 
         {!otpMode && (
@@ -741,7 +757,6 @@ export default function Login() {
 
             </div>
 
-
             {/* PASSWORD */}
 
             <div className="form-group">
@@ -763,8 +778,34 @@ export default function Login() {
                 required
               />
 
-            </div>
+              {/* FORGOT PASSWORD */}
 
+              <div
+                style={{
+                  textAlign: "right",
+                  marginTop: "8px",
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() =>
+                    navigate("/forgot-password")
+                  }
+                  style={{
+                    background: "none",
+                    border: "none",
+                    padding: 0,
+                    color: "#8b5cf6",
+                    cursor: "pointer",
+                    fontSize: "14px",
+                    fontWeight: "600",
+                  }}
+                >
+                  Forgot Password?
+                </button>
+              </div>
+
+            </div>
 
             {/* ERROR */}
 
@@ -799,7 +840,6 @@ export default function Login() {
 
             )}
 
-
             {/* SUCCESS */}
 
             {message && (
@@ -810,10 +850,7 @@ export default function Login() {
 
             )}
 
-
-            {/* =================================================
-                NORMAL LOGIN BUTTON
-            ================================================= */}
+            {/* LOGIN BUTTON */}
 
             <button
               type="submit"
@@ -827,10 +864,7 @@ export default function Login() {
 
             </button>
 
-
-            {/* =================================================
-                DIVIDER
-            ================================================= */}
+            {/* DIVIDER */}
 
             <div
               style={{
@@ -864,10 +898,7 @@ export default function Login() {
 
             </div>
 
-
-            {/* =================================================
-                LOGIN WITH OTP BUTTON
-            ================================================= */}
+            {/* OTP BUTTON */}
 
             <button
               type="button"
@@ -889,18 +920,13 @@ export default function Login() {
 
         )}
 
-
         {/* =================================================
-            OTP LOGIN SCREEN
+            OTP LOGIN
         ================================================= */}
 
         {otpMode && (
 
           <div>
-
-            {/* =================================================
-                OTP HEADER
-            ================================================= */}
 
             <div
               style={{
@@ -920,10 +946,7 @@ export default function Login() {
 
             </div>
 
-
-            {/* =================================================
-                EMAIL
-            ================================================= */}
+            {/* EMAIL */}
 
             <div className="form-group">
 
@@ -947,10 +970,7 @@ export default function Login() {
 
             </div>
 
-
-            {/* =================================================
-                SEND OTP BUTTON
-            ================================================= */}
+            {/* SEND OTP */}
 
             {!otpSent && (
 
@@ -969,10 +989,7 @@ export default function Login() {
 
             )}
 
-
-            {/* =================================================
-                OTP SENT MESSAGE
-            ================================================= */}
+            {/* OTP SENT */}
 
             {otpSent && !error && (
 
@@ -989,10 +1006,7 @@ export default function Login() {
 
             )}
 
-
-            {/* =================================================
-                OTP INPUT
-            ================================================= */}
+            {/* OTP INPUT */}
 
             {otpSent && (
 
@@ -1027,10 +1041,7 @@ export default function Login() {
 
                 </div>
 
-
-                {/* =================================================
-                    ERROR
-                ================================================= */}
+                {/* ERROR */}
 
                 {error && (
 
@@ -1042,10 +1053,7 @@ export default function Login() {
 
                 )}
 
-
-                {/* =================================================
-                    SUCCESS
-                ================================================= */}
+                {/* SUCCESS */}
 
                 {message && (
 
@@ -1057,10 +1065,7 @@ export default function Login() {
 
                 )}
 
-
-                {/* =================================================
-                    VERIFY OTP
-                ================================================= */}
+                {/* VERIFY */}
 
                 <button
                   type="button"
@@ -1078,10 +1083,7 @@ export default function Login() {
 
                 </button>
 
-
-                {/* =================================================
-                    RESEND OTP
-                ================================================= */}
+                {/* RESEND */}
 
                 <button
                   type="button"
@@ -1103,10 +1105,7 @@ export default function Login() {
 
             )}
 
-
-            {/* =================================================
-                BACK TO NORMAL LOGIN
-            ================================================= */}
+            {/* BACK */}
 
             <button
               type="button"
@@ -1126,10 +1125,7 @@ export default function Login() {
 
         )}
 
-
-        {/* =================================================
-            REGISTER
-        ================================================= */}
+        {/* REGISTER */}
 
         <div className="auth-switch">
 
@@ -1153,3 +1149,4 @@ export default function Login() {
     </div>
   );
 }
+

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -132,7 +133,7 @@ export default function Register() {
 
       setError(
         error.message ||
-        "Unable to send OTP. Make sure the backend is running."
+        "Unable to send OTP. Make sure the OTP server is running."
       );
 
     } finally {
@@ -320,18 +321,27 @@ export default function Register() {
         user.email
       );
 
-      // Set display name in Firebase Auth
+      // =================================================
+      // STEP 2
+      // SET DISPLAY NAME
+      // =================================================
+
       if (name) {
         try {
-          await updateProfile(user, { displayName: name });
+          await updateProfile(user, {
+            displayName: name
+          });
         } catch (profileErr) {
-          console.log("Setting display name failed:", profileErr);
+          console.log(
+            "Setting display name failed:",
+            profileErr
+          );
         }
       }
 
       // =================================================
-      // STEP 2
-      // SEND FIREBASE EMAIL VERIFICATION
+      // STEP 3
+      // SEND FIREBASE VERIFICATION EMAIL
       // =================================================
 
       console.log(
@@ -345,13 +355,27 @@ export default function Register() {
       );
 
       // =================================================
-      // STEP 3
+      // STEP 4
       // SAVE USER INFORMATION
       // =================================================
 
-      localStorage.setItem("moodifyUserName", name);
-      localStorage.setItem("moodifyEmail", email);
-      localStorage.setItem("moodifyUser", JSON.stringify({ name: name, email: email }));
+      localStorage.setItem(
+        "moodifyUserName",
+        name
+      );
+
+      localStorage.setItem(
+        "moodifyEmail",
+        email
+      );
+
+      localStorage.setItem(
+        "moodifyUser",
+        JSON.stringify({
+          name: name,
+          email: email
+        })
+      );
 
       // User is NOT logged in yet
       localStorage.removeItem(
@@ -363,7 +387,7 @@ export default function Register() {
       );
 
       // =================================================
-      // STEP 4
+      // STEP 5
       // SIGN OUT FIREBASE USER
       // =================================================
 
@@ -371,17 +395,21 @@ export default function Register() {
         createUserWithEmailAndPassword()
         automatically signs the user in.
 
-        But your required flow is:
+        But our required flow is:
 
         Register
           ↓
-        Verification email
+        Brevo OTP verified
+          ↓
+        Firebase account created
+          ↓
+        Firebase verification email
           ↓
         User verifies email
           ↓
         Login
 
-        Therefore we sign them out here.
+        Therefore we sign the user out here.
       */
 
       await signOut(auth);
@@ -391,7 +419,7 @@ export default function Register() {
       );
 
       // =================================================
-      // STEP 5
+      // STEP 6
       // SUCCESS MESSAGE
       // =================================================
 
@@ -405,6 +433,7 @@ export default function Register() {
       );
 
       // =================================================
+      // STEP 7
       // GO TO LOGIN
       // =================================================
 
@@ -577,7 +606,10 @@ export default function Register() {
               type="button"
               className="auth-submit"
               onClick={handleSendOTP}
-              disabled={otpLoading || loading}
+              disabled={
+                otpLoading ||
+                loading
+              }
               style={{
                 marginBottom: "15px"
               }}
@@ -674,44 +706,48 @@ export default function Register() {
             </div>
           )}
 
-  {/* =================================================
-    PASSWORD SECTION
-    SHOW ONLY AFTER OTP IS VERIFIED
-================================================= */}
+          {/* =================================================
+              PASSWORD SECTION
+              SHOW ONLY AFTER OTP IS VERIFIED
+          ================================================= */}
 
-{otpVerified && (
-  <>
-    <div className="form-group">
-      <label>
-        Password
-      </label>
+          {otpVerified && (
+            <>
+              <div className="form-group">
 
-      <input
-        type="password"
-        name="password"
-        placeholder="Create a password"
-        value={form.password}
-        onChange={handleChange}
-        disabled={loading}
-      />
-    </div>
+                <label>
+                  Password
+                </label>
 
-    <div className="form-group">
-      <label>
-        Confirm Password
-      </label>
+                <input
+                  type="password"
+                  name="password"
+                  placeholder="Create a password"
+                  value={form.password}
+                  onChange={handleChange}
+                  disabled={loading}
+                />
 
-      <input
-        type="password"
-        name="confirmPassword"
-        placeholder="Confirm your password"
-        value={form.confirmPassword}
-        onChange={handleChange}
-        disabled={loading}
-      />
-    </div>
-  </>
-)}
+              </div>
+
+              <div className="form-group">
+
+                <label>
+                  Confirm Password
+                </label>
+
+                <input
+                  type="password"
+                  name="confirmPassword"
+                  placeholder="Confirm your password"
+                  value={form.confirmPassword}
+                  onChange={handleChange}
+                  disabled={loading}
+                />
+
+              </div>
+            </>
+          )}
 
           {/* =================================================
               ERROR
@@ -785,3 +821,4 @@ export default function Register() {
     </div>
   );
 }
+
