@@ -48,12 +48,19 @@ NEGATION_MAP = {
     r"\bnot in the mood\b": "not_in_the_mood",
 }
 
+DYNAMIC_NEGATIONS = [
+    (r"\b(not|do not|don't|did not|didn't|is not|isn't|am not|are not|aren't|cannot|can't)\s+(?:feeling\s+)?(?:so\s+|very\s+|too\s+|really\s+|that\s+|super\s+|much\s+|all\s+that\s+)?(good|well|great|happy|okay|ok|fine|amazing|excited)\b", r"not_feeling_good"),
+]
+
 
 def tokenize(text):
     # 1. Expand contractions first so "I'm" -> "i am" (vocabulary-known)
     for pattern, replacement in CONTRACTION_MAP.items():
         text = re.sub(pattern, replacement, text, flags=re.IGNORECASE)
-    # 2. Apply negation phrase collapsing
+    # 2. Apply dynamic negation phrase collapsing
+    for pattern, replacement in DYNAMIC_NEGATIONS:
+        text = re.sub(pattern, replacement, text, flags=re.IGNORECASE)
+    # 3. Apply explicit negation phrase collapsing
     for pattern, replacement in NEGATION_MAP.items():
         text = re.sub(pattern, replacement, text, flags=re.IGNORECASE)
     return re.findall(r"\b\w+(?:'\w+)?\b", text.lower())
