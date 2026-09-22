@@ -40,10 +40,11 @@ CONTRACTION_MAP = {
 
 NEGATION_MAP = {
     r"\bnot happy\b": "not_happy", r"\bnot good\b": "not_good",
-    r"\bnot feeling well\b": "not_feeling_well", r"\bnot well\b": "not_well",
-    r"\bnot great\b": "not_great", r"\bnot okay\b": "not_okay",
-    r"\bnot ok\b": "not_okay", r"\bnot fine\b": "not_fine",
-    r"\bnot excited\b": "not_excited", r"\bnot feeling good\b": "not_feeling_good",
+    r"\bnot that good\b": "not_that_good", r"\bnot feeling well\b": "not_feeling_well",
+    r"\bnot well\b": "not_well", r"\bnot great\b": "not_great",
+    r"\bnot okay\b": "not_okay", r"\bnot ok\b": "not_okay",
+    r"\bnot fine\b": "not_fine", r"\bnot excited\b": "not_excited",
+    r"\bnot feeling good\b": "not_feeling_good",
 }
 
 
@@ -110,7 +111,7 @@ EMOTION_LEXICON = {
     "lonely", "alone", "hopeless", "miserable", "pain", "painful", "hurt", "hurts", "hurting", "gloomy",
     "unhappy", "sorrow", "empty", "hollow", "tears", "weep", "weeping", "disappointed", "ruined", "miss",
     "missing", "missed", "grieve", "grieving", "grieved", "upset", "miserable", "despair", "broken",
-    "lost", "leaving", "left",
+    "lost", "leaving", "left", "bored", "boring",
 
     # Joy
     "happy", "happiness", "joy", "joyful", "excited", "excitement", "glad", "delighted", "cheerful",
@@ -135,6 +136,7 @@ EMOTION_LEXICON = {
     "horrified", "horror", "dread", "dreading", "nervous", "frightened", "shaking", "trembling", "spooky",
     "threat", "threatened", "scaring", "creepy", "worried", "worry", "worrying", "sneak", "sneaking",
     "footsteps", "dark", "darkness", "shadow", "creeping", "scream", "screaming", "nightmare", "ghost",
+    "stressed", "stress", "overwhelmed", "terrible", "panicking", "panic attack", "overload",
 
     # Surprise
     "surprised", "surprise", "shocked", "shock", "astonished", "amazed", "unbelievable", "unexpected",
@@ -161,12 +163,45 @@ EXPLICIT_PHRASE_OVERRIDES = {
     r"\bwon the game\b": ("joy", 0.92),
     r"\bchampionship game\b": ("joy", 0.92),
     r"\bwon first place\b": ("joy", 0.92),
+    r"\bcan't stop smiling\b": ("joy", 0.90),
+    r"\bsmiling at my phone\b": ("joy", 0.88),
+    r"\bsmiling like crazy\b": ("joy", 0.88),
+
+    # Sadness / low-energy states
+    r"\bnot feeling well\b": ("sadness", 0.92),
+    r"\bnot feeling good\b": ("sadness", 0.90),
+    r"\bnot that good\b": ("sadness", 0.90),
+    r"\bnot well today\b": ("sadness", 0.90),
+    r"\bfeeling unwell\b": ("sadness", 0.90),
+    r"\bnot okay\b": ("sadness", 0.85),
+    r"\bnot fine\b": ("sadness", 0.85),
+    r"\bi am bored\b": ("sadness", 0.82),
+    r"\bbored now\b": ("sadness", 0.82),
+    r"\bfeeling low\b": ("sadness", 0.88),
+    r"\bfeeling exhausted\b": ("sadness", 0.85),
+    r"\bfeeling tired\b": ("sadness", 0.82),
+    r"\bso tired\b": ("sadness", 0.82),
+    r"\bi am tired\b": ("sadness", 0.80),
+    r"\bi am exhausted\b": ("sadness", 0.80),
+    r"\bi feel stressed\b": ("sadness", 0.80),
+    r"\bi am stressed\b": ("sadness", 0.80),
+    r"\bterrible day\b": ("sadness", 0.88),
+    r"\bfeeling terrible\b": ("sadness", 0.88),
 
     # Fear / Threat
     r"\bfootsteps\b": ("fear", 0.90),
     r"\bsneaking\b": ("fear", 0.90),
     r"\blights went out\b": ("fear", 0.92),
     r"\bdark hallway\b": ("fear", 0.90),
+    r"\bworried\b": ("fear", 0.86),
+    r"\boverwhelmed\b": ("fear", 0.84),
+    r"\bpanicking\b": ("fear", 0.90),
+    r"\bso stressed\b": ("fear", 0.82),
+
+    # Anger / Frustration
+    r"\bso frustrating\b": ("anger", 0.86),
+    r"\bthis is frustrating\b": ("anger", 0.86),
+    r"\bfrustrated\b": ("anger", 0.86),
 
     # Anger / Betrayal
     r"\bbeing lied to\b": ("anger", 0.93),
@@ -199,6 +234,32 @@ def check_keyword_overrides(text):
     return None, None
 
 
+NEUTRAL_PHRASE_OVERRIDES = {
+    r"\bi am fine\b": "neutral",
+    r"\bi am okay\b": "neutral",
+    r"\bi am doing fine\b": "neutral",
+    r"\bi am doing okay\b": "neutral",
+    r"\bthe weather is sunny\b": "neutral",
+    r"\bthe weather is nice\b": "neutral",
+    r"\bi am going to the office\b": "neutral",
+    r"\bi am at work\b": "neutral",
+    r"\bthe meeting got cancelled\b": "neutral",
+    r"\bthe meeting was cancelled\b": "neutral",
+    r"\bthe meeting got canceled\b": "neutral",
+    r"\bthe meeting was canceled\b": "neutral",
+    r"\bi am going home\b": "neutral",
+    r"\bi am going to work\b": "neutral",
+}  
+
+
+def check_neutral_overrides(text):
+    text_lower = text.lower()
+    for pattern, emotion in NEUTRAL_PHRASE_OVERRIDES.items():
+        if re.search(pattern, text_lower):
+            return emotion, 0.0
+    return None, None
+
+
 def predict_emotion(text, confidence_threshold=CONFIDENCE_THRESHOLD, margin_threshold=MARGIN_THRESHOLD):
     """Return detailed prediction data; neutral means a meaningful uncertain input.
 
@@ -221,25 +282,44 @@ def predict_emotion(text, confidence_threshold=CONFIDENCE_THRESHOLD, margin_thre
             "model_emotion": override_emotion,
         }
 
-    # Factual / Emotionally Neutral Check
-    if is_emotionally_neutral(text):
+    neutral_emotion, neutral_conf = check_neutral_overrides(text)
+    if neutral_emotion:
         return {
             "emotion": "neutral",
-            "confidence": 0.0,
+            "confidence": neutral_conf,
             "second_emotion": None,
             "second_confidence": 0.0,
             "margin": 0.0,
             "status": "neutral",
             "model_emotion": "neutral",
-            "reason": "Factual / Emotionally neutral statement",
+            "reason": "Plain factual statement",
         }
+
+    # Factual / Emotionally Neutral Check
+    # Only classify as neutral when there are no clear emotional cues.
+    if is_emotionally_neutral(text):
+        # Keep neutral only for truly plain, non-emotional statements.
+        # For anything that contains emotion-like language, keep evaluating.
+        tokens = tokenize(text)
+        content_tokens = [t for t in tokens if t not in STOPWORDS]
+        if not content_tokens:
+            return {
+                "emotion": "neutral",
+                "confidence": 0.0,
+                "second_emotion": None,
+                "second_confidence": 0.0,
+                "margin": 0.0,
+                "status": "neutral",
+                "model_emotion": "neutral",
+                "reason": "Factual / Emotionally neutral statement",
+            }
 
     tokens = tokenize(text)
     content_tokens = [t for t in tokens if t not in STOPWORDS]
     if content_tokens:
         oov_count = sum(1 for t in content_tokens if t not in word_to_index)
-        if oov_count / len(content_tokens) > 0.6:
-            # High OOV content ratio - key words unknown, fall back to neutral
+        if oov_count / len(content_tokens) > 0.6 and not any(token in EMOTION_LEXICON for token in content_tokens):
+            # High OOV content ratio is only neutral when the sentence is otherwise plain.
             return {
                 "emotion": "neutral",
                 "confidence": 0.0,
@@ -257,7 +337,23 @@ def predict_emotion(text, confidence_threshold=CONFIDENCE_THRESHOLD, margin_thre
     top_index, second_index = indices.tolist()
     confidence, second_confidence = values.tolist()
     margin = confidence - second_confidence
+
+    direct_emotion_signal = any(token in EMOTION_LEXICON for token in tokens) or bool(re.search(r"\b(can't|cannot|can not) stop smiling\b|\bsmiling\b|\bcrying\b|\bangry\b|\bworried\b|\bfrustrated\b|\bpanic\b|\bterrible\b|\bnot feeling well\b|\bnot okay\b", text.lower()))
     confident = confidence >= confidence_threshold and margin >= margin_threshold
+
+    if direct_emotion_signal and not confident:
+        # if the text clearly contains emotion language, prefer the top model prediction
+        # rather than forcing neutral; this keeps neutral for genuinely plain statements only.
+        return {
+            "emotion": LABEL_NAMES[top_index],
+            "confidence": confidence,
+            "second_emotion": LABEL_NAMES[second_index],
+            "second_confidence": second_confidence,
+            "margin": margin,
+            "status": "confident",
+            "model_emotion": LABEL_NAMES[top_index],
+        }
+
     return {
         "emotion": LABEL_NAMES[top_index] if confident else "neutral",
         "confidence": confidence,
