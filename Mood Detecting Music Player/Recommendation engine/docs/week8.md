@@ -1,4 +1,5 @@
-# Week 8 — Recommendation Engine Documentation, Evaluation and Finalization
+cd ../..
+pwd# Week 8 — Recommendation Engine Documentation, Evaluation and Finalization
 
 ## 1. Objective
 
