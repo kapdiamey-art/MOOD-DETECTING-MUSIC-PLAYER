@@ -33,7 +33,7 @@ from dataset import create_dataloaders
 class SelfTrainedAttentionEmotionModel(nn.Module):
     """PyTorch Emotion Model trained 100% from scratch."""
 
-    def __init__(self, vocab_size, embedding_dim=128, hidden_dim=128, num_classes=6, num_heads=4, dropout=0.3):
+    def __init__(self, vocab_size, embedding_dim=128, hidden_dim=128, num_classes=7, num_heads=4, dropout=0.3):
         super().__init__()
         self.embedding = nn.Embedding(vocab_size, embedding_dim, padding_idx=0)
 
@@ -106,7 +106,7 @@ def train_model():
     train_loader, val_loader, test_loader = create_dataloaders(batch_size=batch_size, max_length=max_length)
 
     # Initialize model from scratch
-    model = SelfTrainedAttentionEmotionModel(vocab_size=vocab_size, embedding_dim=128, hidden_dim=128, num_classes=6)
+    model = SelfTrainedAttentionEmotionModel(vocab_size=vocab_size, embedding_dim=128, hidden_dim=128, num_classes=7)
     model = model.to(device)
 
     # Label Smoothing Cross-Entropy Loss to prevent overconfidence

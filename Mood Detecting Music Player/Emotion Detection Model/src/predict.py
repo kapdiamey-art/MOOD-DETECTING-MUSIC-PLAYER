@@ -8,11 +8,11 @@ from input_validation import validate_input
 from model import SelfTrainedAttentionEmotionModel
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-MAX_LENGTH, EMBEDDING_DIM, HIDDEN_DIM, NUM_CLASSES = 50, 128, 128, 6
+MAX_LENGTH, EMBEDDING_DIM, HIDDEN_DIM, NUM_CLASSES = 50, 128, 128, 7
 # Starting values only. Use evaluate.py's coverage results to tune them.
 CONFIDENCE_THRESHOLD = 0.50
 MARGIN_THRESHOLD = 0.10
-LABEL_NAMES = ["sadness", "joy", "love", "anger", "fear", "surprise"]
+LABEL_NAMES = ["sadness", "joy", "love", "anger", "fear", "surprise", "neutral"]
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 with open(BASE_DIR / "models" / "vocabulary.json", encoding="utf-8") as file:
@@ -92,26 +92,13 @@ STOPWORDS = {
 }
 
 
-SARCASM_POSITIVE_WORDS = {
-    "thrilled", "glad", "happy", "great", "oh, great", "oh great", "wonderful", "excited",
-    "fantastic", "perfect", "love it", "awesome", "so good", "exactly how i wanted", "just what i needed"
-}
-
-SARCASM_NEGATIVE_EVENTS = {
-    "canceled", "cancelled", "delayed", "ruined", "broke", "broken",
-    "lost", "stuck", "crowded", "terrible", "worst", "disaster",
-    "failed", "fail", "late", "traffic", "accident", "crash", "crashed",
-    "couldn't have been an email", "could not have been an email", "another meeting", "more meetings"
-}
-
-
 EMOTION_LEXICON = {
     # Sadness
     "sad", "sadness", "cry", "crying", "cried", "depressed", "depression", "heartbroken", "grief",
     "lonely", "alone", "hopeless", "miserable", "pain", "painful", "hurt", "hurts", "hurting", "gloomy",
     "unhappy", "sorrow", "empty", "hollow", "tears", "weep", "weeping", "disappointed", "ruined", "miss",
     "missing", "missed", "grieve", "grieving", "grieved", "upset", "miserable", "despair", "broken",
-    "lost", "leaving", "left", "bored", "boring",
+    "lost", "leaving", "left", "bored", "boring", "exhausted", "drained", "lonely", "annoyed", "annoying",
 
     # Joy
     "happy", "happiness", "joy", "joyful", "excited", "excitement", "glad", "delighted", "cheerful",
@@ -157,80 +144,21 @@ def is_emotionally_neutral(text):
     return True
 
 
-EXPLICIT_PHRASE_OVERRIDES = {
-    # Joy / Victory
-    r"\bwon the championship\b": ("joy", 0.94),
-    r"\bwon the game\b": ("joy", 0.92),
-    r"\bchampionship game\b": ("joy", 0.92),
-    r"\bwon first place\b": ("joy", 0.92),
-    r"\bcan't stop smiling\b": ("joy", 0.90),
-    r"\bsmiling at my phone\b": ("joy", 0.88),
-    r"\bsmiling like crazy\b": ("joy", 0.88),
 
-    # Sadness / low-energy states
-    r"\bnot feeling well\b": ("sadness", 0.92),
-    r"\bnot feeling good\b": ("sadness", 0.90),
-    r"\bnot that good\b": ("sadness", 0.90),
-    r"\bnot well today\b": ("sadness", 0.90),
-    r"\bfeeling unwell\b": ("sadness", 0.90),
-    r"\bnot okay\b": ("sadness", 0.85),
-    r"\bnot fine\b": ("sadness", 0.85),
-    r"\bi am bored\b": ("sadness", 0.82),
-    r"\bbored now\b": ("sadness", 0.82),
-    r"\bfeeling low\b": ("sadness", 0.88),
-    r"\bfeeling exhausted\b": ("sadness", 0.85),
-    r"\bfeeling tired\b": ("sadness", 0.82),
-    r"\bso tired\b": ("sadness", 0.82),
-    r"\bi am tired\b": ("sadness", 0.80),
-    r"\bi am exhausted\b": ("sadness", 0.80),
-    r"\bi feel stressed\b": ("sadness", 0.80),
-    r"\bi am stressed\b": ("sadness", 0.80),
-    r"\bterrible day\b": ("sadness", 0.88),
-    r"\bfeeling terrible\b": ("sadness", 0.88),
 
-    # Fear / Threat
-    r"\bfootsteps\b": ("fear", 0.90),
-    r"\bsneaking\b": ("fear", 0.90),
-    r"\blights went out\b": ("fear", 0.92),
-    r"\bdark hallway\b": ("fear", 0.90),
-    r"\bworried\b": ("fear", 0.86),
-    r"\boverwhelmed\b": ("fear", 0.84),
-    r"\bpanicking\b": ("fear", 0.90),
-    r"\bso stressed\b": ("fear", 0.82),
 
-    # Anger / Frustration
-    r"\bso frustrating\b": ("anger", 0.86),
-    r"\bthis is frustrating\b": ("anger", 0.86),
-    r"\bfrustrated\b": ("anger", 0.86),
-
-    # Anger / Betrayal
-    r"\bbeing lied to\b": ("anger", 0.93),
-    r"\bcannot tolerate\b": ("anger", 0.90),
-    r"\bcan't tolerate\b": ("anger", 0.90),
-    r"\bbetrayed my trust\b": ("anger", 0.92),
-}
+def normalize_text_for_matching(text):
+    return text.lower().replace("’", "'").replace("“", '"').replace("”", '"')
 
 
 def check_keyword_overrides(text):
-    text_lower = text.lower()
+    text_lower = normalize_text_for_matching(text)
     for kw, emotion in CRISIS_KEYWORDS.items():
         if kw in text_lower:
             return emotion, 0.95
     for kw, emotion in AGGRESSION_KEYWORDS.items():
         if kw in text_lower:
             return emotion, 0.90
-    
-    # Check explicit multi-clause phrase overrides
-    for pattern, (emotion, conf) in EXPLICIT_PHRASE_OVERRIDES.items():
-        if re.search(pattern, text_lower):
-            return emotion, conf
-
-    # Sarcasm / Ironic Contrast check (e.g. "thrilled that ... canceled")
-    has_pos = any(w in text_lower for w in SARCASM_POSITIVE_WORDS)
-    has_neg_event = any(w in text_lower for w in SARCASM_NEGATIVE_EVENTS)
-    if has_pos and has_neg_event:
-        return "anger", 0.88
-
     return None, None
 
 
@@ -249,11 +177,15 @@ NEUTRAL_PHRASE_OVERRIDES = {
     r"\bthe meeting was canceled\b": "neutral",
     r"\bi am going home\b": "neutral",
     r"\bi am going to work\b": "neutral",
-}  
+}
 
 
 def check_neutral_overrides(text):
-    text_lower = text.lower()
+    text_lower = normalize_text_for_matching(text)
+    conflict_markers = ["not", "but", "however", "though", "pretending", "panic", "worried", "scared", "lonely", "angry", "annoying", "frustrated", "exhausted", "drained", "disappointed", "empty", "uneasy"]
+    if any(marker in text_lower for marker in conflict_markers):
+        # Do not force neutral when the sentence contains explicit emotional wording or contradiction.
+        return None, None
     for pattern, emotion in NEUTRAL_PHRASE_OVERRIDES.items():
         if re.search(pattern, text_lower):
             return emotion, 0.0

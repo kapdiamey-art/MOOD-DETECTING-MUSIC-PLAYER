@@ -50,7 +50,8 @@ LABEL_MAP = {
     "love": 2,
     "anger": 3,
     "fear": 4,
-    "surprise": 5
+    "surprise": 5,
+    "neutral": 6
 }
 
 

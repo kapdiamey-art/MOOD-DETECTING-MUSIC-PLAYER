@@ -97,7 +97,7 @@ class SelfTrainedAttentionEmotionModel(nn.Module):
     Validation Accuracy: ~93.24%
     """
 
-    def __init__(self, vocab_size, embedding_dim=128, hidden_dim=128, num_classes=6, num_heads=4, dropout=0.3):
+    def __init__(self, vocab_size, embedding_dim=128, hidden_dim=128, num_classes=7, num_heads=4, dropout=0.3):
         super().__init__()
         self.embedding = nn.Embedding(vocab_size, embedding_dim, padding_idx=0)
 
