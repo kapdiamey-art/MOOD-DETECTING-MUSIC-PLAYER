@@ -88,7 +88,7 @@ async def detect_mood(
     try:
         emotion, confidence, recommendations_df = recommend_from_text(
             request.text,
-            n=5,
+            n=15,
             preferences=preferences,
             use_spotify=True,
             language=request.language or "all"
