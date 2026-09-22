@@ -140,7 +140,7 @@ def map_emotion(emotion):
 
 def recommend_from_text(
     text,
-    n=5,
+    n=15,
     preferences=None,
     feedback=None,
     use_spotify=False,
@@ -405,7 +405,7 @@ if __name__ == "__main__":
 
             text,
 
-            n=5,
+            n=15,
 
             preferences=preferences,
 
