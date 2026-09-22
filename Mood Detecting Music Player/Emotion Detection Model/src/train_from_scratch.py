@@ -28,60 +28,7 @@ if os.path.join(BASE_DIR, "src") not in sys.path:
     sys.path.insert(0, os.path.join(BASE_DIR, "src"))
 
 from dataset import create_dataloaders
-
-
-class SelfTrainedAttentionEmotionModel(nn.Module):
-    """PyTorch Emotion Model trained 100% from scratch."""
-
-    def __init__(self, vocab_size, embedding_dim=128, hidden_dim=128, num_classes=7, num_heads=4, dropout=0.3):
-        super().__init__()
-        self.embedding = nn.Embedding(vocab_size, embedding_dim, padding_idx=0)
-
-        # 1. Bidirectional LSTM Layer
-        self.bilstm = nn.LSTM(
-            input_size=embedding_dim,
-            hidden_size=hidden_dim,
-            num_layers=2,
-            batch_first=True,
-            bidirectional=True,
-            dropout=dropout
-        )
-
-        # 2. Multi-Head Self-Attention Layer
-        self.self_attention = nn.MultiheadAttention(
-            embed_dim=hidden_dim * 2,
-            num_heads=num_heads,
-            batch_first=True,
-            dropout=dropout
-        )
-
-        # 3. Layer Normalization & Classifier
-        self.layer_norm = nn.LayerNorm(hidden_dim * 2)
-        self.fc = nn.Sequential(
-            nn.Dropout(dropout),
-            nn.Linear(hidden_dim * 2, 64),
-            nn.ReLU(),
-            nn.Dropout(dropout / 2),
-            nn.Linear(64, num_classes)
-        )
-
-    def forward(self, input_ids):
-        # 1. Token Embeddings [Batch, SeqLen, EmbedDim]
-        embedded = self.embedding(input_ids)
-
-        # 2. BiLSTM contextual pass [Batch, SeqLen, HiddenDim*2]
-        lstm_out, _ = self.bilstm(embedded)
-
-        # 3. Multi-Head Self-Attention pass
-        attn_out, _ = self.self_attention(lstm_out, lstm_out, lstm_out)
-        norm_out = self.layer_norm(lstm_out + attn_out)
-
-        # 4. Global Max Pooling across sequence tokens
-        pooled, _ = torch.max(norm_out, dim=1)
-
-        # 5. Output emotion logits
-        logits = self.fc(pooled)
-        return logits
+from model import SelfTrainedAttentionEmotionModel
 
 
 def train_model():

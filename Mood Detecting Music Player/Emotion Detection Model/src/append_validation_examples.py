@@ -81,6 +81,17 @@ examples = [
     ("I’m trying to stay positive but I’m scared", "fear"),
     ("I’m lowkey exhausted from everything", "sadness"),
     ("I’m good, just a little tired", "neutral"),
+    ("my day was not that well so like I am feeling like bored so like what is the mood", "sadness"),
+    ("i am not feeling good", "sadness"),
+    ("my day was not that well", "sadness"),
+    ("i am not feeling well today", "sadness"),
+    ("i feel bored and unmotivated", "sadness"),
+    ("i am feeling bored today", "sadness"),
+    ("not feeling great at all", "sadness"),
+    ("not feeling good right now", "sadness"),
+    ("today was not good", "sadness"),
+    ("today was not that good", "sadness"),
+    ("i am not happy with how today turned out", "sadness"),
 ]
 
 for target_name in ["data/raw/train.csv", "data/processed/train.csv"]:

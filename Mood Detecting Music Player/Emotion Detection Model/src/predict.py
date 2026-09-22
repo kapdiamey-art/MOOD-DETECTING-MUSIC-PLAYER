@@ -41,10 +41,11 @@ CONTRACTION_MAP = {
 NEGATION_MAP = {
     r"\bnot happy\b": "not_happy", r"\bnot good\b": "not_good",
     r"\bnot that good\b": "not_that_good", r"\bnot feeling well\b": "not_feeling_well",
-    r"\bnot well\b": "not_well", r"\bnot great\b": "not_great",
-    r"\bnot okay\b": "not_okay", r"\bnot ok\b": "not_okay",
+    r"\bnot well\b": "not_well", r"\bnot that well\b": "not_that_well",
+    r"\bnot great\b": "not_great", r"\bnot okay\b": "not_okay", r"\bnot ok\b": "not_okay",
     r"\bnot fine\b": "not_fine", r"\bnot excited\b": "not_excited",
     r"\bnot feeling good\b": "not_feeling_good",
+    r"\bnot in the mood\b": "not_in_the_mood",
 }
 
 
