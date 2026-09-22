@@ -9,9 +9,9 @@ from model import SelfTrainedAttentionEmotionModel
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 BATCH_SIZE, MAX_LENGTH = 32, 50
-EMBEDDING_DIM, HIDDEN_DIM, NUM_CLASSES = 128, 128, 6
+EMBEDDING_DIM, HIDDEN_DIM, NUM_CLASSES = 128, 128, 7
 CONFIDENCE_THRESHOLD, MARGIN_THRESHOLD = 0.50, 0.10
-LABEL_NAMES = ["sadness", "joy", "love", "anger", "fear", "surprise"]
+LABEL_NAMES = ["sadness", "joy", "love", "anger", "fear", "surprise", "neutral"]
 
 # Evaluation-only inputs: they are never written to, or loaded from, training data.
 ROBUSTNESS_CASES = {
