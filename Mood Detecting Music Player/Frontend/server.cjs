@@ -25,6 +25,8 @@ const PORT = 5000;
 // FIREBASE ADMIN INITIALIZATION
 // =====================================================
 
+let firebaseAuth = null;
+
 try {
   const serviceAccount = require(
     path.join(
@@ -37,21 +39,18 @@ try {
     credential: cert(serviceAccount),
   });
 
+  firebaseAuth = getAuth();
+
   console.log(
     "✅ Firebase Admin initialized."
   );
 
 } catch (error) {
-  console.error(
-    "❌ Firebase Admin initialization failed:"
+  console.warn(
+    "⚠️ Firebase Admin initialization skipped (serviceAccountKey.json invalid or missing):",
+    error.message
   );
-
-  console.error(error.message);
-
-  process.exit(1);
 }
-
-const firebaseAuth = getAuth();
 
 // =====================================================
 // CORS
@@ -177,6 +176,11 @@ function generateOTP() {
 async function isRegisteredEmail(
   email
 ) {
+  if (!firebaseAuth) {
+    console.warn("⚠️ Firebase Admin not loaded, skipping email registration check");
+    return true;
+  }
+
   try {
 
     console.log(

@@ -850,34 +850,6 @@ export default function MoodDetection() {
             {micError && <div className="md-mic-error">🚫 {micError}</div>}
           </div>
 
-          {/* Language Preference */}
-          <div className="md-lang-wrap">
-            <span className="md-lang-label">🌐 Music Language</span>
-            <div className="md-lang-group">
-              <button
-                type="button"
-                className={`md-lang-pill ${language === "all" ? "active" : ""}`}
-                onClick={() => setLanguage("all")}
-              >
-                🌐 All Languages
-              </button>
-              <button
-                type="button"
-                className={`md-lang-pill ${language === "english" ? "active" : ""}`}
-                onClick={() => setLanguage("english")}
-              >
-                🇬🇧 English
-              </button>
-              <button
-                type="button"
-                className={`md-lang-pill ${language === "hindi" ? "active" : ""}`}
-                onClick={() => setLanguage("hindi")}
-              >
-                🇮🇳 Hindi / Bollywood
-              </button>
-            </div>
-          </div>
-
           {/* Preferences */}
           <div className="md-prefs">
             <input
@@ -940,67 +912,6 @@ export default function MoodDetection() {
                   style={{ width: `${mood.confidence}%`, background: mood.gradient }}
                 />
               </div>
-
-              {/* 🌧️ INTEGRATED AUTO-DETECTED WEATHER & LOCATION BANNER */}
-              {weatherContext && (
-                <div style={{
-                  margin: "16px 0",
-                  padding: "12px 16px",
-                  background: "rgba(6, 182, 212, 0.08)",
-                  border: "1px solid rgba(6, 182, 212, 0.25)",
-                  borderRadius: "14px",
-                  fontSize: "0.82rem",
-                  color: "var(--text)"
-                }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px", flexWrap: "wrap", gap: "6px" }}>
-                    <span style={{ fontWeight: 800, color: "#38bdf8" }}>
-                      📍 Location & Environmental Context:
-                    </span>
-                    <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
-                      <input
-                        style={{
-                          background: "rgba(255,255,255,0.08)",
-                          border: "1px solid rgba(255,255,255,0.2)",
-                          borderRadius: "8px",
-                          padding: "3px 8px",
-                          color: "var(--text)",
-                          fontSize: "0.78rem",
-                          width: "110px",
-                          outline: "none"
-                        }}
-                        value={customCity}
-                        onChange={(e) => setCustomCity(e.target.value)}
-                        onKeyDown={(e) => e.key === "Enter" && updateCityWeather(customCity)}
-                        placeholder="City (e.g. Goa)"
-                        title="Change location"
-                      />
-                      <button
-                        type="button"
-                        style={{
-                          background: "linear-gradient(135deg, #06b6d4, #3b82f6)",
-                          border: "none",
-                          borderRadius: "8px",
-                          color: "#ffffff",
-                          fontSize: "0.75rem",
-                          fontWeight: 700,
-                          padding: "4px 10px",
-                          cursor: "pointer"
-                        }}
-                        onClick={() => updateCityWeather(customCity)}
-                      >
-                        Update Location
-                      </button>
-                    </div>
-                  </div>
-                  <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", alignItems: "center" }}>
-                    <span>📍 <b>{weatherContext.city}</b> ({detectedLocation.includes("GPS") ? "GPS" : "Live"})</span>
-                    <span>•</span>
-                    <span>{weatherContext.icon} <b>Weather:</b> {weatherContext.condition} ({weatherContext.temp_c}°C)</span>
-                    <span>•</span>
-                    <span>{weatherContext.time_icon} <b>Time:</b> {weatherContext.time_of_day}</span>
-                  </div>
-                </div>
-              )}
 
               <button
                 className="md-playlist-btn"
