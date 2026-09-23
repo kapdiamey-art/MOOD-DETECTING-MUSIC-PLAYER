@@ -19,19 +19,44 @@ export default function Recommendations() {
   const { currentTrack, isPlaying, playTrack, togglePlay, errorMsg } = usePlayer();
 
   const [mood, setMood] = useState(null);
-  const [songs, setSongs] = useState([]);
+  const [songs, setSongs] = useState([]);       // currently displayed 15
+  const [songPool, setSongPool] = useState([]); // full 50-song pool
+  const [weatherCtx, setWeatherCtx] = useState(null);
+  const [shuffling, setShuffling] = useState(false);
 
   // LIKED SONGS STATE — tracks which songs the user has liked in this session
   const [likedSongs, setLikedSongs] = useState({});
 
   useEffect(() => {
     // Read data saved by MoodDetection page
-    const savedMood = localStorage.getItem("moodify_mood");
-    const savedSongs = localStorage.getItem("moodify_recommendations");
+    const savedMood    = localStorage.getItem("moodify_mood");
+    const savedPool    = localStorage.getItem("moodify_song_pool");        // full 50
+    const savedSongs   = localStorage.getItem("moodify_recommendations");  // current 15
+    const savedWeather = localStorage.getItem("moodify_weather_context");
+    const weatherEnabled = localStorage.getItem("moodify_weather_enabled") === "true";
 
-    if (savedMood) setMood(JSON.parse(savedMood));
+    if (savedMood)  setMood(JSON.parse(savedMood));
+    if (savedPool)  setSongPool(JSON.parse(savedPool));
     if (savedSongs) setSongs(JSON.parse(savedSongs));
+    if (weatherEnabled && savedWeather) {
+      setWeatherCtx(JSON.parse(savedWeather));
+    }
   }, []);
+
+  // Pick a fresh random 15 from the full 50-song pool
+  const shuffleSongs = () => {
+    const pool = songPool.length > 0 ? songPool : songs;
+    if (pool.length === 0) return;
+    setShuffling(true);
+    setTimeout(() => {
+      const shuffled = [...pool].sort(() => Math.random() - 0.5);
+      const next15 = shuffled.slice(0, Math.min(15, shuffled.length));
+      setSongs(next15);
+      setLikedSongs({});
+      localStorage.setItem("moodify_recommendations", JSON.stringify(next15));
+      setShuffling(false);
+    }, 300);
+  };
 
   // LIKE SONG FUNCTION — sends song data to backend MongoDB via POST /recommendations/like
   const likeSong = async (song, idx) => {
@@ -107,6 +132,15 @@ export default function Recommendations() {
               }
             </p>
 
+            {weatherCtx && (
+              <div style={{ marginTop: '12px', padding: '8px 12px', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', display: 'inline-flex', alignItems: 'center', gap: '8px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                <span style={{ fontSize: '1.2rem' }}>{weatherCtx.icon}</span>
+                <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+                  Filtered for <strong style={{ color: 'var(--text)' }}>{weatherCtx.condition}</strong> in <strong style={{ color: 'var(--text)' }}>{weatherCtx.city}</strong> ({weatherCtx.temp_c}°C)
+                </span>
+              </div>
+            )}
+
             {mood?.confidence && (
               <div className="hero-ai-confidence">
                 <span className="confidence-spark">✦</span>
@@ -168,7 +202,25 @@ export default function Recommendations() {
           <div className="section-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <h2>Recommended for you</h2>
             <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-              <span className="artist">{songs.length} songs</span>
+              <span className="artist">{songs.length} of {songPool.length || songs.length} songs</span>
+              <button
+                className="primary-btn"
+                style={{
+                  padding: "8px 16px",
+                  fontSize: "0.85rem",
+                  background: shuffling
+                    ? "rgba(139,92,246,0.3)"
+                    : "linear-gradient(135deg,rgba(139,92,246,0.25),rgba(236,72,153,0.25))",
+                  border: "1px solid rgba(139,92,246,0.5)",
+                  color: "var(--text)",
+                  transition: "all 0.2s"
+                }}
+                onClick={shuffleSongs}
+                disabled={shuffling}
+                title={`Pick 15 new songs from a pool of ${songPool.length || songs.length}`}
+              >
+                {shuffling ? "🔄 Shuffling…" : "🔀 Shuffle (New 15)"}
+              </button>
               <button
                 className="primary-btn"
                 style={{ padding: "8px 16px", fontSize: "0.85rem" }}
@@ -278,8 +330,22 @@ export default function Recommendations() {
                   <div className="song-info">
                     <div className="song-title">{song.track_name}</div>
                     <div className="artist">{song.artists}</div>
-                    <div style={{ fontSize: "0.8rem", color: "var(--primary)", marginTop: "4px", fontWeight: "600" }}>
-                      {Math.round((song.final_score || 0) * 100)}% Match
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "4px" }}>
+                      <div style={{ fontSize: "0.8rem", color: "var(--primary)", fontWeight: "600" }}>
+                        {Math.round((song.final_score || 0) * 100)}% Match
+                      </div>
+                      {weatherCtx && song.suitable_weather && (
+                        <div style={{
+                          fontSize: "0.7rem",
+                          color: "#a78bfa",
+                          background: "rgba(139,92,246,0.1)",
+                          padding: "2px 6px",
+                          borderRadius: "4px",
+                          border: "1px solid rgba(139,92,246,0.2)"
+                        }}>
+                          ⛅ {song.suitable_weather}
+                        </div>
+                      )}
                     </div>
                     {/* LIKE BUTTON — saves song to MongoDB backend */}
                     <button

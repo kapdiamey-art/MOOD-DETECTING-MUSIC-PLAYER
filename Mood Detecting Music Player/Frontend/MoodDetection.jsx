@@ -25,6 +25,7 @@ export default function MoodDetection() {
   const [weatherContext,  setWeatherContext ] = useState(null);
   const [detectedLocation, setDetectedLocation] = useState("Detecting location...");
   const [customCity,       setCustomCity      ] = useState(localStorage.getItem("moodify_user_city") || "");
+  const [useWeather,       setUseWeather      ] = useState(false);
 
   // Voice / Whisper speech-to-text state
   const [isListening,     setIsListening    ] = useState(false);
@@ -238,6 +239,7 @@ export default function MoodDetection() {
           genre:    genre.trim()  || undefined,
           artist:   artist.trim() || undefined,
           language: language,
+          weather:  useWeather && weatherContext ? weatherContext.condition : undefined,
         }),
       });
 
@@ -265,11 +267,23 @@ export default function MoodDetection() {
 
       // ── STEP 2: Use recommendations from the detect response directly ──
       const recs = data.recommendations || [];
-      setRecommendations(recs);
 
-      // Save to localStorage immediately so Recommendations page can read them
+      // Shuffle and pick 15 from the full pool of 50
+      const shuffled = [...recs].sort(() => Math.random() - 0.5);
+      const display15 = shuffled.slice(0, 15);
+
+      setRecommendations(display15);
+
+      // Store full 50-song pool so Recommendations page can reshuffle freely
       localStorage.setItem("moodify_mood",            JSON.stringify(detectedMood));
-      localStorage.setItem("moodify_recommendations", JSON.stringify(recs));
+      localStorage.setItem("moodify_song_pool",       JSON.stringify(recs));      // full 50
+      localStorage.setItem("moodify_recommendations", JSON.stringify(display15)); // initial 15
+      localStorage.setItem("moodify_weather_enabled", useWeather ? "true" : "false");
+      if (useWeather && weatherContext) {
+        localStorage.setItem("moodify_weather_context", JSON.stringify(weatherContext));
+      } else {
+        localStorage.removeItem("moodify_weather_context");
+      }
 
     } catch (error) {
       console.error(error);
@@ -868,6 +882,97 @@ export default function MoodDetection() {
             />
           </div>
 
+          <div className="md-weather-section" style={{
+            background: 'rgba(255, 255, 255, 0.02)',
+            border: '1px solid var(--input-border)',
+            borderRadius: '16px',
+            padding: '18px',
+            marginBottom: '24px',
+            transition: 'all 0.2s ease',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <button
+                  type="button"
+                  onClick={() => setUseWeather(!useWeather)}
+                  style={{
+                    width: '44px',
+                    height: '24px',
+                    background: useWeather ? '#8b5cf6' : 'var(--input-border)',
+                    borderRadius: '12px',
+                    position: 'relative',
+                    border: 'none',
+                    cursor: 'pointer',
+                    transition: 'background 0.3s ease',
+                  }}
+                  title={useWeather ? 'Disable weather recommendations' : 'Enable weather recommendations'}
+                >
+                  <div style={{
+                    width: '18px',
+                    height: '18px',
+                    background: '#fff',
+                    borderRadius: '50%',
+                    position: 'absolute',
+                    top: '3px',
+                    left: useWeather ? '23px' : '3px',
+                    transition: 'left 0.3s ease',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                  }} />
+                </button>
+                <span style={{ color: 'var(--text)', fontSize: '0.95rem', fontWeight: 600 }}>
+                  Weather-based Recommendations
+                </span>
+              </div>
+
+              {useWeather && weatherContext && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', color: '#a78bfa', background: 'rgba(139,92,246,0.15)', padding: '6px 14px', borderRadius: '99px', border: '1px solid rgba(139,92,246,0.2)' }}>
+                  <span style={{ fontSize: '1.1rem' }}>{weatherContext.icon}</span>
+                  <span style={{ fontWeight: 700 }}>{weatherContext.temp_c}°C</span>
+                  <span style={{ opacity: 0.9 }}>{weatherContext.condition}</span>
+                </div>
+              )}
+            </div>
+
+            {useWeather && (
+              <div style={{ marginTop: '16px', display: 'flex', gap: '10px' }}>
+                <input
+                  type="text"
+                  className="md-pref-input"
+                  placeholder="Not your location? Enter city (e.g., London, Tokyo)..."
+                  value={customCity}
+                  onChange={(e) => setCustomCity(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') updateCityWeather(customCity); }}
+                  style={{ flex: 1 }}
+                />
+                <button
+                  type="button"
+                  onClick={() => updateCityWeather(customCity)}
+                  style={{
+                    background: 'rgba(139,92,246,0.15)',
+                    color: '#a78bfa',
+                    border: '1px solid rgba(139,92,246,0.3)',
+                    borderRadius: '12px',
+                    padding: '0 20px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(139,92,246,0.25)' }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(139,92,246,0.15)' }}
+                >
+                  Update
+                </button>
+              </div>
+            )}
+            
+            {useWeather && weatherContext && (
+               <div style={{ marginTop: '12px', fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                 <span>📍 Current location:</span>
+                 <strong style={{ color: 'var(--text)' }}>{detectedLocation}</strong>
+               </div>
+            )}
+          </div>
+
           {/* Analyze Button */}
           <button
             className="md-analyze-btn"
@@ -901,6 +1006,13 @@ export default function MoodDetection() {
                   <div className="md-result-desc">{mood.description}</div>
                 </div>
               </div>
+
+              {useWeather && weatherContext && (
+                <div style={{ marginBottom: '20px', display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', color: '#a78bfa', background: 'rgba(139,92,246,0.1)', padding: '6px 12px', borderRadius: '12px', border: '1px solid rgba(139,92,246,0.2)' }}>
+                  <span>{weatherContext.icon}</span>
+                  <span>Songs filtered for <strong>{weatherContext.condition}</strong> weather</span>
+                </div>
+              )}
 
               <div className="md-conf-label">
                 <span>AI Confidence</span>

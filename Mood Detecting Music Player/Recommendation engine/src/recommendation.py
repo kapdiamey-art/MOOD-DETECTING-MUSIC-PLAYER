@@ -788,7 +788,8 @@ def recommend(
     feedback=None,
     use_spotify=True,
     text=None,
-    language="all"
+    language="all",
+    weather=None
 ):
 
     """
@@ -1498,6 +1499,17 @@ def recommend(
 
 
     # -----------------------------------------------------
+    # Weather score
+    # -----------------------------------------------------
+
+    candidates["weather_score"] = 0.0
+    if weather and "suitable_weather" in candidates.columns:
+        w_lower = str(weather).lower().strip()
+        candidates["weather_score"] = candidates["suitable_weather"].apply(
+            lambda w: 1.0 if str(w).lower().strip() in w_lower else 0.0
+        )
+
+    # -----------------------------------------------------
     # Ranking weights
     # -----------------------------------------------------
 
@@ -1587,6 +1599,13 @@ def recommend(
         0.05
         * candidates[
             "feedback_score"
+        ]
+
+        +
+
+        0.15
+        * candidates[
+            "weather_score"
         ]
     )
 
@@ -1688,58 +1707,22 @@ def recommend(
 
     if len(candidates) > n:
 
-        # Only the high-quality recommendation pool is allowed
-        # to participate in the shuffle.
-        shuffle_pool_size = min(
-            len(candidates),
-            max(n * 3, 30)
-        )
-
-        shuffle_pool = (
-            candidates
-            .head(shuffle_pool_size)
-            .copy()
-        )
-
-        # Small random variation. The recommendation score
-        # remains dominant, so low-quality songs cannot jump
-        # to the top simply because of randomness.
-        shuffle_pool["_shuffle_noise"] = np.random.uniform(
-            0.0,
-            0.015,
-            size=len(shuffle_pool)
-        )
-
-        shuffle_pool["_shuffle_score"] = (
-            shuffle_pool["final_score"]
-            + shuffle_pool["_shuffle_noise"]
-        )
-
-        shuffle_pool = (
-            shuffle_pool
-            .sort_values(
-                "_shuffle_score",
-                ascending=False
-            )
-            .drop(
-                columns=[
-                    "_shuffle_noise",
-                    "_shuffle_score"
-                ]
-            )
-        )
-
-        remaining = candidates.iloc[
-            shuffle_pool_size:
-        ].copy()
-
-        candidates = pd.concat(
-            [
-                shuffle_pool,
-                remaining
-            ],
-            ignore_index=True
-        )
+        # Select a larger pool of high-quality recommendations
+        # (top 50) and truly randomly sample 'n' from it.
+        pool_size = min(len(candidates), 50)
+        
+        # Take the top `pool_size` candidates
+        top_pool = candidates.head(pool_size).copy()
+        
+        # Randomly sample `n` from the top_pool
+        sampled_top = top_pool.sample(n=min(n, len(top_pool)))
+        
+        # Keep the rest that weren't selected, in case we need them
+        remaining_indices = [i for i in candidates.index if i not in sampled_top.index]
+        remaining = candidates.loc[remaining_indices].copy()
+        
+        # Put the randomly sampled ones at the top
+        candidates = pd.concat([sampled_top, remaining], ignore_index=True)
 
 
     # -----------------------------------------------------

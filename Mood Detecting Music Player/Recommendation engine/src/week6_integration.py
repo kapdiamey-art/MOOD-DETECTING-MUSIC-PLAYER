@@ -144,7 +144,8 @@ def recommend_from_text(
     preferences=None,
     feedback=None,
     use_spotify=False,
-    language="all"
+    language="all",
+    weather=None
 ):
 
     if not text or not text.strip():
@@ -171,7 +172,8 @@ def recommend_from_text(
             feedback=feedback,
             use_spotify=use_spotify,
             text=text,
-            language=language
+            language=language,
+            weather=weather
         )
         return "neutral", confidence if confidence else 0.50, recommendations
 
@@ -206,7 +208,9 @@ def recommend_from_text(
 
         text=text,
 
-        language=language
+        language=language,
+
+        weather=weather
     )
 
 

@@ -42,6 +42,7 @@ class MoodRequest(BaseModel):
     genre: Optional[str] = None
     artist: Optional[str] = None
     language: Optional[str] = "all"
+    weather: Optional[str] = None
 
 
 class MoodJourneyRequest(BaseModel):
@@ -88,10 +89,11 @@ async def detect_mood(
     try:
         emotion, confidence, recommendations_df = recommend_from_text(
             request.text,
-            n=15,
+            n=50,
             preferences=preferences,
             use_spotify=True,
-            language=request.language or "all"
+            language=request.language or "all",
+            weather=request.weather
         )
 
         # Clean NaN values so FastAPI can serialize to JSON without error
