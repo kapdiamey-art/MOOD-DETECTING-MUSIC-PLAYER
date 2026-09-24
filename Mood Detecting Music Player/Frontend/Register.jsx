@@ -65,7 +65,6 @@ export default function Register() {
 
   const isValidEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
     return emailRegex.test(email);
   };
 
@@ -79,13 +78,11 @@ export default function Register() {
 
     const email = form.email.trim().toLowerCase();
 
-    // Check email
     if (!email) {
       setError("Please enter your email address.");
       return;
     }
 
-    // Validate email
     if (!isValidEmail(email)) {
       setError("Please enter a valid email address.");
       return;
@@ -94,48 +91,32 @@ export default function Register() {
     try {
       setOtpLoading(true);
 
-      const response = await fetch(
-        "http://localhost:5000/send-otp",
-        {
-          method: "POST",
-
-          headers: {
-            "Content-Type": "application/json"
-          },
-
-          body: JSON.stringify({
-            email: email
-          })
-        }
-      );
+      const response = await fetch("http://localhost:5000/send-otp", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          email: email,
+          type: "register"
+        })
+      });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(
-          data.message || "Failed to send OTP."
-        );
+        throw new Error(data.message || "Failed to send OTP.");
       }
 
-      // OTP sent successfully
       setOtpSent(true);
       setOtp("");
-
-      setMessage(
-        "OTP sent successfully. Check your email."
-      );
-
+      setMessage("OTP sent successfully. Please check your email inbox.");
     } catch (error) {
-      console.error(
-        "Send OTP Error:",
-        error
-      );
-
+      console.error("Send OTP Error:", error);
       setError(
         error.message ||
-        "Unable to send OTP. Make sure the OTP server is running."
+          "Unable to send OTP. Make sure the OTP server is running."
       );
-
     } finally {
       setOtpLoading(false);
     }
@@ -152,69 +133,41 @@ export default function Register() {
     const email = form.email.trim().toLowerCase();
     const enteredOTP = otp.trim();
 
-    // Check OTP
     if (!enteredOTP) {
-      setError("Please enter the OTP.");
+      setError("Please enter the 6-digit OTP.");
       return;
     }
 
-    // Check OTP format
     if (!/^\d{6}$/.test(enteredOTP)) {
-      setError(
-        "OTP must contain exactly 6 digits."
-      );
+      setError("OTP must contain exactly 6 digits.");
       return;
     }
 
     try {
       setOtpLoading(true);
 
-      const response = await fetch(
-        "http://localhost:5000/verify-otp",
-        {
-          method: "POST",
-
-          headers: {
-            "Content-Type": "application/json"
-          },
-
-          body: JSON.stringify({
-            email: email,
-            otp: enteredOTP
-          })
-        }
-      );
+      const response = await fetch("http://localhost:5000/verify-otp", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          email: email,
+          otp: enteredOTP
+        })
+      });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(
-          data.message ||
-          "OTP verification failed."
-        );
+        throw new Error(data.message || "OTP verification failed.");
       }
 
-      // =================================================
-      // OTP VERIFIED
-      // =================================================
-
       setOtpVerified(true);
-
-      setMessage(
-        "OTP verified successfully! You can now create your account."
-      );
-
+      setMessage("✅ OTP verified successfully! Now set your password below to create your account.");
     } catch (error) {
-      console.error(
-        "Verify OTP Error:",
-        error
-      );
-
-      setError(
-        error.message ||
-        "Invalid OTP."
-      );
-
+      console.error("Verify OTP Error:", error);
+      setError(error.message || "Invalid OTP.");
     } finally {
       setOtpLoading(false);
     }
@@ -233,269 +186,94 @@ export default function Register() {
     const name = form.name.trim();
     const email = form.email.trim().toLowerCase();
 
-    // =================================================
-    // CHECK ALL FIELDS
-    // =================================================
-
-    if (
-      !name ||
-      !email ||
-      !form.password ||
-      !form.confirmPassword
-    ) {
+    if (!name || !email || !form.password || !form.confirmPassword) {
       setError("Please fill in all fields.");
       return;
     }
 
-    // =================================================
-    // EMAIL VALIDATION
-    // =================================================
-
     if (!isValidEmail(email)) {
-      setError(
-        "Please enter a valid email address."
-      );
+      setError("Please enter a valid email address.");
       return;
     }
-
-    // =================================================
-    // PASSWORD LENGTH
-    // =================================================
 
     if (form.password.length < 6) {
-      setError(
-        "Password must contain at least 6 characters."
-      );
+      setError("Password must contain at least 6 characters.");
       return;
     }
 
-    // =================================================
-    // PASSWORD MATCH
-    // =================================================
-
-    if (
-      form.password !==
-      form.confirmPassword
-    ) {
-      setError(
-        "Passwords do not match."
-      );
+    if (form.password !== form.confirmPassword) {
+      setError("Passwords do not match.");
       return;
     }
-
-    // =================================================
-    // OTP MUST BE VERIFIED
-    // =================================================
 
     if (!otpVerified) {
-      setError(
-        "Please verify the OTP before creating your account."
-      );
+      setError("Please verify the OTP sent to your email before creating your account.");
       return;
     }
 
     try {
       setLoading(true);
 
-      // =================================================
-      // STEP 1
-      // CREATE FIREBASE ACCOUNT
-      // =================================================
-
-      console.log(
-        "Creating Firebase account..."
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        form.password
       );
 
-      const userCredential =
-        await createUserWithEmailAndPassword(
-          auth,
-          email,
-          form.password
-        );
-
-      const user =
-        userCredential.user;
-
-      console.log(
-        "Firebase account created:",
-        user.email
-      );
-
-      // =================================================
-      // STEP 2
-      // SET DISPLAY NAME
-      // =================================================
+      const user = userCredential.user;
 
       if (name) {
         try {
-          await updateProfile(user, {
-            displayName: name
-          });
+          await updateProfile(user, { displayName: name });
         } catch (profileErr) {
-          console.log(
-            "Setting display name failed:",
-            profileErr
-          );
+          console.log("Setting display name failed:", profileErr);
         }
       }
 
-      // =================================================
-      // STEP 3
-      // SEND FIREBASE VERIFICATION EMAIL
-      // =================================================
-
-      console.log(
-        "Sending Firebase verification email..."
-      );
-
       await sendEmailVerification(user);
 
-      console.log(
-        "Firebase verification email sent."
-      );
+      // Sync registration record
+      fetch("http://localhost:8000/auth/register-sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, name })
+      }).catch(() => {});
 
-      // =================================================
-      // STEP 4
-      // SAVE USER INFORMATION
-      // =================================================
+      localStorage.setItem("moodifyRegistered_" + email, "true");
+      localStorage.setItem("moodifyUserName", name);
+      localStorage.setItem("moodifyEmail", email);
+      localStorage.setItem("moodifyUser", JSON.stringify({ name, email }));
 
-      localStorage.setItem(
-        "moodifyUserName",
-        name
-      );
-
-      localStorage.setItem(
-        "moodifyEmail",
-        email
-      );
-
-      localStorage.setItem(
-        "moodifyUser",
-        JSON.stringify({
-          name: name,
-          email: email
-        })
-      );
-
-      // User is NOT logged in yet
-      localStorage.removeItem(
-        "moodifyLoggedIn"
-      );
-
-      localStorage.removeItem(
-        "moodifyIdToken"
-      );
-
-      // =================================================
-      // STEP 5
-      // SIGN OUT FIREBASE USER
-      // =================================================
-
-      /*
-        createUserWithEmailAndPassword()
-        automatically signs the user in.
-
-        But our required flow is:
-
-        Register
-          ↓
-        Brevo OTP verified
-          ↓
-        Firebase account created
-          ↓
-        Firebase verification email
-          ↓
-        User verifies email
-          ↓
-        Login
-
-        Therefore we sign the user out here.
-      */
+      localStorage.removeItem("moodifyLoggedIn");
+      localStorage.removeItem("moodifyIdToken");
 
       await signOut(auth);
 
-      console.log(
-        "Firebase user signed out after registration."
-      );
-
-      // =================================================
-      // STEP 6
-      // SUCCESS MESSAGE
-      // =================================================
-
       alert(
         "Account created successfully!\n\n" +
-        "A Firebase verification email has been sent to:\n" +
-        email +
-        "\n\n" +
-        "Please open the NEWEST verification email, " +
-        "click the verification link once, and then login."
+          "A Firebase verification email link has been sent to:\n" +
+          email +
+          "\n\n" +
+          "Please check your email, click the verification link once, and then log in."
       );
-
-      // =================================================
-      // STEP 7
-      // GO TO LOGIN
-      // =================================================
 
       navigate("/login");
-
     } catch (error) {
-      console.error(
-        "Registration Error:",
-        error
-      );
+      console.error("Registration Error:", error);
 
-      // =================================================
-      // FIREBASE ERRORS
-      // =================================================
-
-      if (
-        error.code ===
-        "auth/email-already-in-use"
-      ) {
-        setError(
-          "This email is already registered. Please login instead."
-        );
-
-      } else if (
-        error.code ===
-        "auth/invalid-email"
-      ) {
-        setError(
-          "Please enter a valid email address."
-        );
-
-      } else if (
-        error.code ===
-        "auth/weak-password"
-      ) {
-        setError(
-          "Password must contain at least 6 characters."
-        );
-
-      } else if (
-        error.code ===
-        "auth/too-many-requests"
-      ) {
-        setError(
-          "Too many requests. Please try again later."
-        );
-
-      } else if (
-        error.code ===
-        "auth/network-request-failed"
-      ) {
-        setError(
-          "Network error. Please check your internet connection."
-        );
-
+      if (error.code === "auth/email-already-in-use") {
+        setError("This email is already registered. Please login instead.");
+      } else if (error.code === "auth/invalid-email") {
+        setError("Please enter a valid email address.");
+      } else if (error.code === "auth/weak-password") {
+        setError("Password must contain at least 6 characters.");
+      } else if (error.code === "auth/too-many-requests") {
+        setError("Too many requests. Please try again later.");
+      } else if (error.code === "auth/network-request-failed") {
+        setError("Network error. Please check your internet connection.");
       } else {
-        setError(
-          error.message ||
-          "Registration failed. Please try again."
-        );
+        setError(error.message || "Registration failed. Please try again.");
       }
-
     } finally {
       setLoading(false);
     }
@@ -507,61 +285,25 @@ export default function Register() {
 
   return (
     <div className="auth-page">
-
-      <div className="auth-card">
-
-        {/* =================================================
-            LOGO
-        ================================================= */}
-
+      <div className="auth-card glass">
+        {/* LOGO */}
         <div className="auth-logo">
-
-          <div className="auth-logo-icon">
-            ♫
-          </div>
-
-          <span>
-            Moodify
-          </span>
-
+          <div className="auth-logo-icon">♫</div>
+          <span>Moodify</span>
         </div>
 
-        {/* =================================================
-            HEADER
-        ================================================= */}
-
+        {/* HEADER */}
         <div className="auth-header">
-
-          <span className="auth-badge">
-            ✨ JOIN MOODIFY
-          </span>
-
-          <h1>
-            Create your account
-          </h1>
-
-          <p>
-            Start your personalized music journey.
-          </p>
-
+          <span className="auth-badge">✨ JOIN MOODIFY</span>
+          <h1>Create your account</h1>
+          <p>Start your personalized music journey.</p>
         </div>
 
-        {/* =================================================
-            FORM
-        ================================================= */}
-
+        {/* FORM */}
         <form onSubmit={handleRegister}>
-
-          {/* =================================================
-              NAME
-          ================================================= */}
-
+          {/* NAME */}
           <div className="form-group">
-
-            <label>
-              Full Name
-            </label>
-
+            <label>Full Name</label>
             <input
               type="text"
               name="name"
@@ -569,156 +311,92 @@ export default function Register() {
               value={form.name}
               onChange={handleChange}
               disabled={loading}
+              required
             />
-
           </div>
 
-          {/* =================================================
-              EMAIL
-          ================================================= */}
-
+          {/* EMAIL */}
           <div className="form-group">
-
-            <label>
-              Email Address
-            </label>
-
+            <label>Email Address</label>
             <input
               type="email"
               name="email"
               placeholder="you@example.com"
               value={form.email}
               onChange={handleChange}
-              disabled={
-                otpVerified ||
-                loading
-              }
+              disabled={otpVerified || loading}
+              required
             />
-
           </div>
 
-          {/* =================================================
-              SEND OTP
-          ================================================= */}
-
+          {/* SEND OTP BUTTON */}
           {!otpVerified && (
             <button
               type="button"
               className="auth-submit"
               onClick={handleSendOTP}
-              disabled={
-                otpLoading ||
-                loading
-              }
-              style={{
-                marginBottom: "15px"
-              }}
+              disabled={otpLoading || loading}
+              style={{ marginBottom: "15px" }}
             >
-
-              {otpLoading
-                ? "Sending OTP..."
-                : otpSent
-                ? "Resend OTP"
-                : "Send OTP"}
-
+              {otpLoading ? "Sending OTP..." : otpSent ? "Resend OTP" : "Send OTP"}
             </button>
           )}
 
-          {/* =================================================
-              ENTER OTP
-          ================================================= */}
+          {/* ENTER OTP SECTION */}
+          {otpSent && !otpVerified && (
+            <div className="form-group">
+              <label>Enter 6-digit OTP</label>
+              <input
+                type="text"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                maxLength={6}
+                placeholder="Enter 6-digit OTP"
+                value={otp}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/\D/g, "");
+                  setOtp(value);
+                  setError("");
+                  setMessage("");
+                }}
+                disabled={otpLoading || loading}
+              />
 
-          {otpSent &&
-            !otpVerified && (
-              <div className="form-group">
+              <button
+                type="button"
+                className="auth-submit"
+                onClick={handleVerifyOTP}
+                disabled={otpLoading || loading || otp.length !== 6}
+                style={{ marginTop: "10px" }}
+              >
+                {otpLoading ? "Verifying..." : "Verify OTP →"}
+              </button>
+            </div>
+          )}
 
-                <label>
-                  Enter OTP
-                </label>
-
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  autoComplete="one-time-code"
-                  maxLength={6}
-                  placeholder="Enter 6-digit OTP"
-                  value={otp}
-                  onChange={(e) => {
-
-                    const value =
-                      e.target.value.replace(
-                        /\D/g,
-                        ""
-                      );
-
-                    setOtp(value);
-                    setError("");
-                    setMessage("");
-
-                  }}
-                  disabled={
-                    otpLoading ||
-                    loading
-                  }
-                />
-
-                <button
-                  type="button"
-                  className="auth-submit"
-                  onClick={
-                    handleVerifyOTP
-                  }
-                  disabled={
-                    otpLoading ||
-                    loading
-                  }
-                  style={{
-                    marginTop: "10px"
-                  }}
-                >
-
-                  {otpLoading
-                    ? "Verifying..."
-                    : "Verify OTP →"}
-
-                </button>
-
-              </div>
-            )}
-
-          {/* =================================================
-              OTP VERIFIED
-          ================================================= */}
-
+          {/* OTP VERIFIED BADGE */}
           {otpVerified && (
             <div
               style={{
                 padding: "10px",
                 marginBottom: "15px",
                 borderRadius: "8px",
-                background: "#e8f7ee",
-                color: "#16803c",
+                background: "rgba(34, 197, 94, 0.15)",
+                border: "1px solid rgba(34, 197, 94, 0.3)",
+                color: "#4ade80",
                 textAlign: "center",
-                fontWeight: "500"
+                fontWeight: "600"
               }}
             >
-              ✅ OTP verified successfully
+              ✅ OTP Verified Successfully
             </div>
           )}
 
-          {/* =================================================
-              PASSWORD SECTION
-              SHOW ONLY AFTER OTP IS VERIFIED
-          ================================================= */}
-
+          {/* PASSWORD SECTION (UNLOCKED ONLY AFTER OTP VERIFIED) */}
           {otpVerified && (
             <>
               <div className="form-group">
-
-                <label>
-                  Password
-                </label>
-
+                <label>Password</label>
                 <input
                   type="password"
                   name="password"
@@ -726,16 +404,12 @@ export default function Register() {
                   value={form.password}
                   onChange={handleChange}
                   disabled={loading}
+                  required
                 />
-
               </div>
 
               <div className="form-group">
-
-                <label>
-                  Confirm Password
-                </label>
-
+                <label>Confirm Password</label>
                 <input
                   type="password"
                   name="confirmPassword"
@@ -743,82 +417,67 @@ export default function Register() {
                   value={form.confirmPassword}
                   onChange={handleChange}
                   disabled={loading}
+                  required
                 />
-
               </div>
             </>
           )}
 
-          {/* =================================================
-              ERROR
-          ================================================= */}
-
+          {/* ERROR */}
           {error && (
             <div className="auth-error">
               ⚠️ {error}
+              {error.includes("already registered") && (
+                <button
+                  type="button"
+                  onClick={() => navigate("/login")}
+                  style={{
+                    display: "block",
+                    marginTop: "10px",
+                    width: "100%",
+                    padding: "8px 12px",
+                    borderRadius: "8px",
+                    background: "rgba(139, 92, 246, 0.3)",
+                    border: "1px solid rgba(139, 92, 246, 0.5)",
+                    color: "#fff",
+                    fontWeight: "600",
+                    cursor: "pointer"
+                  }}
+                >
+                  Go to Login →
+                </button>
+              )}
             </div>
           )}
 
-          {/* =================================================
-              SUCCESS MESSAGE
-          ================================================= */}
-
+          {/* SUCCESS MESSAGE */}
           {message && !error && (
-            <div
-              style={{
-                marginBottom: "15px",
-                color: "#16803c"
-              }}
-            >
+            <div style={{ marginBottom: "15px", color: "#4ade80", fontSize: "14px" }}>
               {message}
             </div>
           )}
 
-          {/* =================================================
-              CREATE ACCOUNT
-          ================================================= */}
-
+          {/* CREATE ACCOUNT SUBMIT BUTTON */}
           <button
             type="submit"
             className="auth-submit"
-            disabled={
-              loading ||
-              !otpVerified
-            }
+            disabled={loading || !otpVerified}
           >
-
-            {loading
-              ? "Creating Account..."
-              : "Create My Account →"}
-
+            {loading ? "Creating Account..." : "Create My Account →"}
           </button>
-
         </form>
 
-        {/* =================================================
-            LOGIN LINK
-        ================================================= */}
-
+        {/* LOGIN LINK */}
         <div className="auth-switch">
-
-          <span>
-            Already have an account?
-          </span>
-
-          <button
-            type="button"
-            onClick={() =>
-              navigate("/login")
-            }
-          >
+          <span>Already have an account?</span>
+          <button type="button" onClick={() => navigate("/login")}>
             Login
           </button>
-
         </div>
-
       </div>
-
     </div>
   );
 }
+
+
 

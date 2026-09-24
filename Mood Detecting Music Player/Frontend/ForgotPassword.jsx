@@ -2,16 +2,14 @@ import React, { useState } from "react";
 import {
   Link,
   useLocation,
+  useNavigate,
 } from "react-router-dom";
 import { sendPasswordResetEmail } from "firebase/auth";
 
 import { auth } from "./firebase";
 
 export default function ForgotPassword() {
-  // ============================================================
-  // CHECK WHERE USER CAME FROM
-  // ============================================================
-
+  const navigate = useNavigate();
   const location = useLocation();
 
   const cameFromProfile =
@@ -54,14 +52,27 @@ export default function ForgotPassword() {
         cleanEmail
       );
 
+      const actionCodeSettings = {
+        url: window.location.origin + "/reset-password",
+        handleCodeInApp: true,
+      };
+
       await sendPasswordResetEmail(
         auth,
-        cleanEmail
+        cleanEmail,
+        actionCodeSettings
       );
 
-      setMessage(
-        "Password reset link sent! Please check your email and spam folder."
-      );
+      setMessage("Password reset link sent! Redirecting to login...");
+
+      setTimeout(() => {
+        navigate("/login", {
+          replace: true,
+          state: {
+            message: "Password reset link sent! Please check your email inbox and spam folder."
+          }
+        });
+      }, 1000);
 
     } catch (error) {
       console.error(

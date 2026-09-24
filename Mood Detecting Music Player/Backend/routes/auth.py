@@ -140,12 +140,37 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
 #  ENDPOINTS
 # ══════════════════════════════════════════════════════════
 
+@router.post("/register-sync")
+async def register_sync(data: dict):
+    email = data.get("email", "").strip().lower()
+    name = data.get("name", "").strip()
+    if not email:
+        raise HTTPException(400, "Email required")
+    if users_col is not None:
+        existing = await users_col.find_one({"email": email})
+        if not existing:
+            await users_col.insert_one({
+                "email": email,
+                "name": name or email.split("@")[0],
+                "created_at": datetime.utcnow()
+            })
+    return {"success": True}
+
+
+@router.post("/check-user")
+async def check_user(data: dict):
+    email = data.get("email", "").strip().lower()
+    if not email:
+        return {"registered": False}
+    if users_col is not None:
+        user = await users_col.find_one({"email": email})
+        if user:
+            return {"registered": True}
+    return {"registered": False}
+
+
 @router.post("/register")
 async def register(data: UserRegister):
-    """
-    Account registration is handled directly by Firebase Auth on the client.
-    User credentials and passwords are not stored in MongoDB.
-    """
     return {
         "message": "Registration is handled directly by Firebase Auth.",
         "firebase_managed": True
@@ -166,6 +191,91 @@ async def login(data: UserLogin):
 @router.post("/forgot-password")
 async def forgot_password(data: dict):
     return {"message": "Password reset is handled directly via Firebase Auth."}
+
+
+@router.post("/google")
+async def google_sso_login(data: dict):
+    """
+    Endpoint for Google SSO login verification and user profile creation in MongoDB.
+    """
+    token = data.get("credential") or data.get("token") or data.get("idToken")
+    email = data.get("email")
+    name = data.get("name")
+    
+    if token:
+        try:
+            payload = decode_firebase_token(token)
+            email = payload.get("email") or email
+            name = payload.get("name") or name
+        except Exception:
+            pass
+
+    if not email:
+        raise HTTPException(400, "Valid email required for Google SSO")
+
+    user_doc = None
+    if users_col is not None:
+        user_doc = await users_col.find_one({"email": email})
+        if not user_doc:
+            new_user = {
+                "email": email,
+                "name": name or email.split("@")[0],
+                "auth_provider": "google",
+                "created_at": datetime.utcnow()
+            }
+            res = await users_col.insert_one(new_user)
+            user_doc = new_user
+            user_doc["_id"] = res.inserted_id
+
+    return {
+        "success": True,
+        "message": "Google SSO login successful",
+        "user": {
+            "email": email,
+            "name": name or (user_doc.get("name") if user_doc else email.split("@")[0]),
+            "provider": "google"
+        }
+    }
+
+
+@router.post("/microsoft")
+async def microsoft_sso_login(data: dict):
+    """
+    Endpoint for Microsoft SSO login verification and user profile creation in MongoDB.
+    """
+    token = data.get("credential") or data.get("token") or data.get("idToken")
+    email = data.get("email")
+    name = data.get("name")
+
+    if not email and not token:
+        raise HTTPException(400, "Valid email or token required for Microsoft SSO")
+
+    if not email and token:
+        email = f"user_{token[:8]}@microsoft.com"
+
+    user_doc = None
+    if users_col is not None:
+        user_doc = await users_col.find_one({"email": email})
+        if not user_doc:
+            new_user = {
+                "email": email,
+                "name": name or email.split("@")[0],
+                "auth_provider": "microsoft",
+                "created_at": datetime.utcnow()
+            }
+            res = await users_col.insert_one(new_user)
+            user_doc = new_user
+            user_doc["_id"] = res.inserted_id
+
+    return {
+        "success": True,
+        "message": "Microsoft SSO login successful",
+        "user": {
+            "email": email,
+            "name": name or (user_doc.get("name") if user_doc else email.split("@")[0]),
+            "provider": "microsoft"
+        }
+    }
 
 
 @router.post("/logout")

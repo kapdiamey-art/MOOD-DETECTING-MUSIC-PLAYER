@@ -1,17 +1,21 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 
 import {
   signInWithEmailAndPassword,
   sendEmailVerification,
+  GoogleAuthProvider,
+  OAuthProvider,
+  signInWithPopup,
+  getAdditionalUserInfo,
+  signOut
 } from "firebase/auth";
 
 import { auth } from "./firebase";
 
-const OTP_API = "http://localhost:5000";
-
 export default function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   // =====================================================
   // STATES
@@ -20,18 +24,21 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const [otpMode, setOtpMode] = useState(false);
-
-  const [otp, setOtp] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
-
   const [loading, setLoading] = useState(false);
-  const [otpLoading, setOtpLoading] = useState(false);
   const [resending, setResending] = useState(false);
 
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [showResend, setShowResend] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (location.state?.message) {
+      setMessage(location.state.message);
+    } else if (params.get("mode") === "resetPassword") {
+      setMessage("Password changed successfully! You can login now.");
+    }
+  }, [location.search, location.state]);
 
   // =====================================================
   // EMAIL VALIDATION
@@ -45,46 +52,22 @@ export default function Login() {
   // SAVE FIREBASE SESSION
   // =====================================================
 
-  const saveFirebaseSession = async (
-    user,
-    cleanEmail
-  ) => {
-    const firebaseToken =
-      await user.getIdToken(true);
+  const saveFirebaseSession = async (user, cleanEmail) => {
+    const firebaseToken = await user.getIdToken(true);
 
     if (!firebaseToken) {
-      throw new Error(
-        "Firebase authentication token was not created."
-      );
+      throw new Error("Firebase authentication token was not created.");
     }
 
     const savedName =
       user.displayName ||
-      localStorage.getItem(
-        "moodifyUserName"
-      ) ||
+      localStorage.getItem("moodifyUserName") ||
       cleanEmail.split("@")[0];
 
-    localStorage.setItem(
-      "moodifyToken",
-      firebaseToken
-    );
-
-    localStorage.setItem(
-      "moodifyLoggedIn",
-      "true"
-    );
-
-    localStorage.setItem(
-      "moodifyEmail",
-      cleanEmail
-    );
-
-    localStorage.setItem(
-      "moodifyUserName",
-      savedName
-    );
-
+    localStorage.setItem("moodifyToken", firebaseToken);
+    localStorage.setItem("moodifyLoggedIn", "true");
+    localStorage.setItem("moodifyEmail", cleanEmail);
+    localStorage.setItem("moodifyUserName", savedName);
     localStorage.setItem(
       "moodifyUser",
       JSON.stringify({
@@ -92,40 +75,57 @@ export default function Login() {
         email: cleanEmail,
       })
     );
-
-    localStorage.setItem(
-      "moodifyLoginMethod",
-      "password"
-    );
-
-    console.log(
-      "================================="
-    );
-
-    console.log(
-      "FIREBASE LOGIN SESSION SAVED"
-    );
-
-    console.log(
-      "Email:",
-      cleanEmail
-    );
-
-    console.log(
-      "Token exists:",
-      true
-    );
-
-    console.log(
-      "Token length:",
-      firebaseToken.length
-    );
-
-    console.log(
-      "================================="
-    );
+    localStorage.setItem("moodifyLoginMethod", "password");
 
     return firebaseToken;
+  };
+
+  // =====================================================
+  // GOOGLE SSO LOGIN
+  // =====================================================
+  const handleGoogleLogin = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      setMessage("");
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      await saveFirebaseSession(user, user.email || "");
+      setMessage("Google sign-in successful! Redirecting...");
+      setTimeout(() => navigate("/mood"), 500);
+    } catch (err) {
+      console.error("Google SSO error:", err);
+      if (err.code !== "auth/popup-closed-by-user") {
+        setError("Google authentication failed: " + (err.message || "Please try again."));
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // =====================================================
+  // MICROSOFT SSO LOGIN
+  // =====================================================
+  const handleMicrosoftLogin = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      setMessage("");
+      const provider = new OAuthProvider("microsoft.com");
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      await saveFirebaseSession(user, user.email || "");
+      setMessage("Microsoft sign-in successful! Redirecting...");
+      setTimeout(() => navigate("/mood"), 500);
+    } catch (err) {
+      console.error("Microsoft SSO error:", err);
+      if (err.code !== "auth/popup-closed-by-user") {
+        setError("Microsoft authentication failed: " + (err.message || "Please try again."));
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   // =====================================================
@@ -139,443 +139,61 @@ export default function Login() {
     setMessage("");
     setShowResend(false);
 
-    const cleanEmail =
-      email.trim().toLowerCase();
+    const cleanEmail = email.trim().toLowerCase();
 
     if (!cleanEmail || !password) {
-      setError(
-        "Please enter your email and password."
-      );
+      setError("Please enter your email and password.");
       return;
     }
 
     if (!isValidEmail(cleanEmail)) {
-      setError(
-        "Please enter a valid email address."
-      );
+      setError("Please enter a valid email address.");
       return;
     }
 
     try {
       setLoading(true);
 
-      console.log(
-        "Logging in:",
-        cleanEmail
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        cleanEmail,
+        password
       );
 
-      const userCredential =
-        await signInWithEmailAndPassword(
-          auth,
-          cleanEmail,
-          password
-        );
-
-      const user =
-        userCredential.user;
-
-      console.log(
-        "Firebase user:",
-        user.email
-      );
-
-      console.log(
-        "Email verified:",
-        user.emailVerified
-      );
-
-      // =================================================
-      // CHECK EMAIL VERIFICATION
-      // =================================================
+      const user = userCredential.user;
 
       if (!user.emailVerified) {
-        setError(
-          "Please verify your email before continuing."
-        );
-
+        setError("Please verify your email before continuing.");
         setShowResend(true);
-
         return;
       }
 
-      // =================================================
-      // SAVE FIREBASE TOKEN
-      // =================================================
+      await saveFirebaseSession(user, cleanEmail);
 
-      await saveFirebaseSession(
-        user,
-        cleanEmail
-      );
-
-      setMessage(
-        "Login successful! Redirecting..."
-      );
-
+      setMessage("Login successful! Redirecting...");
       setTimeout(() => {
         navigate("/mood");
       }, 500);
-
     } catch (error) {
-      console.error(
-        "Login error:",
-        error
-      );
+      console.error("Login error:", error);
 
-      if (
-        error.code ===
-        "auth/invalid-credential"
-      ) {
-        setError(
-          "Incorrect email or password."
-        );
-
-      } else if (
-        error.code ===
-        "auth/user-not-found"
-      ) {
-        setError(
-          "No account found. Please register first."
-        );
-
-      } else if (
-        error.code ===
-        "auth/wrong-password"
-      ) {
-        setError(
-          "Incorrect email or password."
-        );
-
-      } else if (
-        error.code ===
-        "auth/invalid-email"
-      ) {
-        setError(
-          "Please enter a valid email address."
-        );
-
-      } else if (
-        error.code ===
-        "auth/too-many-requests"
-      ) {
-        setError(
-          "Too many login attempts. Please try again later."
-        );
-
-      } else if (
-        error.code ===
-        "auth/user-disabled"
-      ) {
-        setError(
-          "This account has been disabled."
-        );
-
+      if (error.code === "auth/invalid-credential") {
+        setError("Incorrect email or password.");
+      } else if (error.code === "auth/user-not-found") {
+        setError("No account found. Please register first.");
+      } else if (error.code === "auth/wrong-password") {
+        setError("Incorrect email or password.");
+      } else if (error.code === "auth/invalid-email") {
+        setError("Please enter a valid email address.");
+      } else if (error.code === "auth/too-many-requests") {
+        setError("Too many login attempts. Please try again later.");
+      } else if (error.code === "auth/user-disabled") {
+        setError("This account has been disabled.");
       } else {
-        setError(
-          error.message ||
-            "Login failed. Please try again."
-        );
+        setError(error.message || "Login failed. Please try again.");
       }
-
     } finally {
       setLoading(false);
-    }
-  };
-
-  // =====================================================
-  // OPEN OTP LOGIN
-  // =====================================================
-
-  const handleOpenOTPLogin = () => {
-    setOtpMode(true);
-
-    setOtp("");
-    setOtpSent(false);
-
-    setError("");
-    setMessage("");
-    setShowResend(false);
-  };
-
-  // =====================================================
-  // SEND OTP
-  // =====================================================
-
-  const handleSendOTP = async () => {
-    setError("");
-    setMessage("");
-    setOtp("");
-
-    const cleanEmail =
-      email.trim().toLowerCase();
-
-    if (!cleanEmail) {
-      setError(
-        "Please enter your email address."
-      );
-      return;
-    }
-
-    if (!isValidEmail(cleanEmail)) {
-      setError(
-        "Please enter a valid email address."
-      );
-      return;
-    }
-
-    try {
-      setOtpLoading(true);
-
-      console.log(
-        "Checking and sending OTP to:",
-        cleanEmail
-      );
-
-      const response = await fetch(
-        `${OTP_API}/send-otp`,
-        {
-          method: "POST",
-
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-
-          body: JSON.stringify({
-            email: cleanEmail,
-          }),
-        }
-      );
-
-      const data =
-        await response.json();
-
-      console.log(
-        "Send OTP response:",
-        data
-      );
-
-      if (
-        !response.ok ||
-        !data.success
-      ) {
-        throw new Error(
-          data.message ||
-            "Failed to send OTP."
-        );
-      }
-
-      setOtpSent(true);
-
-      setMessage(
-        "OTP sent successfully! Check your email."
-      );
-
-    } catch (error) {
-      console.error(
-        "Send OTP error:",
-        error
-      );
-
-      setOtpSent(false);
-
-      setError(
-        error.message ||
-          "Failed to send OTP. Please try again."
-      );
-
-    } finally {
-      setOtpLoading(false);
-    }
-  };
-
-  // =====================================================
-  // VERIFY OTP
-  // =====================================================
-
-  const handleVerifyOTP = async () => {
-    setError("");
-    setMessage("");
-
-    const cleanEmail =
-      email.trim().toLowerCase();
-
-    const cleanOTP =
-      otp.trim();
-
-    if (!cleanEmail) {
-      setError(
-        "Email is required."
-      );
-      return;
-    }
-
-    if (!isValidEmail(cleanEmail)) {
-      setError(
-        "Please enter a valid email address."
-      );
-      return;
-    }
-
-    if (!cleanOTP) {
-      setError(
-        "Please enter the OTP."
-      );
-      return;
-    }
-
-    if (!/^\d{6}$/.test(cleanOTP)) {
-      setError(
-        "OTP must contain exactly 6 digits."
-      );
-      return;
-    }
-
-    try {
-      setOtpLoading(true);
-
-      console.log(
-        "Verifying OTP for:",
-        cleanEmail
-      );
-
-      const response = await fetch(
-        `${OTP_API}/verify-otp`,
-        {
-          method: "POST",
-
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-
-          body: JSON.stringify({
-            email: cleanEmail,
-            otp: cleanOTP,
-          }),
-        }
-      );
-
-      const data =
-        await response.json();
-
-      console.log(
-        "Verify OTP response:",
-        data
-      );
-
-      if (
-        !response.ok ||
-        !data.success
-      ) {
-        throw new Error(
-          data.message ||
-            "Invalid OTP."
-        );
-      }
-
-      console.log(
-        "OTP verified successfully"
-      );
-
-      setMessage(
-        "OTP verified. Please use Email + Password login for the protected Moodify session."
-      );
-
-      setOtpMode(false);
-      setOtpSent(false);
-      setOtp("");
-
-    } catch (error) {
-      console.error(
-        "OTP verification error:",
-        error
-      );
-
-      setError(
-        error.message ||
-          "Invalid OTP. Please try again."
-      );
-
-    } finally {
-      setOtpLoading(false);
-    }
-  };
-
-  // =====================================================
-  // RESEND OTP
-  // =====================================================
-
-  const handleResendOTP = async () => {
-    setError("");
-    setMessage("");
-    setOtp("");
-
-    const cleanEmail =
-      email.trim().toLowerCase();
-
-    if (!cleanEmail) {
-      setError(
-        "Email is required."
-      );
-      return;
-    }
-
-    try {
-      setOtpLoading(true);
-
-      const response = await fetch(
-        `${OTP_API}/send-otp`,
-        {
-          method: "POST",
-
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-
-          body: JSON.stringify({
-            email: cleanEmail,
-          }),
-        }
-      );
-
-      const data =
-        await response.json();
-
-      console.log(
-        "Resend OTP response:",
-        data
-      );
-
-      if (
-        !response.ok ||
-        !data.success
-      ) {
-        throw new Error(
-          data.message ||
-            "Failed to resend OTP."
-        );
-      }
-
-      setOtpSent(true);
-
-      setMessage(
-        "New OTP sent successfully!"
-      );
-
-    } catch (error) {
-      console.error(
-        "Resend OTP error:",
-        error
-      );
-
-      setError(
-        error.message ||
-          "Unable to resend OTP."
-      );
-
-    } finally {
-      setOtpLoading(false);
     }
   };
 
@@ -583,82 +201,43 @@ export default function Login() {
   // RESEND EMAIL VERIFICATION
   // =====================================================
 
-  const handleResendVerification =
-    async () => {
+  const handleResendVerification = async () => {
+    setError("");
+    setMessage("");
 
-      setError("");
-      setMessage("");
+    const cleanEmail = email.trim().toLowerCase();
 
-      const cleanEmail =
-        email.trim().toLowerCase();
+    if (!cleanEmail || !password) {
+      setError("Enter your email and password first.");
+      return;
+    }
 
-      if (!cleanEmail || !password) {
-        setError(
-          "Enter your email and password first."
-        );
+    try {
+      setResending(true);
+
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        cleanEmail,
+        password
+      );
+
+      const user = userCredential.user;
+
+      if (user.emailVerified) {
+        setMessage("Your email is already verified. Please login again.");
+        setShowResend(false);
         return;
       }
 
-      try {
-        setResending(true);
+      await sendEmailVerification(user);
 
-        const userCredential =
-          await signInWithEmailAndPassword(
-            auth,
-            cleanEmail,
-            password
-          );
-
-        const user =
-          userCredential.user;
-
-        if (user.emailVerified) {
-          setMessage(
-            "Your email is already verified. Please login again."
-          );
-
-          setShowResend(false);
-
-          return;
-        }
-
-        await sendEmailVerification(
-          user
-        );
-
-        setMessage(
-          "Verification email sent! Check your inbox and spam folder."
-        );
-
-      } catch (error) {
-        console.error(
-          "Resend verification error:",
-          error
-        );
-
-        setError(
-          error.message ||
-            "Could not send verification email."
-        );
-
-      } finally {
-        setResending(false);
-      }
-    };
-
-  // =====================================================
-  // BACK TO NORMAL LOGIN
-  // =====================================================
-
-  const handleBack = () => {
-    setOtpMode(false);
-
-    setOtpSent(false);
-    setOtp("");
-
-    setError("");
-    setMessage("");
-    setShowResend(false);
+      setMessage("Verification email sent! Check your inbox and spam folder.");
+    } catch (error) {
+      console.error("Resend verification error:", error);
+      setError(error.message || "Could not send verification email.");
+    } finally {
+      setResending(false);
+    }
   };
 
   // =====================================================
@@ -667,461 +246,203 @@ export default function Login() {
 
   return (
     <div className="auth-page">
-
-      <div className="auth-card">
-
+      <div className="auth-card glass">
         {/* LOGO */}
-
         <div className="auth-logo">
-
-          <div className="auth-logo-icon">
-            ♫
-          </div>
-
-          <span>
-            Moodify
-          </span>
-
+          <div className="auth-logo-icon">♫</div>
+          <span>Moodify</span>
         </div>
 
         {/* HEADER */}
-
         <div className="auth-header">
-
-          <span className="auth-badge">
-            🎧 WELCOME BACK
-          </span>
-
-          <h1>
-            Welcome back
-          </h1>
-
-          <p>
-            Your mood. Your music. Your moment.
-          </p>
-
+          <span className="auth-badge">🎧 WELCOME BACK</span>
+          <h1>Welcome back</h1>
+          <p>Your mood. Your music. Your moment.</p>
         </div>
 
-        {/* =================================================
-            NORMAL LOGIN
-        ================================================= */}
+        {/* LOGIN FORM */}
+        <form onSubmit={handleLogin}>
+          {/* EMAIL */}
+          <div className="form-group">
+            <label>Email Address</label>
+            <input
+              type="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setError("");
+                setMessage("");
+                setShowResend(false);
+              }}
+              required
+            />
+          </div>
 
-        {!otpMode && (
+          {/* PASSWORD */}
+          <div className="form-group">
+            <label>Password</label>
+            <input
+              type="password"
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                setError("");
+                setMessage("");
+                setShowResend(false);
+              }}
+              required
+            />
 
-          <form onSubmit={handleLogin}>
-
-            {/* EMAIL */}
-
-            <div className="form-group">
-
-              <label>
-                Email Address
-              </label>
-
-              <input
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => {
-                  setEmail(
-                    e.target.value
-                  );
-
-                  setError("");
-                  setMessage("");
-                  setShowResend(false);
-                }}
-                required
-              />
-
-            </div>
-
-            {/* PASSWORD */}
-
-            <div className="form-group">
-
-              <label>
-                Password
-              </label>
-
-              <input
-                type="password"
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => {
-                  setPassword(
-                    e.target.value
-                  );
-
-                  setError("");
-                  setMessage("");
-                  setShowResend(false);
-                }}
-                required
-              />
-
-              {/* FORGOT PASSWORD */}
-
-              <div
+            {/* FORGOT PASSWORD */}
+            <div style={{ textAlign: "right", marginTop: "8px" }}>
+              <button
+                type="button"
+                onClick={() => navigate("/forgot-password")}
                 style={{
-                  textAlign: "right",
-                  marginTop: "8px",
+                  background: "none",
+                  border: "none",
+                  padding: 0,
+                  color: "#8b5cf6",
+                  cursor: "pointer",
+                  fontSize: "14px",
+                  fontWeight: "600",
                 }}
               >
+                Forgot Password?
+              </button>
+            </div>
+          </div>
 
+          {/* ERROR */}
+          {error && (
+            <div className="auth-error">
+              ⚠️ {error}
+              {showResend && (
                 <button
                   type="button"
-                  onClick={() =>
-                    navigate(
-                      "/forgot-password"
-                    )
-                  }
+                  onClick={handleResendVerification}
+                  disabled={resending}
                   style={{
-                    background: "none",
-                    border: "none",
-                    padding: 0,
-                    color: "#8b5cf6",
-                    cursor: "pointer",
-                    fontSize: "14px",
-                    fontWeight: "600",
+                    display: "block",
+                    marginTop: "12px",
+                    width: "100%",
                   }}
                 >
-                  Forgot Password?
+                  {resending ? "Sending..." : "Resend Verification Email"}
                 </button>
-
-              </div>
-
+              )}
             </div>
+          )}
 
-            {/* ERROR */}
+          {/* SUCCESS */}
+          {message && <div className="auth-success">✅ {message}</div>}
 
-            {error && (
+          {/* LOGIN BUTTON */}
+          <button type="submit" className="auth-submit" disabled={loading}>
+            {loading ? "Checking..." : "Login →"}
+          </button>
 
-              <div className="auth-error">
+          {/* DIVIDER */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              margin: "20px 0",
+              color: "#888",
+            }}
+          >
+            <div style={{ flex: 1, height: "1px", background: "#ddd" }} />
+            <span>OR</span>
+            <div style={{ flex: 1, height: "1px", background: "#ddd" }} />
+          </div>
 
-                ⚠️ {error}
-
-                {showResend && (
-
-                  <button
-                    type="button"
-                    onClick={
-                      handleResendVerification
-                    }
-                    disabled={resending}
-                    style={{
-                      display: "block",
-                      marginTop: "12px",
-                      width: "100%",
-                    }}
-                  >
-                    {resending
-                      ? "Sending..."
-                      : "Resend Verification Email"}
-                  </button>
-
-                )}
-
-              </div>
-
-            )}
-
-            {/* SUCCESS */}
-
-            {message && (
-
-              <div className="auth-success">
-                ✅ {message}
-              </div>
-
-            )}
-
-            {/* LOGIN BUTTON */}
-
+          {/* GOOGLE & MICROSOFT SSO BUTTONS */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             <button
-              type="submit"
-              className="auth-submit"
+              type="button"
+              onClick={handleGoogleLogin}
               disabled={loading}
-            >
-              {loading
-                ? "Checking..."
-                : "Login →"}
-            </button>
-
-            {/* DIVIDER */}
-
-            <div
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: "10px",
-                margin: "20px 0",
-                color: "#888",
+                justifyContent: "center",
+                gap: "12px",
+                width: "100%",
+                padding: "12px 16px",
+                borderRadius: "12px",
+                border: "1px solid rgba(255,255,255,0.18)",
+                background: "rgba(255,255,255,0.06)",
+                color: "#fff",
+                fontSize: "14px",
+                fontWeight: "600",
+                cursor: "pointer",
+                transition: "all 0.2s ease",
               }}
             >
-
-              <div
-                style={{
-                  flex: 1,
-                  height: "1px",
-                  background: "#ddd",
-                }}
-              />
-
-              <span>
-                OR
-              </span>
-
-              <div
-                style={{
-                  flex: 1,
-                  height: "1px",
-                  background: "#ddd",
-                }}
-              />
-
-            </div>
-
-            {/* OTP BUTTON */}
+              <svg width="18" height="18" viewBox="0 0 24 24">
+                <path
+                  fill="#4285F4"
+                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                />
+                <path
+                  fill="#34A853"
+                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                />
+                <path
+                  fill="#FBBC05"
+                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                />
+                <path
+                  fill="#EA4335"
+                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                />
+              </svg>
+              Continue with Google
+            </button>
 
             <button
               type="button"
-              className="auth-submit"
-              onClick={
-                handleOpenOTPLogin
-              }
+              onClick={handleMicrosoftLogin}
               disabled={loading}
               style={{
-                background:
-                  "transparent",
-                color: "inherit",
-                border:
-                  "1px solid currentColor",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "12px",
+                width: "100%",
+                padding: "12px 16px",
+                borderRadius: "12px",
+                border: "1px solid rgba(255,255,255,0.18)",
+                background: "rgba(255,255,255,0.06)",
+                color: "#fff",
+                fontSize: "14px",
+                fontWeight: "600",
+                cursor: "pointer",
+                transition: "all 0.2s ease",
               }}
             >
-              Login with OTP
+              <svg width="18" height="18" viewBox="0 0 23 23">
+                <path fill="#f35325" d="M1 1h10v10H1z" />
+                <path fill="#81bc06" d="M12 1h10v10H12z" />
+                <path fill="#05a6f0" d="M1 12h10v10H1z" />
+                <path fill="#ffba08" d="M12 12h10v10H12z" />
+              </svg>
+              Continue with Microsoft
             </button>
-
-          </form>
-
-        )}
-
-        {/* =================================================
-            OTP LOGIN
-        ================================================= */}
-
-        {otpMode && (
-
-          <div>
-
-            <div
-              style={{
-                marginBottom: "20px",
-                textAlign: "center",
-              }}
-            >
-
-              <h2>
-                Login with OTP
-              </h2>
-
-              <p>
-                Enter your email to receive a
-                6-digit OTP.
-              </p>
-
-            </div>
-
-            {/* EMAIL */}
-
-            <div className="form-group">
-
-              <label>
-                Email Address
-              </label>
-
-              <input
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => {
-                  setEmail(
-                    e.target.value
-                  );
-
-                  setError("");
-                  setMessage("");
-                  setOtpSent(false);
-                  setOtp("");
-                }}
-                disabled={otpSent}
-              />
-
-            </div>
-
-            {/* SEND OTP */}
-
-            {!otpSent && (
-
-              <button
-                type="button"
-                className="auth-submit"
-                onClick={
-                  handleSendOTP
-                }
-                disabled={otpLoading}
-              >
-                {otpLoading
-                  ? "Checking..."
-                  : "Send OTP →"}
-              </button>
-
-            )}
-
-            {/* ERROR */}
-
-            {error && (
-
-              <div
-                className="auth-error"
-                style={{
-                  marginTop: "15px",
-                }}
-              >
-                ⚠️ {error}
-              </div>
-
-            )}
-
-            {/* OTP SENT */}
-
-            {otpSent && !error && (
-
-              <div
-                className="auth-success"
-                style={{
-                  marginBottom: "15px",
-                }}
-              >
-                📧 OTP sent to {email}
-              </div>
-
-            )}
-
-            {/* OTP INPUT */}
-
-            {otpSent && (
-
-              <>
-
-                <div className="form-group">
-
-                  <label>
-                    Enter OTP
-                  </label>
-
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={6}
-                    placeholder="Enter 6-digit OTP"
-                    value={otp}
-                    onChange={(e) => {
-
-                      const value =
-                        e.target.value.replace(
-                          /\D/g,
-                          ""
-                        );
-
-                      setOtp(value);
-                      setError("");
-                      setMessage("");
-
-                    }}
-                  />
-
-                </div>
-
-                {/* VERIFY */}
-
-                <button
-                  type="button"
-                  className="auth-submit"
-                  onClick={
-                    handleVerifyOTP
-                  }
-                  disabled={
-                    otpLoading ||
-                    otp.length !== 6
-                  }
-                >
-                  {otpLoading
-                    ? "Verifying..."
-                    : "Verify OTP →"}
-                </button>
-
-                {/* RESEND */}
-
-                <button
-                  type="button"
-                  className="auth-submit"
-                  onClick={
-                    handleResendOTP
-                  }
-                  disabled={otpLoading}
-                  style={{
-                    marginTop: "10px",
-                  }}
-                >
-                  {otpLoading
-                    ? "Sending..."
-                    : "Resend OTP"}
-                </button>
-
-              </>
-
-            )}
-
-            {/* BACK */}
-
-            <button
-              type="button"
-              className="auth-submit"
-              onClick={handleBack}
-              disabled={otpLoading}
-              style={{
-                marginTop: "10px",
-              }}
-            >
-              ← Back to Login
-            </button>
-
           </div>
+        </form>
 
-        )}
-
-        {/* REGISTER */}
-
+        {/* REGISTER LINK */}
         <div className="auth-switch">
-
-          <span>
-            Don't have an account?
-          </span>
-
-          <button
-            type="button"
-            onClick={() =>
-              navigate("/register")
-            }
-          >
+          <span>Don't have an account?</span>
+          <button type="button" onClick={() => navigate("/register")}>
             Create Account
           </button>
-
         </div>
-
       </div>
-
     </div>
   );
-}
+}

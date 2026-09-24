@@ -11,6 +11,7 @@ import Landing from "./Landing";
 import Login from "./Login";
 import Register from "./Register";
 import ForgotPassword from "./ForgotPassword";
+import ResetPassword from "./ResetPassword";
 
 import ThemeToggle from "./ThemeToggle";
 import { PlayerProvider } from "./PlayerContext";
@@ -98,6 +99,17 @@ export default function App() {
         <Route
           path="/forgot-password"
           element={<ForgotPassword />}
+        />
+
+        <Route
+          path="/reset-password"
+          element={
+            <Navigate
+              to="/login"
+              state={{ message: "Password changed successfully! You can login now." }}
+              replace
+            />
+          }
         />
 
 

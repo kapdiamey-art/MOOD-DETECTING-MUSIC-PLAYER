@@ -15,8 +15,9 @@ const {
   getAuth,
 } = require("firebase-admin/auth");
 
-// Load .env
-dotenv.config();
+// Load .env from Frontend or Backend fallback
+dotenv.config({ path: path.join(__dirname, ".env") });
+dotenv.config({ path: path.join(__dirname, "../Backend/.env") });
 
 const app = express();
 const PORT = 5000;
@@ -178,7 +179,7 @@ async function isRegisteredEmail(
 ) {
   if (!firebaseAuth) {
     console.warn("⚠️ Firebase Admin not loaded, skipping email registration check");
-    return true;
+    return false;
   }
 
   try {
@@ -294,34 +295,33 @@ app.post(
       }
 
       // -----------------------------------------------
-      // CHECK FIREBASE REGISTRATION
+      // CHECK FIREBASE REGISTRATION (ACCORDING TO TYPE)
       // -----------------------------------------------
 
-      const registered =
-        await isRegisteredEmail(
-          email
-        );
+      const isRegister = req.body.type === "register" || req.body.isRegistration === true;
 
-      // -----------------------------------------------
-      // STOP IF NOT REGISTERED
-      // -----------------------------------------------
-
-      if (!registered) {
-
-        console.log(
-          "🚫 OTP NOT SENT - EMAIL NOT REGISTERED:",
-          email
-        );
-
-        return res.status(404).json({
-
-          success: false,
-
-          registered: false,
-
-          message:
-            "This email is not registered. Please create an account first.",
-        });
+      if (firebaseAuth) {
+        try {
+          const registered = await isRegisteredEmail(email);
+          if (isRegister && registered) {
+            console.log("🚫 REGISTER OTP BLOCKED - EMAIL ALREADY REGISTERED:", email);
+            return res.status(400).json({
+              success: false,
+              registered: true,
+              message: "This email is already registered. Please login instead.",
+            });
+          }
+          if (!isRegister && !registered) {
+            console.log("🚫 LOGIN OTP BLOCKED - EMAIL NOT REGISTERED:", email);
+            return res.status(404).json({
+              success: false,
+              registered: false,
+              message: "This email is not registered. Please create an account first.",
+            });
+          }
+        } catch (authErr) {
+          console.warn("⚠️ Firebase Auth lookup failed, proceeding with OTP send:", authErr.message);
+        }
       }
 
       // -----------------------------------------------
