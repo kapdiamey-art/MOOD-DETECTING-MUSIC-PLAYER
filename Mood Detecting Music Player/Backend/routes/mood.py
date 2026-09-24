@@ -167,3 +167,90 @@ async def create_mood_journey(request: MoodJourneyRequest, current_user=Depends(
                 "songs": start.to_dict(orient="records") + finish.to_dict(orient="records")}
     except Exception as error:
         raise HTTPException(500, detail=f"Could not build mood journey: {error}")
+
+
+# Cache for dataset genres and top artists
+_ALL_GENRES_CACHE = None
+_TOP_ARTISTS_CACHE = None
+_ARTIST_SET_CACHE = None
+
+
+def _init_music_caches():
+    global _ALL_GENRES_CACHE, _TOP_ARTISTS_CACHE, _ARTIST_SET_CACHE
+    if _ALL_GENRES_CACHE is not None:
+        return
+    try:
+        from recommendation import songs
+        if songs is not None:
+            # Build clean genres list
+            genre_set = set()
+            if "track_genre" in songs.columns:
+                for g in songs['track_genre'].dropna().unique():
+                    s = str(g).strip().lower().replace("[", "").replace("]", "").replace("'", "").replace('"', "")
+                    for item in s.split(","):
+                        clean_item = item.strip()
+                        if clean_item:
+                            genre_set.add(clean_item)
+            _ALL_GENRES_CACHE = sorted(list(genre_set))
+
+            # Build top artists by dataset count
+            from collections import Counter
+            counts = Counter()
+            if "artists" in songs.columns:
+                for a in songs['artists'].dropna():
+                    if isinstance(a, str):
+                        for p in a.split(';'):
+                            name = p.strip()
+                            if name:
+                                counts.update([name])
+            _TOP_ARTISTS_CACHE = [artist for artist, _ in counts.most_common(35)]
+            _ARTIST_SET_CACHE = sorted(list(counts.keys()))
+    except Exception as e:
+        print(f"[music cache error] {e}")
+        _ALL_GENRES_CACHE = []
+        _TOP_ARTISTS_CACHE = []
+        _ARTIST_SET_CACHE = []
+
+
+@router.get("/genres")
+async def get_genres(q: Optional[str] = None):
+    """Get genres. If query 'q' is given, filter. Returns top genres when empty."""
+    _init_music_caches()
+    all_genres = _ALL_GENRES_CACHE or []
+
+    if not q or not q.strip():
+        # Popular/common genres when empty
+        popular_defaults = ["pop", "rock", "indie", "bollywood", "lofi", "acoustic", "hip-hop", "dance", "edm", "classical", "jazz", "r-n-b", "metal", "soul", "ambient", "country"]
+        existing_defaults = [g for g in popular_defaults if g in all_genres]
+        rem = [g for g in all_genres if g not in existing_defaults]
+        return {"genres": existing_defaults + rem[:15], "total": len(all_genres)}
+
+    query = q.strip().lower()
+    filtered = [g for g in all_genres if query in g]
+    filtered.sort(key=lambda x: (not x.startswith(query), x))
+    return {"genres": filtered[:15], "total": len(all_genres)}
+
+
+@router.get("/artists")
+async def search_artists(q: Optional[str] = None):
+    """Search artists from dataset. If q is empty, returns top dataset artists."""
+    _init_music_caches()
+    top_artists = _TOP_ARTISTS_CACHE or []
+    all_artists = _ARTIST_SET_CACHE or []
+
+    if not q or not q.strip():
+        return {"artists": top_artists[:20], "total": len(all_artists)}
+
+    query = q.strip().lower()
+    matches = []
+    # Search in all artists
+    for a in all_artists:
+        if query in a.lower():
+            matches.append(a)
+            if len(matches) >= 40:
+                break
+
+    matches.sort(key=lambda x: (not x.lower().startswith(query), x.lower()))
+    return {"artists": matches[:15], "total": len(all_artists)}
+
+

@@ -27,6 +27,52 @@ export default function MoodDetection() {
   const [customCity,       setCustomCity      ] = useState(localStorage.getItem("moodify_user_city") || "");
   const [useWeather,       setUseWeather      ] = useState(false);
 
+  // Autocomplete states
+  const [genreSuggestions,   setGenreSuggestions  ] = useState([]);
+  const [artistSuggestions,  setArtistSuggestions ] = useState([]);
+  const [showGenreDropdown,  setShowGenreDropdown ] = useState(false);
+  const [showArtistDropdown, setShowArtistDropdown] = useState(false);
+
+  // Fetch genre suggestions (initial or search query)
+  const fetchGenreSuggestions = async (query = "") => {
+    try {
+      const res = await fetch(`http://localhost:8000/mood/genres?q=${encodeURIComponent(query)}`);
+      if (res.ok) {
+        const data = await res.json();
+        setGenreSuggestions(data.genres || []);
+      }
+    } catch (err) {
+      console.error("Genre fetch error:", err);
+    }
+  };
+
+  // Fetch artist suggestions (initial or search query)
+  const fetchArtistSuggestions = async (query = "") => {
+    try {
+      const res = await fetch(`http://localhost:8000/mood/artists?q=${encodeURIComponent(query)}`);
+      if (res.ok) {
+        const data = await res.json();
+        setArtistSuggestions(data.artists || []);
+      }
+    } catch (err) {
+      console.error("Artist fetch error:", err);
+    }
+  };
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchGenreSuggestions(genre.trim());
+    }, 120);
+    return () => clearTimeout(timer);
+  }, [genre]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchArtistSuggestions(artist.trim());
+    }, 120);
+    return () => clearTimeout(timer);
+  }, [artist]);
+
   // Voice / Whisper speech-to-text state
   const [isListening,     setIsListening    ] = useState(false);
   const [micError,        setMicError       ] = useState("");
@@ -372,7 +418,7 @@ export default function MoodDetection() {
           border-radius: 28px;
           padding: 36px;
           position: relative;
-          overflow: hidden;
+          overflow: visible;
           backdrop-filter: blur(20px);
         }
         .md-card-glow {
@@ -513,6 +559,118 @@ export default function MoodDetection() {
           border-color: rgba(139,92,246,0.4);
         }
         .md-pref-input::placeholder { color: var(--input-placeholder); }
+
+        /* ── Search & Select Autocomplete Dropdown ── */
+        .md-pref-group {
+          position: relative;
+          width: 100%;
+        }
+        .md-input-with-clear {
+          position: relative;
+          width: 100%;
+          display: flex;
+          align-items: center;
+        }
+        .md-clear-btn {
+          position: absolute;
+          right: 12px;
+          background: rgba(255,255,255,0.1);
+          border: none;
+          color: var(--text-secondary);
+          width: 22px;
+          height: 22px;
+          border-radius: 50%;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 0.75rem;
+          transition: all 0.15s ease;
+          z-index: 2;
+        }
+        .md-clear-btn:hover {
+          background: rgba(239, 68, 68, 0.25);
+          color: #ef4444;
+        }
+        .md-dropdown {
+          position: absolute;
+          top: calc(100% + 6px);
+          left: 0;
+          right: 0;
+          background: #161124;
+          border: 1px solid rgba(139, 92, 246, 0.4);
+          border-radius: 16px;
+          box-shadow: 0 16px 40px rgba(0, 0, 0, 0.65), 0 0 25px rgba(139, 92, 246, 0.18);
+          backdrop-filter: blur(24px);
+          z-index: 999;
+          overflow: hidden;
+          animation: dropDownSlide 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes dropDownSlide {
+          from { opacity: 0; transform: translateY(-6px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        html.light .md-dropdown {
+          background: #ffffff;
+          border-color: rgba(139, 92, 246, 0.25);
+          box-shadow: 0 16px 36px rgba(0, 0, 0, 0.14);
+        }
+        .md-dropdown-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 10px 14px;
+          background: rgba(139, 92, 246, 0.12);
+          border-bottom: 1px solid rgba(139, 92, 246, 0.18);
+          font-size: 0.74rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          color: #a78bfa;
+        }
+        .md-dropdown-hint {
+          font-size: 0.7rem;
+          color: var(--text-secondary);
+          font-weight: 500;
+          text-transform: none;
+          letter-spacing: 0;
+        }
+        .md-dropdown-list {
+          max-height: 230px;
+          overflow-y: auto;
+        }
+        .md-dropdown-list::-webkit-scrollbar {
+          width: 6px;
+        }
+        .md-dropdown-list::-webkit-scrollbar-thumb {
+          background: rgba(139, 92, 246, 0.35);
+          border-radius: 99px;
+        }
+        .md-dropdown-item {
+          padding: 11px 16px;
+          font-size: 0.9rem;
+          color: var(--text);
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          transition: background 0.15s ease, color 0.15s ease;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+        .md-dropdown-item:last-child { border-bottom: none; }
+        .md-dropdown-item:hover, .md-dropdown-item.selected {
+          background: rgba(139, 92, 246, 0.22);
+          color: #c4b5fd;
+        }
+        .md-item-icon { font-size: 1rem; flex-shrink: 0; }
+        .md-item-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .md-item-check { color: #a78bfa; font-weight: bold; }
+        .md-dropdown-empty {
+          padding: 16px;
+          font-size: 0.85rem;
+          color: var(--text-secondary);
+          text-align: center;
+        }
 
         /* ── Language Selector Pills ── */
         .md-lang-wrap {
@@ -864,22 +1022,139 @@ export default function MoodDetection() {
             {micError && <div className="md-mic-error">🚫 {micError}</div>}
           </div>
 
-          {/* Preferences */}
+          {/* Preferences with Proper Search & Select Dropdowns */}
           <div className="md-prefs">
-            <input
-              className="md-pref-input"
-              type="text"
-              value={genre}
-              onChange={(e) => setGenre(e.target.value)}
-              placeholder="🎸 Preferred genre (e.g. pop)"
-            />
-            <input
-              className="md-pref-input"
-              type="text"
-              value={artist}
-              onChange={(e) => setArtist(e.target.value)}
-              placeholder="🎤 Preferred artist (e.g. Taylor Swift)"
-            />
+            {/* Genre Search Dropdown */}
+            <div
+              className="md-pref-group"
+              onBlur={(e) => {
+                if (!e.currentTarget.contains(e.relatedTarget)) {
+                  setShowGenreDropdown(false);
+                }
+              }}
+            >
+              <div className="md-input-with-clear">
+                <input
+                  className="md-pref-input"
+                  type="text"
+                  value={genre}
+                  onFocus={() => {
+                    setShowGenreDropdown(true);
+                    fetchGenreSuggestions(genre.trim());
+                  }}
+                  onChange={(e) => {
+                    setGenre(e.target.value);
+                    setShowGenreDropdown(true);
+                  }}
+                  placeholder="🎸 Search or Select Genre..."
+                />
+                {genre && (
+                  <button
+                    type="button"
+                    className="md-clear-btn"
+                    onClick={() => setGenre("")}
+                    title="Clear genre"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+
+              {showGenreDropdown && (
+                <div className="md-dropdown">
+                  <div className="md-dropdown-header">
+                    <span>{genre.trim() ? "Matching Genres" : "Top Dataset Genres"}</span>
+                    <span className="md-dropdown-hint">Type initials to search</span>
+                  </div>
+                  <div className="md-dropdown-list">
+                    {genreSuggestions.length > 0 ? (
+                      genreSuggestions.map((g) => (
+                        <div
+                          key={g}
+                          className={`md-dropdown-item${genre === g ? " selected" : ""}`}
+                          onMouseDown={() => {
+                            setGenre(g);
+                            setShowGenreDropdown(false);
+                          }}
+                        >
+                          <span className="md-item-icon">🎵</span>
+                          <span className="md-item-name">{g}</span>
+                          {genre === g && <span className="md-item-check">✓</span>}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="md-dropdown-empty">No matching genre found</div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Artist Search Dropdown */}
+            <div
+              className="md-pref-group"
+              onBlur={(e) => {
+                if (!e.currentTarget.contains(e.relatedTarget)) {
+                  setShowArtistDropdown(false);
+                }
+              }}
+            >
+              <div className="md-input-with-clear">
+                <input
+                  className="md-pref-input"
+                  type="text"
+                  value={artist}
+                  onFocus={() => {
+                    setShowArtistDropdown(true);
+                    fetchArtistSuggestions(artist.trim());
+                  }}
+                  onChange={(e) => {
+                    setArtist(e.target.value);
+                    setShowArtistDropdown(true);
+                  }}
+                  placeholder="🎤 Search or Select Artist..."
+                />
+                {artist && (
+                  <button
+                    type="button"
+                    className="md-clear-btn"
+                    onClick={() => setArtist("")}
+                    title="Clear artist"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+
+              {showArtistDropdown && (
+                <div className="md-dropdown">
+                  <div className="md-dropdown-header">
+                    <span>{artist.trim() ? "Matching Artists" : "Top Dataset Artists"}</span>
+                    <span className="md-dropdown-hint">30,000+ available</span>
+                  </div>
+                  <div className="md-dropdown-list">
+                    {artistSuggestions.length > 0 ? (
+                      artistSuggestions.map((a) => (
+                        <div
+                          key={a}
+                          className={`md-dropdown-item${artist === a ? " selected" : ""}`}
+                          onMouseDown={() => {
+                            setArtist(a);
+                            setShowArtistDropdown(false);
+                          }}
+                        >
+                          <span className="md-item-icon">🎤</span>
+                          <span className="md-item-name">{a}</span>
+                          {artist === a && <span className="md-item-check">✓</span>}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="md-dropdown-empty">No matching artist found</div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="md-weather-section" style={{
