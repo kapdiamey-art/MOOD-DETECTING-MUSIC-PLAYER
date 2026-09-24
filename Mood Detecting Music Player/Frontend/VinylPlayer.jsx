@@ -14,10 +14,10 @@ export default function VinylPlayer({
   const vinylRef = useRef(null);
   const startAngleRef = useRef(0);
 
-  // Tonearm angle calculation for turntable variant:
-  // Rest angle: 0deg. Play start: 22deg. Play end: 36deg.
-  const progressRatio = duration > 0 ? Math.min(1, Math.max(0, currentTime / duration)) : 0;
-  const tonearmAngle = isPlaying ? 22 + progressRatio * 14 : 0;
+  // Tonearm angle calculation (User Requested Motion):
+  // When OFF (isPlaying === false): Tonearm rests ON the CD (30deg).
+  // When STARTS / ON (isPlaying === true): Tonearm COMES OUT from the CD to the side (-6deg).
+  const tonearmAngle = isPlaying ? -6 : 30;
 
   // Synthesize realistic vinyl scratch sound
   const playScratchSound = () => {
@@ -179,7 +179,7 @@ export default function VinylPlayer({
   return (
     <div
       className={`turntable-deck-wrap ${className}`}
-      style={{ width: `${platterSize + (showTonearm ? 70 : 0)}px` }}
+      style={{ width: `${platterSize + (showTonearm ? 80 : 0)}px` }}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
@@ -241,71 +241,80 @@ export default function VinylPlayer({
         )}
       </div>
 
-      {/* ── Realistic Precision SVG Tonearm ── */}
+      {/* ── Compact Realistic SVG Tonearm ── */}
       {showTonearm && (
-        <div className="turntable-tonearm-svg-wrap" style={{ height: `${platterSize * 0.92}px` }}>
+        <div className="turntable-tonearm-svg-wrap" style={{ height: `${platterSize * 0.72}px` }}>
           <div
             className="tonearm-rotator"
             style={{
               transform: `rotate(${tonearmAngle}deg)`,
-              transformOrigin: "24px 24px",
-              transition: isPlaying
-                ? "transform 0.7s cubic-bezier(0.2, 0.9, 0.3, 1)"
-                : "transform 0.9s cubic-bezier(0.4, 0, 0.2, 1)"
+              transformOrigin: "32px 32px",
+              transition: "transform 0.9s cubic-bezier(0.34, 1.2, 0.64, 1)"
             }}
           >
             <svg
-              width="68"
-              height="220"
-              viewBox="0 0 68 220"
+              width="100"
+              height="210"
+              viewBox="0 0 100 210"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
               className="tonearm-svg"
             >
               <defs>
-                <linearGradient id="chromeGimbal" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0%" stopColor="#f1f5f9" />
-                  <stop offset="50%" stopColor="#64748b" />
-                  <stop offset="100%" stopColor="#1e293b" />
+                <linearGradient id="chromeGimbal2" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stopColor="#ffffff" />
+                  <stop offset="40%" stopColor="#cbd5e1" />
+                  <stop offset="80%" stopColor="#475569" />
+                  <stop offset="100%" stopColor="#0f172a" />
                 </linearGradient>
-                <linearGradient id="chromeArm" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stopColor="#e2e8f0" />
-                  <stop offset="40%" stopColor="#ffffff" />
+                <linearGradient id="chromeArm2" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor="#cbd5e1" />
+                  <stop offset="35%" stopColor="#ffffff" />
                   <stop offset="70%" stopColor="#94a3b8" />
-                  <stop offset="100%" stopColor="#475569" />
+                  <stop offset="100%" stopColor="#334155" />
                 </linearGradient>
-                <filter id="armShadow" x="-10" y="-10" width="90" height="240" filterUnits="userSpaceOnUse">
-                  <feDropShadow dx="3" dy="6" stdDeviation="5" floodColor="#000000" floodOpacity="0.65" />
+                <linearGradient id="brassAccent2" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stopColor="#fbbf24" />
+                  <stop offset="100%" stopColor="#d97706" />
+                </linearGradient>
+                <filter id="armShadow2" x="-20" y="-20" width="150" height="280" filterUnits="userSpaceOnUse">
+                  <feDropShadow dx="4" dy="8" stdDeviation="7" floodColor="#000000" floodOpacity="0.85" />
                 </filter>
               </defs>
 
-              <g filter="url(#armShadow)">
-                {/* Pivot Gimbal Ring */}
-                <circle cx="24" cy="24" r="18" fill="#0f172a" stroke="#334155" strokeWidth="2" />
-                <circle cx="24" cy="24" r="12" fill="url(#chromeGimbal)" />
-                <circle cx="24" cy="24" r="5" fill="#f8fafc" />
+              <g filter="url(#armShadow2)">
+                {/* Pivot Base */}
+                <circle cx="32" cy="32" r="24" fill="#090d16" stroke="#475569" strokeWidth="2" />
+                <circle cx="32" cy="32" r="16" fill="url(#chromeGimbal2)" stroke="#334155" strokeWidth="1.5" />
+                <circle cx="32" cy="32" r="8"  fill="url(#brassAccent2)" />
+                <circle cx="32" cy="32" r="3"  fill="#ffffff" />
 
-                {/* Counterweight */}
-                <rect x="18" y="2" width="12" height="10" rx="2" fill="#1e293b" stroke="#64748b" strokeWidth="1" />
+                {/* Counterweight Block */}
+                <rect x="20" y="4" width="24" height="14" rx="3" fill="#1e293b" stroke="#94a3b8" strokeWidth="1.2" />
+                <rect x="23" y="7"  width="18" height="3"  fill="url(#chromeArm2)" opacity="0.55" />
 
-                {/* Curved Metallic Tonearm Pipe */}
+                {/* Arm Tube — shorter, proportionate curve */}
                 <path
-                  d="M 24 24 Q 22 100 28 150 L 32 178"
-                  stroke="url(#chromeArm)"
-                  strokeWidth="3.5"
+                  d="M 32 32 Q 26 100 36 155 L 42 178"
+                  stroke="url(#chromeArm2)"
+                  strokeWidth="5"
                   strokeLinecap="round"
                 />
 
-                {/* Cartridge Headshell */}
+                {/* Cartridge Joint */}
+                <rect x="37" y="173" width="10" height="5" rx="1.5" fill="url(#brassAccent2)" />
+
+                {/* Headshell */}
                 <path
-                  d="M 29 178 L 36 177 L 41 202 L 32 204 Z"
+                  d="M 39 178 L 52 176 L 59 198 L 45 201 Z"
                   fill="#0f172a"
-                  stroke="#94a3b8"
-                  strokeWidth="1.2"
+                  stroke="#cbd5e1"
+                  strokeWidth="1.5"
                 />
 
-                {/* Stylus Needle Glow Point */}
-                <circle cx="36" cy="204" r="2.2" fill="#f59e0b" />
+                {/* Stylus / Needle glow */}
+                <circle cx="53" cy="200" r="3.5" fill="#f59e0b" />
+                <circle cx="53" cy="200" r="6"   fill="none" stroke="#f59e0b" strokeWidth="1" opacity="0.45" />
               </g>
             </svg>
           </div>

@@ -159,8 +159,8 @@ async def create_mood_journey(request: MoodJourneyRequest, current_user=Depends(
         raise HTTPException(400, "Choose moods from the six supported emotions.")
     try:
         from recommendation import recommend  # imported from existing engine path above
-        start_frame = recommend(current, n=2, use_spotify=True)
-        finish_frame = recommend(target, n=4, use_spotify=True)
+        start_frame = recommend(current, n=4, use_spotify=True)
+        finish_frame = recommend(target, n=6, use_spotify=True)
         start = start_frame.where(pd.notnull(start_frame), None)
         finish = finish_frame.where(pd.notnull(finish_frame), None)
         return {"current_mood": request.current_mood, "target_mood": request.target_mood,

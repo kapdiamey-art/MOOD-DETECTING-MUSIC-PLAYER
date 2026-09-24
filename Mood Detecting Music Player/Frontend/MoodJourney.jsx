@@ -12,7 +12,18 @@ export default function MoodJourney() {
   const [targetMood, setTargetMood] = useState("joy");
   const [songs, setSongs]     = useState([]);
   const [loading, setLoading] = useState(false);
-  const { playTrack }         = usePlayer();
+  const { playTrack, searchQuery } = usePlayer();
+
+  // Filter journey songs by global search query
+  const filterBySearch = (list) => {
+    if (!searchQuery.trim()) return list;
+    const q = searchQuery.toLowerCase();
+    return list.filter(
+      (s) =>
+        (s.track_name || "").toLowerCase().includes(q) ||
+        (s.artists || "").toLowerCase().includes(q)
+    );
+  };
 
   const createJourney = async () => {
     setLoading(true);
@@ -160,8 +171,13 @@ export default function MoodJourney() {
 
         {songs.length > 0 && (
           <div className="journey-songs-grid">
-            {songs.map((song, index) => {
-              const label      = index < 2 ? "Start" : "Towards goal";
+            {filterBySearch(songs).length === 0 && searchQuery ? (
+              <div style={{ gridColumn: "1/-1", textAlign: "center", color: "var(--text-secondary)", padding: "40px 0" }}>
+                No songs match &ldquo;<strong>{searchQuery}</strong>&rdquo;
+              </div>
+            ) : null}
+            {filterBySearch(songs).map((song, index) => {
+              const label      = index < 4 ? "Start" : "Towards goal";
               const albumImage = song.album_image || null;
 
               return (

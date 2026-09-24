@@ -1157,83 +1157,136 @@ export default function MoodDetection() {
             </div>
           </div>
 
+          {/* =========================================================
+              WEATHER-BASED RECOMMENDATIONS CARD
+             ========================================================= */}
           <div className="md-weather-section" style={{
-            background: 'rgba(255, 255, 255, 0.02)',
-            border: '1px solid var(--input-border)',
-            borderRadius: '16px',
-            padding: '18px',
-            marginBottom: '24px',
-            transition: 'all 0.2s ease',
+            background: useWeather
+              ? 'linear-gradient(135deg, rgba(139, 92, 246, 0.12) 0%, rgba(59, 130, 246, 0.08) 100%)'
+              : 'rgba(255, 255, 255, 0.02)',
+            border: useWeather
+              ? '1px solid rgba(168, 85, 247, 0.35)'
+              : '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: '20px',
+            padding: '22px 24px',
+            marginBottom: '26px',
+            boxShadow: useWeather
+              ? '0 12px 35px rgba(139, 92, 246, 0.15)'
+              : '0 8px 25px rgba(0,0,0,0.2)',
+            backdropFilter: 'blur(16px)',
+            transition: 'all 0.3s ease',
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '14px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                 <button
                   type="button"
                   onClick={() => setUseWeather(!useWeather)}
                   style={{
-                    width: '44px',
-                    height: '24px',
-                    background: useWeather ? '#8b5cf6' : 'var(--input-border)',
-                    borderRadius: '12px',
+                    width: '48px',
+                    height: '26px',
+                    background: useWeather ? 'linear-gradient(135deg, #a855f7, #6366f1)' : 'rgba(255,255,255,0.15)',
+                    borderRadius: '13px',
                     position: 'relative',
                     border: 'none',
                     cursor: 'pointer',
                     transition: 'background 0.3s ease',
+                    boxShadow: useWeather ? '0 0 12px rgba(168,85,247,0.5)' : 'none',
                   }}
                   title={useWeather ? 'Disable weather recommendations' : 'Enable weather recommendations'}
                 >
                   <div style={{
-                    width: '18px',
-                    height: '18px',
+                    width: '20px',
+                    height: '20px',
                     background: '#fff',
                     borderRadius: '50%',
                     position: 'absolute',
                     top: '3px',
-                    left: useWeather ? '23px' : '3px',
-                    transition: 'left 0.3s ease',
-                    boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                    left: useWeather ? '25px' : '3px',
+                    transition: 'left 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+                    boxShadow: '0 2px 5px rgba(0,0,0,0.3)',
                   }} />
                 </button>
-                <span style={{ color: 'var(--text)', fontSize: '0.95rem', fontWeight: 600 }}>
-                  Weather-based Recommendations
-                </span>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '1.25rem' }}>🌤️</span>
+                  <span style={{ color: 'var(--text)', fontSize: '1.02rem', fontWeight: '700', letterSpacing: '-0.01em' }}>
+                    Weather-based Recommendations
+                  </span>
+                </div>
               </div>
 
               {useWeather && weatherContext && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', color: '#a78bfa', background: 'rgba(139,92,246,0.15)', padding: '6px 14px', borderRadius: '99px', border: '1px solid rgba(139,92,246,0.2)' }}>
-                  <span style={{ fontSize: '1.1rem' }}>{weatherContext.icon}</span>
-                  <span style={{ fontWeight: 700 }}>{weatherContext.temp_c}°C</span>
-                  <span style={{ opacity: 0.9 }}>{weatherContext.condition}</span>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  fontSize: '0.92rem',
+                  color: '#fff',
+                  background: 'linear-gradient(135deg, rgba(168,85,247,0.25), rgba(99,102,241,0.2))',
+                  padding: '7px 18px',
+                  borderRadius: '99px',
+                  border: '1px solid rgba(168,85,247,0.4)',
+                  boxShadow: '0 4px 15px rgba(168,85,247,0.2)',
+                }}>
+                  <span style={{ fontSize: '1.2rem' }}>{weatherContext.icon}</span>
+                  <span style={{ fontWeight: '800', fontSize: '1.05rem', color: '#f3e8ff' }}>{weatherContext.temp_c}°C</span>
+                  <span style={{ opacity: 0.85, fontWeight: '500', color: '#cbd5e1' }}>• {weatherContext.condition}</span>
                 </div>
               )}
             </div>
 
             {useWeather && (
-              <div style={{ marginTop: '16px', display: 'flex', gap: '10px' }}>
-                <input
-                  type="text"
-                  className="md-pref-input"
-                  placeholder="Not your location? Enter city (e.g., London, Tokyo)..."
-                  value={customCity}
-                  onChange={(e) => setCustomCity(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === 'Enter') updateCityWeather(customCity); }}
-                  style={{ flex: 1 }}
-                />
+              <div style={{ marginTop: '18px', display: 'flex', gap: '12px' }}>
+                <div style={{ position: 'relative', flex: 1, display: 'flex', alignItems: 'center' }}>
+                  <span style={{ position: 'absolute', left: '14px', fontSize: '1.1rem', pointerEvents: 'none', opacity: 0.7 }}>
+                    📍
+                  </span>
+                  <input
+                    type="text"
+                    className="md-pref-input"
+                    placeholder="Enter city name (e.g. London, Bicholim, Tokyo)..."
+                    value={customCity}
+                    onChange={(e) => setCustomCity(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') updateCityWeather(customCity); }}
+                    style={{
+                      width: '100%',
+                      paddingLeft: '42px',
+                      paddingRight: '14px',
+                      paddingTop: '11px',
+                      paddingBottom: '11px',
+                      borderRadius: '12px',
+                      border: '1px solid rgba(255,255,255,0.15)',
+                      background: 'rgba(0,0,0,0.25)',
+                      color: '#fff',
+                      fontSize: '0.93rem',
+                      boxSizing: 'border-box',
+                    }}
+                  />
+                </div>
+
                 <button
                   type="button"
                   onClick={() => updateCityWeather(customCity)}
                   style={{
-                    background: 'rgba(139,92,246,0.15)',
-                    color: '#a78bfa',
-                    border: '1px solid rgba(139,92,246,0.3)',
+                    background: 'linear-gradient(135deg, #a855f7, #6366f1)',
+                    color: '#fff',
+                    border: 'none',
                     borderRadius: '12px',
-                    padding: '0 20px',
-                    fontWeight: 700,
+                    padding: '0 24px',
+                    fontWeight: '700',
+                    fontSize: '0.9rem',
                     cursor: 'pointer',
-                    transition: 'all 0.2s',
+                    boxShadow: '0 4px 15px rgba(168,85,247,0.35)',
+                    transition: 'all 0.2s ease',
                   }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(139,92,246,0.25)' }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(139,92,246,0.15)' }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-1px)';
+                    e.currentTarget.style.boxShadow = '0 6px 20px rgba(168,85,247,0.5)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 4px 15px rgba(168,85,247,0.35)';
+                  }}
                 >
                   Update
                 </button>
@@ -1241,9 +1294,10 @@ export default function MoodDetection() {
             )}
             
             {useWeather && weatherContext && (
-               <div style={{ marginTop: '12px', fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                 <span>📍 Current location:</span>
-                 <strong style={{ color: 'var(--text)' }}>{detectedLocation}</strong>
+               <div style={{ marginTop: '14px', fontSize: '0.86rem', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                 <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 8px #22c55e', display: 'inline-block' }} />
+                 <span>Active Location:</span>
+                 <strong style={{ color: '#f8fafc', fontWeight: '700' }}>{detectedLocation}</strong>
                </div>
             )}
           </div>

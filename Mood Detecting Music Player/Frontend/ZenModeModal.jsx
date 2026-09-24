@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { usePlayer } from "./PlayerContext";
 import VinylPlayer from "./VinylPlayer";
 import AudioVisualizer from "./AudioVisualizer";
@@ -19,9 +19,44 @@ export default function ZenModeModal({ isOpen, onClose }) {
   } = usePlayer();
 
   const [visualizerMode, setVisualizerMode] = useState("portal");
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [isDark, setIsDark] = useState(() => {
     return localStorage.getItem("theme") !== "light";
   });
+
+  // ── Fullscreen helpers ──────────────────────────────────────────────
+  const enterFullscreen = useCallback(() => {
+    const el = document.documentElement;
+    if (el.requestFullscreen) el.requestFullscreen();
+    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+    else if (el.mozRequestFullScreen) el.mozRequestFullScreen();
+  }, []);
+
+  const exitFullscreen = useCallback(() => {
+    if (document.exitFullscreen) document.exitFullscreen();
+    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+    else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
+  }, []);
+
+  // Auto enter fullscreen when zen opens, restore on close
+  useEffect(() => {
+    if (isOpen) {
+      enterFullscreen();
+    } else {
+      if (document.fullscreenElement) exitFullscreen();
+    }
+  }, [isOpen]);
+
+  // Track fullscreen state changes (user pressing F11 or Esc)
+  useEffect(() => {
+    const handleFsChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+      // If user exited fullscreen via Esc/F11 but zen is still open, close zen too
+      if (!document.fullscreenElement && isOpen) onClose();
+    };
+    document.addEventListener("fullscreenchange", handleFsChange);
+    return () => document.removeEventListener("fullscreenchange", handleFsChange);
+  }, [isOpen, onClose]);
 
   useEffect(() => {
     const handleThemeChange = (e) => {
@@ -48,6 +83,7 @@ export default function ZenModeModal({ isOpen, onClose }) {
       if (["INPUT", "TEXTAREA"].includes(e.target.tagName)) return;
 
       if (e.key === "Escape") {
+        exitFullscreen();
         onClose();
       } else if (e.code === "Space") {
         e.preventDefault();
@@ -56,12 +92,15 @@ export default function ZenModeModal({ isOpen, onClose }) {
         seek(Math.min(duration || 30, currentTime + 5));
       } else if (e.key === "ArrowLeft") {
         seek(Math.max(0, currentTime - 5));
+      } else if (e.key === "f" || e.key === "F") {
+        if (document.fullscreenElement) exitFullscreen();
+        else enterFullscreen();
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onClose, togglePlay, currentTime, duration, seek]);
+  }, [isOpen, onClose, togglePlay, currentTime, duration, seek, enterFullscreen, exitFullscreen]);
 
   if (!isOpen) return null;
 
@@ -131,6 +170,19 @@ export default function ZenModeModal({ isOpen, onClose }) {
               </button>
             </div>
 
+            {/* Fullscreen toggle */}
+            <button
+              type="button"
+              className="zen-theme-btn"
+              onClick={() => {
+                if (document.fullscreenElement) exitFullscreen();
+                else enterFullscreen();
+              }}
+              title={isFullscreen ? "Exit fullscreen (F)" : "Enter fullscreen (F)"}
+            >
+              <span>{isFullscreen ? "⛶ Exit" : "⛶ Full"}</span>
+            </button>
+
             {/* Light / Dark Mode Toggle Button */}
             <button
               type="button"
@@ -140,16 +192,6 @@ export default function ZenModeModal({ isOpen, onClose }) {
               aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
             >
               <span>{isDark ? "☀️ Light" : "🌙 Dark"}</span>
-            </button>
-
-            <button
-              type="button"
-              className="zen-close-btn"
-              onClick={onClose}
-              title="Exit Zen Mode (Esc)"
-            >
-              <span>Exit Zen Mode</span>
-              <kbd>ESC</kbd>
             </button>
           </div>
         </header>
@@ -162,24 +204,24 @@ export default function ZenModeModal({ isOpen, onClose }) {
               {/* Soft warm orange/gold ambient aura behind the vinyl */}
               <div className="zen-vinyl-warm-glow" />
 
-              {/* Glowing Concentric Audio Visualizer */}
+              {/* Glowing Concentric Audio Visualizer around CD */}
               <div className="zen-concentric-visualizer">
                 <AudioVisualizer
                   mode={visualizerMode}
                   height={560}
                   width={560}
-                  baseRadius={212}
+                  baseRadius={225}
                   glowColor="#f59e0b"
                   interactive={false}
                 />
               </div>
 
-              {/* 440px High-Fidelity Vinyl Record Platter */}
+              {/* 440px High-Fidelity Vinyl Record Platter with Realistic Tonearm */}
               <div className="zen-vinyl-disc-wrap">
                 <VinylPlayer
                   size={440}
                   variant="turntable"
-                  showTonearm={false}
+                  showTonearm={true}
                   interactive={true}
                 />
               </div>

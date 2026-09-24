@@ -26,6 +26,7 @@ export function PlayerProvider({ children }) {
   const [duration, setDuration] = useState(30);
   const [volume, setVolume] = useState(0.8);
   const [errorMsg, setErrorMsg] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const audioRef = useRef(new Audio());
 
@@ -232,6 +233,8 @@ export function PlayerProvider({ children }) {
         volume,
         setVolume,
         errorMsg,
+        searchQuery,
+        setSearchQuery,
         playTrack,
         togglePlay,
         playNext,

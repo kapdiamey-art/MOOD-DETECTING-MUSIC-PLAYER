@@ -16,7 +16,20 @@ const MOOD_EMOJIS = {
 export default function Recommendations() {
 
   const navigate = useNavigate();
-  const { currentTrack, isPlaying, playTrack, togglePlay, errorMsg } = usePlayer();
+  const { currentTrack, isPlaying, playTrack, togglePlay, errorMsg, searchQuery } = usePlayer();
+
+  // Helper: filter songs by global search query
+  const filterBySearch = (list) => {
+    if (!searchQuery.trim()) return list;
+    const q = searchQuery.toLowerCase();
+    return list.filter(
+      (s) =>
+        (s.track_name || s.song_title || s.title || s.name || "").toLowerCase().includes(q) ||
+        (s.artists || s.artist || "").toLowerCase().includes(q) ||
+        (s.genre || "").toLowerCase().includes(q) ||
+        (s.album || "").toLowerCase().includes(q)
+    );
+  };
 
   const [mood, setMood] = useState(null);
   const [songs, setSongs] = useState([]);       // currently displayed 15
@@ -250,12 +263,22 @@ export default function Recommendations() {
           )}
 
           <div className="song-grid">
-            {songs.map((song, idx) => {
-              const isCurrent = currentTrack?.track_name === song.track_name && currentTrack?.artists === song.artists;
-              const isCurrentPlaying = isCurrent && isPlaying;
-              const hasPreview = !!song.preview_url;
+            {(() => {
+              const sourceList = searchQuery ? (songPool.length > 0 ? songPool : songs) : songs;
+              const filteredList = filterBySearch(sourceList);
+              if (filteredList.length === 0 && searchQuery) {
+                return (
+                  <div style={{ gridColumn: "1/-1", textAlign: "center", color: "var(--text-secondary)", padding: "40px 0" }}>
+                    No songs match &ldquo;<strong>{searchQuery}</strong>&rdquo;
+                  </div>
+                );
+              }
+              return filteredList.map((song, idx) => {
+                const isCurrent = currentTrack?.track_name === song.track_name && currentTrack?.artists === song.artists;
+                const isCurrentPlaying = isCurrent && isPlaying;
+                const hasPreview = !!song.preview_url;
 
-              return (
+                return (
                 <div
                   className={`song-card ${isCurrent ? "song-card-active" : ""}`}
                   key={idx}
@@ -369,7 +392,8 @@ export default function Recommendations() {
                   </div>
                 </div>
               );
-            })}
+            });
+          })()}
           </div>
 
           <div className="dashboard-hero" style={{ marginTop: "35px" }}>

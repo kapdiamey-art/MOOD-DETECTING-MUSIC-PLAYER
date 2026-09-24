@@ -7906,18 +7906,22 @@ body[data-mood="surprise"] .mood-page::before {
    ========================================================= */
 
 .zen-modal-overlay {
-  position: fixed;
-  inset: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 99999;
+  position: fixed !important;
+  inset: 0 !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 2147483647 !important;
   background: #0d0a09;
   backdrop-filter: blur(36px);
   display: flex;
   align-items: center;
   justify-content: center;
   animation: zenFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-  overflow: hidden;
+  overflow: hidden !important;
 }
 
 @keyframes zenFadeIn {
@@ -8121,22 +8125,36 @@ body[data-mood="surprise"] .mood-page::before {
 
 .zen-vinyl-frame {
   position: relative;
-  width: 560px;
-  height: 560px;
+  width: 600px;
+  height: 600px;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: visible;
 }
 
+/* Warm amber glow — sits OUTSIDE the disc via a large spread pseudo-layer */
 .zen-vinyl-warm-glow {
   position: absolute;
-  width: 440px;
-  height: 440px;
+  width: 520px;
+  height: 520px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(245, 158, 11, 0.38) 0%, rgba(217, 119, 6, 0.16) 55%, transparent 75%);
-  filter: blur(48px);
+  background: radial-gradient(
+    circle,
+    transparent 38%,
+    rgba(245, 158, 11, 0.55) 50%,
+    rgba(217, 119, 6, 0.30) 65%,
+    transparent 80%
+  );
+  filter: blur(28px);
   pointer-events: none;
-  z-index: 1;
+  z-index: 4;
+  animation: warmGlowPulse 4s ease-in-out infinite alternate;
+}
+
+@keyframes warmGlowPulse {
+  0%   { opacity: 0.7; transform: scale(0.97); }
+  100% { opacity: 1;   transform: scale(1.05); }
 }
 
 .zen-concentric-visualizer {
@@ -8146,16 +8164,17 @@ body[data-mood="surprise"] .mood-page::before {
   align-items: center;
   justify-content: center;
   pointer-events: none;
-  z-index: 2;
+  z-index: 5;
 }
 
 .zen-vinyl-disc-wrap {
   position: relative;
-  z-index: 3;
+  z-index: 6;
   display: flex;
   align-items: center;
   justify-content: center;
-  filter: drop-shadow(0 24px 50px rgba(0, 0, 0, 0.95));
+  /* Note: removed drop-shadow filter here so the warm glow below remains visible */
+  filter: none;
 }
 
 /* Right Column: Natural Unboxed Now Playing Section */
@@ -8591,7 +8610,26 @@ body.light .zen-vol-range {
   }
 }
 
-/* Hide floating toggle when zen overlay is open to avoid duplicate/overlapping button */
+/* Hide sidebars, top navigation, player bar, floating controls & scrollbars when zen overlay is open */
+html:has(.zen-modal-overlay),
+body:has(.zen-modal-overlay) {
+  overflow: hidden !important;
+}
+
+html:has(.zen-modal-overlay) .sidebar,
+body:has(.zen-modal-overlay) .sidebar,
+html:has(.zen-modal-overlay) .app-sidebar,
+body:has(.zen-modal-overlay) .app-sidebar,
+html:has(.zen-modal-overlay) .top-navigation,
+body:has(.zen-modal-overlay) .top-navigation,
+html:has(.zen-modal-overlay) .responsive-navigation,
+body:has(.zen-modal-overlay) .responsive-navigation,
+html:has(.zen-modal-overlay) .player-bar,
+body:has(.zen-modal-overlay) .player-bar,
+html:has(.zen-modal-overlay) .music-player,
+body:has(.zen-modal-overlay) .music-player,
+html:has(.zen-modal-overlay) .topbar,
+body:has(.zen-modal-overlay) .topbar,
 html:has(.zen-modal-overlay) .floating-theme-toggle {
   display: none !important;
 }
@@ -9281,4 +9319,65 @@ html.light .mood-row span {
 
 html.light .chart-bar {
   background: linear-gradient(180deg, #8b5cf6, #c084fc) !important;
+}
+
+/* ── Realistic Gramophone / Turntable Tonearm (Zen Sanctuary & Deck) ── */
+.turntable-deck-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+.turntable-platter-base {
+  position: relative;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.turntable-ambient-aura {
+  position: absolute;
+  inset: -20px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.18) 0%, transparent 70%);
+  opacity: 0.4;
+  transition: opacity 0.8s ease;
+  pointer-events: none;
+}
+
+.turntable-ambient-aura.aura-active {
+  opacity: 1;
+  animation: pulseAura 4s ease-in-out infinite alternate;
+}
+
+@keyframes pulseAura {
+  0%   { opacity: 0.6; transform: scale(0.98); }
+  100% { opacity: 1;   transform: scale(1.04); }
+}
+
+/* ── Tonearm Assembly (compact, proportional) ── */
+.turntable-tonearm-svg-wrap {
+  position: absolute;
+  top: -16px;
+  right: -40px;
+  width: 110px;
+  pointer-events: none;
+  z-index: 35;
+}
+
+.tonearm-rotator {
+  width: 100%;
+  height: 100%;
+  transform-origin: 32px 32px;
+  will-change: transform;
+}
+
+.tonearm-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter: drop-shadow(0 14px 24px rgba(0, 0, 0, 0.9));
 }

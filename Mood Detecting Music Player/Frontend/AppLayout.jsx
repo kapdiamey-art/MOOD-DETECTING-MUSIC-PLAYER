@@ -72,8 +72,15 @@ export default function AppLayout({ children }) {
     togglePlay,
     playNext,
     playPrev,
-    seek
+    seek,
+    searchQuery,
+    setSearchQuery,
   } = usePlayer();
+
+  // Clear search whenever the user navigates to a new tab
+  useEffect(() => {
+    setSearchQuery("");
+  }, [location.pathname]);
 
   const formatTime = (seconds) => {
     if (isNaN(seconds) || seconds === null) return "0:00";
@@ -268,7 +275,21 @@ export default function AppLayout({ children }) {
               type="text"
               className="search-input"
               placeholder="Search songs, artists, or playlists..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
+
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                style={{
+                  background: "none", border: "none",
+                  color: "var(--text-secondary)", cursor: "pointer",
+                  fontSize: "1rem", padding: "0 6px", lineHeight: 1
+                }}
+                title="Clear search"
+              >✕</button>
+            )}
 
           </div>
 

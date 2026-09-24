@@ -41,7 +41,22 @@ export default function Discover() {
     currentTrack,
     isPlaying,
     playTrack,
+    searchQuery,
   } = usePlayer();
+
+  // Filter displayed songs by local or global search query
+  const filterBySearch = (list) => {
+    const q = (search || searchQuery || "").trim().toLowerCase();
+    if (!q) return list;
+    const filtered = list.filter(
+      (s) =>
+        ((s.track_name || s.song_title || s.title || s.name || "")).toLowerCase().includes(q) ||
+        ((s.artists || s.artist || "")).toLowerCase().includes(q) ||
+        ((s.genre || "")).toLowerCase().includes(q) ||
+        ((s.album || "")).toLowerCase().includes(q)
+    );
+    return filtered.length > 0 ? filtered : list;
+  };
 
   const [songs, setSongs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -114,19 +129,16 @@ export default function Discover() {
     loadSongs(category.query);
   }
 
-  // =====================================================
-  // SEARCH
-  // =====================================================
-
-  function handleSearch(e) {
-    e.preventDefault();
-
-    if (!search.trim()) return;
-
-    setSelectedCategory("");
-
-    loadSongs(search);
-  }
+  // Reactive automatic search as user types
+  useEffect(() => {
+    const q = (search || searchQuery || "").trim();
+    if (!q) return;
+    const timer = setTimeout(() => {
+      setSelectedCategory("");
+      loadSongs(q);
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [search, searchQuery]);
 
   // =====================================================
   // PLAY SONG
@@ -168,12 +180,9 @@ export default function Discover() {
 
         {/* SEARCH */}
 
-        <form
-          onSubmit={handleSearch}
+        <div
           style={{
-            display: "flex",
-            gap: "8px",
-            width: "min(400px, 100%)",
+            width: "min(340px, 100%)",
           }}
         >
           <input
@@ -183,34 +192,20 @@ export default function Discover() {
             }
             placeholder="Search songs or artists..."
             style={{
-              flex: 1,
-              padding: "12px 15px",
-              borderRadius: "12px",
+              width: "100%",
+              padding: "12px 18px",
+              borderRadius: "14px",
               border:
-                "1px solid rgba(255,255,255,0.15)",
+                "1px solid rgba(255,255,255,0.18)",
               background:
-                "rgba(255,255,255,0.05)",
+                "rgba(255,255,255,0.06)",
               color: "white",
               outline: "none",
+              fontSize: "0.95rem",
+              boxSizing: "border-box",
             }}
           />
-
-          <button
-            type="submit"
-            style={{
-              padding: "12px 18px",
-              border: "none",
-              borderRadius: "12px",
-              background:
-                "linear-gradient(135deg,#8b5cf6,#ec4899)",
-              color: "white",
-              cursor: "pointer",
-              fontWeight: "600",
-            }}
-          >
-            Search
-          </button>
-        </form>
+        </div>
       </div>
 
       {/* MOODS */}
@@ -375,7 +370,12 @@ export default function Discover() {
             }}
           >
 
-            {songs.map((song, index) => {
+            {filterBySearch(songs).length === 0 && searchQuery ? (
+              <div style={{ gridColumn: "1/-1", textAlign: "center", color: "var(--text-secondary)", padding: "40px 0" }}>
+                No songs match &ldquo;<strong>{searchQuery}</strong>&rdquo;
+              </div>
+            ) : null}
+            {filterBySearch(songs).map((song, index) => {
 
               const title =
                 song.track_name ||
