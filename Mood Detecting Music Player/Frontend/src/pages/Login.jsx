@@ -11,7 +11,7 @@ import {
   signOut
 } from "firebase/auth";
 
-import { auth } from "./firebase";
+import { auth } from "../services/firebase";
 
 export default function Login() {
   const navigate = useNavigate();

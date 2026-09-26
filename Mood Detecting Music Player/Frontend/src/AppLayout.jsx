@@ -4,10 +4,10 @@ import {
   useLocation,
   useNavigate
 } from "react-router-dom";
-import { usePlayer } from "./PlayerContext";
-import AmbientAurora from "./AmbientAurora";
-import AudioVisualizer from "./AudioVisualizer";
-import ZenModeModal from "./ZenModeModal";
+import { usePlayer } from "./context/PlayerContext";
+import AmbientAurora from "./components/AmbientAurora";
+import AudioVisualizer from "./components/AudioVisualizer";
+import ZenModeModal from "./components/ZenModeModal";
 
 export default function AppLayout({ children }) {
 

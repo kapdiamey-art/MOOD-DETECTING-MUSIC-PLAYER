@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { usePlayer } from "./PlayerContext";
-import VinylPlayer from "./VinylPlayer";
-import AudioVisualizer from "./AudioVisualizer";
+import { usePlayer } from "../context/PlayerContext";
+import VinylPlayer from "../components/VinylPlayer";
+import AudioVisualizer from "../components/AudioVisualizer";
 
 const MOOD_EMOJIS = {
   joy: "🤩",

@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
-import AppLayout from "./AppLayout";
+import AppLayout from "../AppLayout";
 import { useNavigate } from "react-router-dom";
-import { applyMoodTheme } from "./moodTheme";
+import { applyMoodTheme } from "../utils/moodTheme";
 
 const MOOD_MAPPING = {
   joy:      { emoji: "🤩", name: "Joyful",    description: "You're radiating happiness and positive energy!",    gradient: "linear-gradient(135deg,#f59e0b,#ef4444)", color: "#f59e0b" },

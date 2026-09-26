@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { verifyPasswordResetCode, confirmPasswordReset } from "firebase/auth";
-import { auth } from "./firebase";
+import { auth } from "../services/firebase";
 
 export default function ResetPassword() {
   const navigate = useNavigate();

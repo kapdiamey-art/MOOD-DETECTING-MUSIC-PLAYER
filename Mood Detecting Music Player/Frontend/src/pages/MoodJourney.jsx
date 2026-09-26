@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { MOOD_META } from "./moodTheme";
-import { usePlayer } from "./PlayerContext";
+import { MOOD_META } from "../utils/moodTheme";
+import { usePlayer } from "../context/PlayerContext";
 
 const MOODS = Object.keys(MOOD_META);
 

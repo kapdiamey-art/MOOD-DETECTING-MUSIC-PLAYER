@@ -17,6 +17,7 @@
     "debug": "^4.4.3",
     "depd": "^2.0.0",
     "dotenv": "^17.4.2",
+    "firebase-admin": "^14.4.0",
     "dunder-proto": "^1.0.1",
     "ee-first": "^1.1.1",
     "encodeurl": "^2.0.0",

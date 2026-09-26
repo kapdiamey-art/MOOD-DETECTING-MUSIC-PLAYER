@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { usePlayer } from "./PlayerContext";
+import { usePlayer } from "../context/PlayerContext";
 
 export default function VinylPlayer({
   size = 220,

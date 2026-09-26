@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { usePlayer } from "./PlayerContext";
+import { usePlayer } from "../context/PlayerContext";
 
 // Mood color palettes with primary, secondary, and accent glows
 const MOOD_PALETTES = {

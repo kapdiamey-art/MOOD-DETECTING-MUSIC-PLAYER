@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { MOOD_META } from "./moodTheme";
-import YearInPixels from "./YearInPixels";
+import { MOOD_META } from "../utils/moodTheme";
+import YearInPixels from "../components/YearInPixels";
 
 const API = "http://localhost:8000";
 const MONTH_NAMES = [

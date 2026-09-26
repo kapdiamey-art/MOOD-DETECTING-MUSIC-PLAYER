@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { usePlayer } from "./PlayerContext";
+import { usePlayer } from "../context/PlayerContext";
 
 export default function AudioVisualizer({
   mode: initialMode = "bars",
