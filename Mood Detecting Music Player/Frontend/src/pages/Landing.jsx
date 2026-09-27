@@ -73,10 +73,6 @@ export default function Landing() {
           <div className="mood-face" style={{ fontSize: "90px", animation: "float 4s ease-in-out infinite" }}>
             😌
           </div>
-          <div style={{ marginTop: "20px", background: "rgba(255,255,255,0.06)", backdropFilter: "blur(12px)", padding: "12px 24px", borderRadius: "20px", border: "1px solid rgba(255,255,255,0.12)", textAlign: "center" }}>
-            <div style={{ fontSize: "0.85rem", color: "var(--primary)", fontWeight: "700", textTransform: "uppercase", letterSpacing: "1px" }}>Current Vibe</div>
-            <div style={{ fontSize: "1.1rem", fontWeight: "700", color: "#fff", marginTop: "2px" }}>Calm & Peaceful</div>
-          </div>
         </div>
       </section>
 
@@ -215,18 +211,18 @@ export default function Landing() {
               <p style={{ color: "var(--muted)", lineHeight: "1.8", marginTop: "18px", fontSize: "1rem" }}>
                 Moodify was built to bridge the gap between mental wellness and digital music streaming. By leveraging deep learning models, real-time weather analytics, and intuitive UI design, Moodify turns everyday listening into a therapeutic, personalized experience.
               </p>
-              <div style={{ display: "flex", gap: "20px", marginTop: "25px" }}>
-                <div>
-                  <div style={{ fontSize: "1.8rem", fontWeight: "800", color: "#c4b5fd" }}>93.2%</div>
-                  <div style={{ fontSize: "0.85rem", color: "var(--muted)" }}>Model Accuracy</div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "16px 24px", marginTop: "25px" }}>
+                <div style={{ minWidth: "90px" }}>
+                  <div style={{ fontSize: "clamp(1.2rem, 3.5vw, 1.8rem)", fontWeight: "800", color: "#c4b5fd", whiteSpace: "nowrap" }}>93.2%</div>
+                  <div style={{ fontSize: "0.82rem", color: "var(--muted)" }}>Model Accuracy</div>
                 </div>
-                <div>
-                  <div style={{ fontSize: "1.8rem", fontWeight: "800", color: "#f472b6" }}>30,000+</div>
-                  <div style={{ fontSize: "0.85rem", color: "var(--muted)" }}>Songs Indexed</div>
+                <div style={{ minWidth: "90px" }}>
+                  <div style={{ fontSize: "clamp(1.2rem, 3.5vw, 1.8rem)", fontWeight: "800", color: "#f472b6", whiteSpace: "nowrap" }}>30,000+</div>
+                  <div style={{ fontSize: "0.82rem", color: "var(--muted)" }}>Songs Indexed</div>
                 </div>
-                <div>
-                  <div style={{ fontSize: "1.8rem", fontWeight: "800", color: "#34d399" }}>&lt; 10ms</div>
-                  <div style={{ fontSize: "0.85rem", color: "var(--muted)" }}>AI Inference</div>
+                <div style={{ minWidth: "90px" }}>
+                  <div style={{ fontSize: "clamp(1.2rem, 3.5vw, 1.8rem)", fontWeight: "800", color: "#34d399", whiteSpace: "nowrap" }}>&lt; 10ms</div>
+                  <div style={{ fontSize: "0.82rem", color: "var(--muted)" }}>AI Inference</div>
                 </div>
               </div>
             </div>
