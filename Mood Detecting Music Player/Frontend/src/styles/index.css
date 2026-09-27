@@ -2885,6 +2885,15 @@ html.light .search input {
   }
 
   .mood-nav-links {
+    display: flex !important;
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    padding: 6px 10px !important;
+    gap: 8px !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .mood-nav-links::-webkit-scrollbar {
     display: none;
   }
 
@@ -4794,8 +4803,36 @@ html.light .mood-row span {
     height: 34px;
   }
 
+  .navbar {
+    height: auto !important;
+    padding: 14px 8px !important;
+    flex-wrap: wrap !important;
+    gap: 12px !important;
+  }
+
   .nav-links {
+    display: flex !important;
+    order: 3 !important;
+    width: 100% !important;
+    justify-content: space-around !important;
+    gap: 12px !important;
+    padding: 10px 14px !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-radius: 14px !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(12px) !important;
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .nav-links::-webkit-scrollbar {
     display: none;
+  }
+  .nav-links a {
+    font-size: 0.88rem !important;
+    font-weight: 600 !important;
+    color: #cbd5e1 !important;
   }
 
   .nav-actions {
