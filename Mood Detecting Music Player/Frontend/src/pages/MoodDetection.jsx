@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import AppLayout from "../AppLayout";
 import { useNavigate } from "react-router-dom";
 import { applyMoodTheme } from "../utils/moodTheme";
+import { API_BASE_URL } from "../services/apiConfig";
 
 const MOOD_MAPPING = {
   joy:      { emoji: "🤩", name: "Joyful",    description: "You're radiating happiness and positive energy!",    gradient: "linear-gradient(135deg,#f59e0b,#ef4444)", color: "#f59e0b" },
@@ -36,7 +37,7 @@ export default function MoodDetection() {
   // Fetch genre suggestions (initial or search query)
   const fetchGenreSuggestions = async (query = "") => {
     try {
-      const res = await fetch(`http://localhost:8000/mood/genres?q=${encodeURIComponent(query)}`);
+      const res = await fetch(`${API_BASE_URL}/mood/genres?q=${encodeURIComponent(query)}`);
       if (res.ok) {
         const data = await res.json();
         setGenreSuggestions(data.genres || []);
@@ -49,7 +50,7 @@ export default function MoodDetection() {
   // Fetch artist suggestions (initial or search query)
   const fetchArtistSuggestions = async (query = "") => {
     try {
-      const res = await fetch(`http://localhost:8000/mood/artists?q=${encodeURIComponent(query)}`);
+      const res = await fetch(`${API_BASE_URL}/mood/artists?q=${encodeURIComponent(query)}`);
       if (res.ok) {
         const data = await res.json();
         setArtistSuggestions(data.artists || []);
@@ -85,7 +86,7 @@ export default function MoodDetection() {
     if (!targetCity.trim()) return;
     const cleanCity = targetCity.trim();
     try {
-      const res = await fetch(`http://localhost:8000/context/weather?city=${encodeURIComponent(cleanCity)}`);
+      const res = await fetch(`${API_BASE_URL}/context/weather?city=${encodeURIComponent(cleanCity)}`);
       if (res.ok) {
         const data = await res.json();
         setWeatherContext(data);
@@ -115,7 +116,7 @@ export default function MoodDetection() {
           async (pos) => {
             const { latitude, longitude } = pos.coords;
             try {
-              const res = await fetch(`http://localhost:8000/context/weather?lat=${latitude}&lon=${longitude}`);
+              const res = await fetch(`${API_BASE_URL}/context/weather?lat=${latitude}&lon=${longitude}`);
               if (res.ok) {
                 const data = await res.json();
                 setWeatherContext(data);
@@ -153,7 +154,7 @@ export default function MoodDetection() {
             const ipData = await ipRes.json();
             const cityName = ipData.cityName || ipData.city;
             if (cityName) {
-              const res = await fetch(`http://localhost:8000/context/weather?city=${encodeURIComponent(cityName)}`);
+              const res = await fetch(`${API_BASE_URL}/context/weather?city=${encodeURIComponent(cityName)}`);
               if (res.ok) {
                 const data = await res.json();
                 setWeatherContext(data);
@@ -170,7 +171,7 @@ export default function MoodDetection() {
 
       // Final default fallback if all auto-detect mechanisms fail
       try {
-        const res = await fetch("http://localhost:8000/context/weather?city=Goa");
+        const res = await fetch(`${API_BASE_URL}/context/weather?city=Goa`);
         if (res.ok) {
           const data = await res.json();
           setWeatherContext(data);
@@ -274,7 +275,7 @@ export default function MoodDetection() {
       const token = localStorage.getItem("moodifyToken");
 
       // ── STEP 1: Detect mood ──
-      const response = await fetch("http://localhost:8000/mood/detect", {
+      const response = await fetch(`${API_BASE_URL}/mood/detect`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

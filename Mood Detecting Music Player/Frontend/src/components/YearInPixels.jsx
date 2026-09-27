@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { API_BASE_URL } from "../services/apiConfig";
 
 const MOOD_PIXEL_COLORS = {
   joy:      { bg: "#f59e0b", label: "Joyful",    emoji: "🤩" },
@@ -28,7 +29,7 @@ export default function YearInPixels() {
       // 1. Fetch real journal entries from Backend MongoDB
       if (token) {
         try {
-          const res = await fetch("http://localhost:8000/mood/journal", {
+          const res = await fetch(`${API_BASE_URL}/mood/journal`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           if (res.ok) {

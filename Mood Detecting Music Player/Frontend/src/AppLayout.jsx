@@ -8,6 +8,7 @@ import { usePlayer } from "./context/PlayerContext";
 import AmbientAurora from "./components/AmbientAurora";
 import AudioVisualizer from "./components/AudioVisualizer";
 import ZenModeModal from "./components/ZenModeModal";
+import { API_BASE_URL } from "./services/apiConfig";
 
 export default function AppLayout({ children }) {
 
@@ -34,7 +35,7 @@ export default function AppLayout({ children }) {
   useEffect(() => {
     const token = localStorage.getItem("moodifyToken");
     if (!token) return;
-    fetch("http://localhost:8000/auth/me", {
+    fetch(`${API_BASE_URL}/auth/me`, {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then((r) => r.json())

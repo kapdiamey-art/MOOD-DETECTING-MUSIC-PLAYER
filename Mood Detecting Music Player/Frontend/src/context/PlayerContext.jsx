@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useRef, useEffect } from "react";
+import { API_BASE_URL } from "../services/apiConfig";
 
 const PlayerContext = createContext(null);
 
@@ -106,7 +107,7 @@ export function PlayerProvider({ children }) {
     const saveRecentlyPlayed = (t) => {
       const token = localStorage.getItem("moodifyToken");
       if (!token || !t) return;
-      fetch("http://localhost:8000/mymusic/recently-played", {
+      fetch(`${API_BASE_URL}/mymusic/recently-played`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

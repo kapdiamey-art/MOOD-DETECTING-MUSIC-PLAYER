@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { auth } from "../services/firebase";
+import { API_BASE_URL } from "../services/apiConfig";
 
 export default function Analytics() {
 
@@ -50,10 +51,10 @@ export default function Analytics() {
       // Run all four requests in parallel and handle each independently
       try {
         const [statsRes, insightRes, distRes, actRes] = await Promise.allSettled([
-          safeFetch("http://localhost:8000/analytics/stats"),
-          safeFetch("http://localhost:8000/analytics/insight"),
-          safeFetch("http://localhost:8000/analytics/mood-distribution"),
-          safeFetch("http://localhost:8000/analytics/mood-activity"),
+          safeFetch(`${API_BASE_URL}/analytics/stats`),
+          safeFetch(`${API_BASE_URL}/analytics/insight`),
+          safeFetch(`${API_BASE_URL}/analytics/mood-distribution`),
+          safeFetch(`${API_BASE_URL}/analytics/mood-activity`),
         ]);
 
       // Stats — safely merge only the fields we need so an error body never wipes defaults

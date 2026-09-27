@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { MOOD_META } from "../utils/moodTheme";
 import YearInPixels from "../components/YearInPixels";
 
-const API = "http://localhost:8000";
+import { API_BASE_URL as API } from "../services/apiConfig";
 const MONTH_NAMES = [
   "January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December"

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { usePlayer } from "../context/PlayerContext";
 import VinylPlayer from "../components/VinylPlayer";
 import AudioVisualizer from "../components/AudioVisualizer";
+import { API_BASE_URL } from "../services/apiConfig";
 
 const MOOD_EMOJIS = {
   joy: "🤩",
@@ -83,7 +84,7 @@ export default function Recommendations() {
     }
 
     try {
-      const res = await fetch("http://localhost:8000/recommendations/like", {
+      const res = await fetch(`${API_BASE_URL}/recommendations/like`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

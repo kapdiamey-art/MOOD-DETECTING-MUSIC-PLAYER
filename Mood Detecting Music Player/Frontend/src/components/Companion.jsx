@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { API_BASE_URL } from "../services/apiConfig";
 
 export default function Companion() {
   const [open, setOpen] = useState(false);
@@ -85,7 +86,7 @@ export default function Companion() {
       const headers = { "Content-Type": "application/json" };
       if (token) headers.Authorization = `Bearer ${token}`;
 
-      const response = await fetch("http://localhost:8000/companion/chat", {
+      const response = await fetch(`${API_BASE_URL}/companion/chat`, {
         method: "POST",
         headers,
         body: JSON.stringify({ message: userMessage, current_mood: current })

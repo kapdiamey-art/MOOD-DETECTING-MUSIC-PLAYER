@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { MOOD_META } from "../utils/moodTheme";
 import { usePlayer } from "../context/PlayerContext";
+import { API_BASE_URL } from "../services/apiConfig";
 
 const MOODS = Object.keys(MOOD_META);
 
@@ -29,7 +30,7 @@ export default function MoodJourney() {
     setLoading(true);
     try {
       const token    = localStorage.getItem("moodifyToken");
-      const response = await fetch("http://localhost:8000/mood/journey", {
+      const response = await fetch(`${API_BASE_URL}/mood/journey`, {
         method:  "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body:    JSON.stringify({ current_mood: currentMood, target_mood: targetMood }),

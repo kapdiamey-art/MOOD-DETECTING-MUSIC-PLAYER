@@ -23,10 +23,19 @@ app = FastAPI(
 )
 
 # CORS Middleware
-# Allows React (running on port 5173) to talk to FastAPI (port 8000)
+# Allows local dev and production Vercel frontend deployments to connect
+frontend_url = os.getenv("FRONTEND_URL", "*")
+origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
+if frontend_url != "*":
+    origins.append(frontend_url)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=["*"] if frontend_url == "*" else origins,
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
