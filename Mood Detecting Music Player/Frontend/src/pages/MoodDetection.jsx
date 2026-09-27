@@ -110,7 +110,7 @@ export default function MoodDetection() {
         return;
       }
 
-      // 2. Try Browser GPS first
+      // 2. Try Browser GPS first (most accurate — OWM reverse-geocodes to real city)
       if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition(
           async (pos) => {
@@ -120,7 +120,7 @@ export default function MoodDetection() {
               if (res.ok) {
                 const data = await res.json();
                 setWeatherContext(data);
-                setDetectedLocation(`${data.city} (GPS Auto-Detected)`);
+                setDetectedLocation(`${data.city} (GPS)`);
                 setCustomCity(data.city);
                 return;
               }
@@ -129,10 +129,8 @@ export default function MoodDetection() {
             }
             fallbackIPLocation();
           },
-          () => {
-            fallbackIPLocation();
-          },
-          { timeout: 6000, enableHighAccuracy: true }
+          () => { fallbackIPLocation(); },
+          { timeout: 8000, enableHighAccuracy: false, maximumAge: 120000 }
         );
       } else {
         fallbackIPLocation();
@@ -140,7 +138,8 @@ export default function MoodDetection() {
     }
 
     async function fallbackIPLocation() {
-      // Try multiple IP geolocation APIs in sequence
+      // Key fix: use lat/lon from IP API → pass to OWM reverse-geocoding for accurate city.
+      // This avoids hyper-local ISP-mapped locations like "Davorlim" (a tiny Goa village).
       const ipProviders = [
         "https://freeipapi.com/api/json",
         "https://ipwho.is/",
@@ -150,19 +149,39 @@ export default function MoodDetection() {
       for (const provider of ipProviders) {
         try {
           const ipRes = await fetch(provider);
-          if (ipRes.ok) {
-            const ipData = await ipRes.json();
-            const cityName = ipData.cityName || ipData.city;
-            if (cityName) {
-              const res = await fetch(`${API_BASE_URL}/context/weather?city=${encodeURIComponent(cityName)}`);
+          if (!ipRes.ok) continue;
+          const ipData = await ipRes.json();
+
+          // Prefer lat/lon — OWM's reverse geocoding gives the proper city name
+          const lat = ipData.latitude ?? ipData.lat;
+          const lon = ipData.longitude ?? ipData.lon;
+
+          if (lat != null && lon != null) {
+            try {
+              const res = await fetch(`${API_BASE_URL}/context/weather?lat=${lat}&lon=${lon}`);
               if (res.ok) {
                 const data = await res.json();
                 setWeatherContext(data);
-                setDetectedLocation(`${data.city} (IP Auto-Detected)`);
+                setDetectedLocation(`${data.city} (Auto-Detected)`);
                 setCustomCity(data.city);
                 return;
               }
-            }
+            } catch (_) {}
+          }
+
+          // Secondary: use raw city string if no coords available
+          const rawCity = ipData.cityName || ipData.city;
+          if (rawCity) {
+            try {
+              const res = await fetch(`${API_BASE_URL}/context/weather?city=${encodeURIComponent(rawCity)}`);
+              if (res.ok) {
+                const data = await res.json();
+                setWeatherContext(data);
+                setDetectedLocation(`${data.city} (Auto-Detected)`);
+                setCustomCity(data.city);
+                return;
+              }
+            } catch (_) {}
           }
         } catch (e) {
           console.warn(`IP provider ${provider} failed:`, e);
@@ -171,12 +190,12 @@ export default function MoodDetection() {
 
       // Final default fallback if all auto-detect mechanisms fail
       try {
-        const res = await fetch(`${API_BASE_URL}/context/weather?city=Goa`);
+        const res = await fetch(`${API_BASE_URL}/context/weather?city=Mumbai`);
         if (res.ok) {
           const data = await res.json();
           setWeatherContext(data);
-          setDetectedLocation("Goa (Default)");
-          setCustomCity("Goa");
+          setDetectedLocation("Mumbai (Default)");
+          setCustomCity("Mumbai");
         }
       } catch (err) {
         console.error("Default weather fetch failed:", err);
