@@ -1,15 +1,11 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
 
 export default function Landing() {
-  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
-
   const scrollToSection = (id) => {
     const el = document.getElementById(id);
     if (el) {
       el.scrollIntoView({ behavior: "smooth" });
     }
-    setIsMobileNavOpen(false);
   };
 
   return (
@@ -24,14 +20,12 @@ export default function Landing() {
           <span>Moodify</span>
         </div>
 
-        {/* Desktop nav links */}
         <div className="nav-links">
           <a href="#how" onClick={(e) => { e.preventDefault(); scrollToSection("how"); }}>How it works</a>
           <a href="#features" onClick={(e) => { e.preventDefault(); scrollToSection("features"); }}>Features</a>
           <a href="#about" onClick={(e) => { e.preventDefault(); scrollToSection("about"); }}>About</a>
         </div>
 
-        {/* Desktop action buttons */}
         <div className="nav-actions">
           <Link to="/login" className="secondary-btn" style={{ padding: "10px 20px", borderRadius: "12px" }}>
             Login
@@ -40,56 +34,7 @@ export default function Landing() {
             Get Started
           </Link>
         </div>
-
-        {/* Mobile hamburger button (hidden on desktop) */}
-        <button
-          className="landing-hamburger-btn"
-          onClick={() => setIsMobileNavOpen(true)}
-          aria-label="Open menu"
-        >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="3" y1="6" x2="21" y2="6" />
-            <line x1="3" y1="12" x2="21" y2="12" />
-            <line x1="3" y1="18" x2="21" y2="18" />
-          </svg>
-        </button>
       </nav>
-
-      {/* Mobile Slide-Out Drawer for Landing page */}
-      {isMobileNavOpen && (
-        <div className="landing-drawer-overlay" onClick={() => setIsMobileNavOpen(false)}>
-          <div className="landing-drawer" onClick={(e) => e.stopPropagation()}>
-            <div className="landing-drawer-header">
-              <div className="logo">
-                <div className="logo-icon">♫</div>
-                <span>Moodify</span>
-              </div>
-              <button className="landing-drawer-close" onClick={() => setIsMobileNavOpen(false)}>✕</button>
-            </div>
-
-            <nav className="landing-drawer-links">
-              <a href="#how" onClick={(e) => { e.preventDefault(); scrollToSection("how"); }} className="landing-drawer-link">
-                ⚡ How it works
-              </a>
-              <a href="#features" onClick={(e) => { e.preventDefault(); scrollToSection("features"); }} className="landing-drawer-link">
-                ✨ Features
-              </a>
-              <a href="#about" onClick={(e) => { e.preventDefault(); scrollToSection("about"); }} className="landing-drawer-link">
-                ✦ About
-              </a>
-            </nav>
-
-            <div className="landing-drawer-footer">
-              <Link to="/login" className="secondary-btn" style={{ display: "block", textAlign: "center", padding: "12px", borderRadius: "12px" }} onClick={() => setIsMobileNavOpen(false)}>
-                Login
-              </Link>
-              <Link to="/register" className="primary-btn" style={{ display: "block", textAlign: "center", padding: "12px", borderRadius: "12px", marginTop: "10px" }} onClick={() => setIsMobileNavOpen(false)}>
-                Get Started →
-              </Link>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* =========================================================
           HERO SECTION

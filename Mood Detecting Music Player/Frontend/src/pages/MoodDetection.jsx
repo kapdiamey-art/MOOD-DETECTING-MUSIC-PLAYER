@@ -967,31 +967,7 @@ export default function MoodDetection() {
       <div className="md-orb md-orb-1" />
       <div className="md-orb md-orb-2" />
 
-      {/* ── NAVBAR ── */}
-      <header className="mood-navbar">
-        <div className="mood-logo" onClick={() => navigate("/")}>
-          <div className="mood-logo-icon">♫</div>
-          <span>Moodify</span>
-        </div>
-        <nav className="mood-nav-links">
-          <button onClick={() => navigate("/mood")}>🧠 Mood</button>
-          <button onClick={() => navigate("/recommendations")}>🎧 Recommendations</button>
-          <button onClick={() => navigate("/discover")}>🔎 Discover</button>
-          <button onClick={() => navigate("/my-music")}>❤️ My Music</button>
-          <button onClick={() => navigate("/analytics")}>📊 Analytics</button>
-          <button onClick={() => navigate("/journal")}>📔 Journal</button>
-          <button onClick={() => navigate("/journey")}>✨ Journey</button>
-          <button onClick={() => navigate("/profile")}>👤 Profile</button>
-        </nav>
-        <div
-          className="mood-user"
-          onClick={() => navigate("/profile")}
-          style={{ cursor: "pointer" }}
-          title="Go to Profile"
-        >
-          <div className="mood-avatar">{userInitial}</div>
-        </div>
-      </header>
+
 
       {/* ── MAIN ── */}
       <main className="md-page">

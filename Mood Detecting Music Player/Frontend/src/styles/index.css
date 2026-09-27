@@ -2804,36 +2804,6 @@ html.light .search input {
 ========================================================= */
 
 @media screen and (min-width: 769px) and (max-width: 1024px) {
-
-  .top-navigation {
-    height: 78px;
-
-    padding: 0 20px;
-  }
-
-  .top-logo {
-    font-size: 18px;
-  }
-
-  .top-logo-icon {
-    width: 36px;
-    height: 36px;
-  }
-
-  .top-navigation-links {
-    gap: 2px;
-
-    margin: 0 8px;
-  }
-
-  .top-navigation-link {
-    padding: 9px 7px;
-
-    gap: 4px;
-
-    font-size: 12px;
-  }
-
   .top-user-info {
     display: flex;
     max-width: 130px;
@@ -2901,102 +2871,16 @@ html.light .search input {
 
 
 /* =========================================================
-   MOBILE
-   <= 768px
+   MOBILE & TABLET (<= 1024px)
 ========================================================= */
 
-@media screen and (max-width: 768px) {
+@media screen and (max-width: 1024px) {
 
-  /* NAV */
-
-  .top-navigation {
-    height: 65px !important;
-
-    padding: 0 6px !important;
-
-    gap: 0;
-
-    overflow: hidden;
-
-    background:
-      rgba(8, 7, 18, 0.98);
-  }
-
-  .top-logo {
-    display: none !important;
-  }
-
-  .top-navigation-links {
-    width: 100% !important;
-
-    flex: 1;
-
-    margin: 0;
-
-    padding: 0;
-
-    gap: 0;
-
-    display: flex;
-
-    justify-content:
-      space-between;
-  }
-
-  .top-navigation-link {
-    flex: 1 1 0 !important;
-
-    min-width: 0 !important;
-
-    max-width: none;
-
-    height: 62px;
-
-    padding: 5px 1px;
-
-    display: flex;
-
-    flex-direction: column;
-
-    align-items: center;
-
-    justify-content: center;
-
-    gap: 3px;
-
-    border-radius: 8px;
-
-    overflow: hidden;
-  }
-
-  .nav-icon {
-    flex-shrink: 0;
-
-    font-size: 17px;
-
-    line-height: 1;
-  }
-
-  .nav-title {
-    display: block;
-
-    width: 100%;
-
-    min-width: 0;
-
-    font-size: 8px;
-
-    line-height: 1.2;
-
-    text-align: center;
-
-    white-space: nowrap;
-
-    overflow: hidden;
-
-    text-overflow: ellipsis;
-  }
-
+  /* NAV - Hide desktop navigation bar and links on mobile */
+  .top-navigation,
+  .top-navigation-links,
+  .top-navigation-link,
+  .top-logo,
   .top-user {
     display: none !important;
   }
@@ -5477,21 +5361,24 @@ html.light .mood-row span {
   .navbar {
     width: 92%;
     height: auto !important;
-    padding: 12px 16px !important;
-    flex-wrap: nowrap !important;
+    padding: 12px 10px !important;
+    flex-wrap: wrap !important;
     gap: 10px !important;
-    justify-content: space-between !important;
   }
 
-  /* Hide nav links and action buttons on mobile – replaced by drawer */
-  .nav-links,
-  .nav-actions {
-    display: none !important;
-  }
-
-  /* Show hamburger button on mobile */
-  .landing-hamburger-btn {
-    display: grid !important;
+  .nav-links {
+    display: flex !important;
+    order: 3 !important;
+    width: 100% !important;
+    justify-content: space-around !important;
+    gap: 10px !important;
+    padding: 8px 12px !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-radius: 12px !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(12px) !important;
+    overflow-x: auto !important;
+    white-space: nowrap !important;
   }
 
   .logo {
@@ -9480,9 +9367,13 @@ html.light .chart-bar {
   display: none;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   /* Hide congested old desktop/mobile top bars */
-  .top-navigation {
+  .top-navigation,
+  .top-navigation-links,
+  .top-navigation-link,
+  .top-logo,
+  .top-user {
     display: none !important;
   }
   .responsive-navigation {
@@ -9733,117 +9624,55 @@ html.light .chart-bar {
   .main-content {
     padding-top: 76px !important;
   }
+
+  .floating-theme-toggle {
+    top: 74px !important;
+    right: 14px !important;
+    padding: 6px 12px !important;
+    font-size: 12px !important;
+    border-radius: 10px !important;
+  }
 }
 
 /* =========================================================
-   LANDING PAGE — MOBILE HAMBURGER & SLIDE-OUT DRAWER
+   FLOATING THEME TOGGLE BUTTON
    ========================================================= */
 
-/* Hidden on desktop */
-.landing-hamburger-btn {
-  display: none;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: #fff;
-  width: 40px;
-  height: 40px;
+.floating-theme-toggle {
+  position: fixed;
+  top: 94px;
+  right: 24px;
+  z-index: 99999;
+  padding: 8px 14px;
   border-radius: 12px;
-  place-items: center;
   cursor: pointer;
-  transition: background 0.2s ease;
-  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  white-space: nowrap;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
-.landing-hamburger-btn:active {
-  background: rgba(255, 255, 255, 0.18);
+.floating-theme-toggle.dark-mode {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(17, 17, 26, 0.85);
+  color: #ffffff;
 }
 
-.landing-drawer-overlay {
-  display: none;
+.floating-theme-toggle.light-mode {
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  background: rgba(255, 255, 255, 0.92);
+  color: #0f172a;
 }
 
-@media (max-width: 768px) {
-  .landing-hamburger-btn {
-    display: grid;
-  }
-
-  .landing-drawer-overlay {
-    display: block;
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.72);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    z-index: 999999;
-    animation: drawerFadeIn 0.25s ease-out;
-  }
-
-  .landing-drawer {
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    width: clamp(270px, 80vw, 310px);
-    background: rgba(15, 17, 28, 0.97);
-    border-right: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 12px 0 40px rgba(0, 0, 0, 0.5);
-    display: flex;
-    flex-direction: column;
-    padding: 22px 20px;
-    animation: drawerSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
-  .landing-drawer-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-bottom: 18px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  }
-
-  .landing-drawer-close {
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #94a3b8;
-    width: 34px;
-    height: 34px;
-    border-radius: 10px;
-    display: grid;
-    place-items: center;
-    font-size: 1rem;
-    cursor: pointer;
-  }
-
-  .landing-drawer-links {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    margin-top: 20px;
-    flex: 1;
-  }
-
-  .landing-drawer-link {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 14px 16px;
-    border-radius: 14px;
-    color: #cbd5e1;
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 1rem;
-    transition: all 0.2s ease;
-  }
-
-  .landing-drawer-link:hover {
-    background: rgba(139, 92, 246, 0.15);
-    color: #fff;
-    border: 1px solid rgba(139, 92, 246, 0.3);
-  }
-
-  .landing-drawer-footer {
-    padding-top: 18px;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-    margin-top: auto;
-  }
+.floating-theme-toggle:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
 }
+

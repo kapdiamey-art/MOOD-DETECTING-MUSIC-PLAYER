@@ -121,7 +121,9 @@ export default function App() {
           path="/mood"
           element={
             <ProtectedRoute>
-              <MoodDetection />
+              <AppLayout>
+                <MoodDetection />
+              </AppLayout>
             </ProtectedRoute>
           }
         />

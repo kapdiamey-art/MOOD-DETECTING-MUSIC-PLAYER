@@ -260,41 +260,6 @@ export default function AppLayout({ children }) {
 
       <main className="main-content">
 
-        {/* TOPBAR */}
-
-        <div className="topbar">
-
-          <div className="search-bar">
-
-            <span className="search-icon">
-              🔍
-            </span>
-
-            <input
-              type="text"
-              className="search-input"
-              placeholder="Search songs, artists, or playlists..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery("")}
-                style={{
-                  background: "none", border: "none",
-                  color: "var(--text-secondary)", cursor: "pointer",
-                  fontSize: "1rem", padding: "0 6px", lineHeight: 1
-                }}
-                title="Clear search"
-              >✕</button>
-            )}
-
-          </div>
-
-        </div>
-
-
         {/* CURRENT PAGE */}
 
         {children}
