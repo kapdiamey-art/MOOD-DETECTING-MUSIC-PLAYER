@@ -15,6 +15,7 @@ from routes.analytics import router as analytics_router
 from routes.spotify import router as spotify_router
 from routes.companion import router as companion_router
 from routes.context import router as context_router
+from routes.otp import router as otp_router
 
 # Create FastAPI app
 app = FastAPI(
@@ -51,6 +52,7 @@ app.include_router(mymusic_router,   prefix="/mymusic",   tags=["My Music"])
 app.include_router(analytics_router, prefix="/analytics", tags=["Analytics"])
 app.include_router(companion_router, prefix="/companion", tags=["Companion"])
 app.include_router(context_router,   prefix="/context",   tags=["Contextual Sentiment Fusion"])
+app.include_router(otp_router,       prefix="/otp",       tags=["OTP"])
 
 # Root endpoint
 @app.get("/", tags=["Health"])

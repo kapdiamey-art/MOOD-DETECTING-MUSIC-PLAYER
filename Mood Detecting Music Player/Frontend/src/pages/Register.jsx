@@ -10,7 +10,7 @@ import {
 } from "firebase/auth";
 
 import { auth } from "../services/firebase";
-import { API_BASE_URL, OTP_BASE_URL } from "../services/apiConfig";
+import { API_BASE_URL } from "../services/apiConfig";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -92,7 +92,7 @@ export default function Register() {
     try {
       setOtpLoading(true);
 
-      const response = await fetch(`${OTP_BASE_URL}/send-otp`, {
+      const response = await fetch(`${API_BASE_URL}/otp/send-otp`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -153,7 +153,7 @@ export default function Register() {
     try {
       setOtpLoading(true);
 
-      const response = await fetch(`${OTP_BASE_URL}/verify-otp`, {
+      const response = await fetch(`${API_BASE_URL}/otp/verify-otp`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
