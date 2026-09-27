@@ -78,9 +78,12 @@ export default function AppLayout({ children }) {
     setSearchQuery,
   } = usePlayer();
 
-  // Clear search whenever the user navigates to a new tab
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+
+  // Clear search and close mobile navigation drawer whenever user changes page
   useEffect(() => {
     setSearchQuery("");
+    setIsMobileNavOpen(false);
   }, [location.pathname]);
 
   const formatTime = (seconds) => {
@@ -97,23 +100,14 @@ export default function AppLayout({ children }) {
   // ================= NAVIGATION =================
 
   const links = [
-
     ["🧠", "Mood", "/mood"],
-
     ["🎧", "Recommendations", "/recommendations"],
-
     ["🔎", "Discover", "/discover"],
-
     ["❤️", "My Music", "/my-music"],
-
     ["📊", "Analytics", "/analytics"],
-
     ["📔", "Journal", "/journal"],
-
     ["✨", "Journey", "/journey"],
-
     ["👤", "Profile", "/profile"]
-
   ];
 
 
@@ -139,121 +133,125 @@ export default function AppLayout({ children }) {
       {/* Dynamic Fluid Mood Aurora Background */}
       <AmbientAurora />
 
-
       {/* =================================================
           DESKTOP TOP NAVIGATION
           ================================================= */}
-
       <nav className="top-navigation">
-
-        {/* LOGO */}
-
-        <Link
-          to="/mood"
-          className="top-logo"
-        >
-
-          <div className="top-logo-icon">
-            ♫
-          </div>
-
-          <span>
-            Moodify
-          </span>
-
+        <Link to="/mood" className="top-logo">
+          <div className="top-logo-icon">♫</div>
+          <span>Moodify</span>
         </Link>
 
-
-        {/* DESKTOP NAVIGATION */}
-
         <div className="top-navigation-links">
-
-          {links.map(
-            ([icon, title, path]) => (
-
-              <Link
-                key={path}
-                to={path}
-
-                className={
-                  `top-navigation-link ${
-                    location.pathname === path
-                      ? "active"
-                      : ""
-                  }`
-                }
-              >
-
-                <span className="nav-icon">
-                  {icon}
-                </span>
-
-                <span className="nav-title">
-                  {title}
-                </span>
-
-              </Link>
-
-            )
-          )}
-
+          {links.map(([icon, title, path]) => (
+            <Link
+              key={path}
+              to={path}
+              className={`top-navigation-link ${location.pathname === path ? "active" : ""}`}
+            >
+              <span className="nav-icon">{icon}</span>
+              <span className="nav-title">{title}</span>
+            </Link>
+          ))}
         </div>
 
-
-        {/* USER */}
-
-        {/* USER - ONLY FIRST LETTER CIRCULAR AVATAR */}
         <div
           className="top-user"
           onClick={() => navigate("/profile")}
           title={userName}
           style={{ cursor: "pointer" }}
         >
-          <div className="top-user-avatar">
-            {userInitial}
-          </div>
+          <div className="top-user-avatar">{userInitial}</div>
         </div>
-
       </nav>
 
+      {/* =================================================
+          MOBILE TOP HEADER BAR (Hamburger + Logo + Avatar)
+          ================================================= */}
+      <div className="mobile-top-bar">
+        <button
+          className="mobile-hamburger-btn"
+          onClick={() => setIsMobileNavOpen(true)}
+          aria-label="Open menu"
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="18" x2="21" y2="18" />
+          </svg>
+        </button>
+
+        <Link to="/mood" className="mobile-logo">
+          <div className="mobile-logo-icon">♫</div>
+          <span>Moodify</span>
+        </Link>
+
+        <div className="mobile-user-avatar" onClick={() => navigate("/profile")}>
+          {userInitial}
+        </div>
+      </div>
 
       {/* =================================================
-          NEW RESPONSIVE NAVIGATION
-          iPHONE / PIXEL / iPAD / SURFACE
+          MOBILE SIDEBAR DRAWER (Slide-out navigation)
           ================================================= */}
+      {isMobileNavOpen && (
+        <div className="mobile-drawer-overlay" onClick={() => setIsMobileNavOpen(false)}>
+          <div className="mobile-drawer" onClick={(e) => e.stopPropagation()}>
+            <div className="mobile-drawer-header">
+              <div className="mobile-logo">
+                <div className="mobile-logo-icon">♫</div>
+                <span>Moodify</span>
+              </div>
+              <button className="mobile-drawer-close" onClick={() => setIsMobileNavOpen(false)}>
+                ✕
+              </button>
+            </div>
 
-      <div className="responsive-navigation">
+            <div className="mobile-drawer-user" onClick={() => { navigate("/profile"); setIsMobileNavOpen(false); }}>
+              <div className="mobile-drawer-avatar">{userInitial}</div>
+              <div className="mobile-drawer-info">
+                <div className="mobile-drawer-name">{userName}</div>
+                <div className="mobile-drawer-email">{userEmail || "Moodify Listener"}</div>
+              </div>
+            </div>
 
-        {links.map(
-          ([icon, title, path]) => (
+            <nav className="mobile-drawer-links">
+              {links.map(([icon, title, path]) => (
+                <Link
+                  key={path}
+                  to={path}
+                  className={`mobile-drawer-link ${location.pathname === path ? "active" : ""}`}
+                  onClick={() => setIsMobileNavOpen(false)}
+                >
+                  <span className="mobile-drawer-icon">{icon}</span>
+                  <span className="mobile-drawer-title">{title}</span>
+                </Link>
+              ))}
+            </nav>
 
-            <Link
-              key={path}
-              to={path}
-
-              className={
-                location.pathname === path
-                  ? "responsive-nav-item active"
-                  : "responsive-nav-item"
-              }
-            >
-
-              <span className="responsive-nav-icon">
-                {icon}
-              </span>
-
-              <span className="responsive-nav-text">
-                {title === "Recommendations"
-                  ? "Recommend"
-                  : title}
-              </span>
-
-            </Link>
-
-          )
-        )}
-
-      </div>
+            <div className="mobile-drawer-footer">
+              <button
+                className="mobile-drawer-zen-btn"
+                onClick={() => {
+                  setIsZenOpen(true);
+                  setIsMobileNavOpen(false);
+                }}
+              >
+                ✨ Fullscreen Zen Sanctuary
+              </button>
+              <button
+                className="mobile-drawer-logout-btn"
+                onClick={() => {
+                  handleLogout();
+                  setIsMobileNavOpen(false);
+                }}
+              >
+                🚪 Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
 
       {/* =================================================
