@@ -27,6 +27,7 @@ export default function MoodDetection() {
   const [detectedLocation, setDetectedLocation] = useState("Detecting location...");
   const [customCity,       setCustomCity      ] = useState(localStorage.getItem("moodify_user_city") || "");
   const [useWeather,       setUseWeather      ] = useState(false);
+  const [isUpdatingWeather, setIsUpdatingWeather] = useState(false);
 
   // Autocomplete states
   const [genreSuggestions,   setGenreSuggestions  ] = useState([]);
@@ -83,8 +84,9 @@ export default function MoodDetection() {
 
   // Helper to fetch weather for a specific city name and save it to localStorage
   const updateCityWeather = async (targetCity) => {
-    if (!targetCity.trim()) return;
+    if (!targetCity || !targetCity.trim()) return;
     const cleanCity = targetCity.trim();
+    setIsUpdatingWeather(true);
     try {
       const res = await fetch(`${API_BASE_URL}/context/weather?city=${encodeURIComponent(cleanCity)}`);
       if (res.ok) {
@@ -96,6 +98,8 @@ export default function MoodDetection() {
       }
     } catch (err) {
       console.error("Error updating city weather:", err);
+    } finally {
+      setIsUpdatingWeather(false);
     }
   };
 
@@ -906,6 +910,174 @@ export default function MoodDetection() {
           color: var(--text-secondary);
           line-height: 1.5;
         }
+        /* ── Weather Section Responsive Styling ── */
+        .md-weather-section {
+          background: rgba(255, 255, 255, 0.02);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 20px;
+          padding: 22px 24px;
+          margin-bottom: 26px;
+          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+          backdrop-filter: blur(16px);
+          transition: all 0.3s ease;
+        }
+        .md-weather-section.active {
+          background: linear-gradient(135deg, rgba(139, 92, 246, 0.12) 0%, rgba(59, 130, 246, 0.08) 100%);
+          border: 1px solid rgba(168, 85, 247, 0.35);
+          box-shadow: 0 12px 35px rgba(139, 92, 246, 0.15);
+        }
+        .md-weather-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          flex-wrap: wrap;
+          gap: 14px;
+        }
+        .md-weather-title-group {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+        }
+        .md-weather-toggle-btn {
+          width: 48px;
+          height: 26px;
+          border-radius: 13px;
+          position: relative;
+          border: none;
+          cursor: pointer;
+          transition: background 0.3s ease, box-shadow 0.3s ease;
+          flex-shrink: 0;
+        }
+        .md-weather-toggle-thumb {
+          width: 20px;
+          height: 20px;
+          background: #fff;
+          border-radius: 50%;
+          position: absolute;
+          top: 3px;
+          transition: left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+        .md-weather-badge {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          font-size: 0.92rem;
+          color: #fff;
+          background: linear-gradient(135deg, rgba(168, 85, 247, 0.25), rgba(99, 102, 241, 0.2));
+          padding: 7px 18px;
+          border-radius: 99px;
+          border: 1px solid rgba(168, 85, 247, 0.4);
+          box-shadow: 0 4px 15px rgba(168, 85, 247, 0.2);
+        }
+        .md-weather-input-container {
+          margin-top: 18px;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+        .md-weather-field-wrap {
+          position: relative;
+          flex: 1;
+          display: flex;
+          align-items: center;
+          width: 100%;
+        }
+        .md-weather-field-icon {
+          position: absolute;
+          left: 14px;
+          font-size: 1.1rem;
+          pointer-events: none;
+          opacity: 0.7;
+          z-index: 1;
+        }
+        .md-weather-city-input {
+          width: 100%;
+          padding: 12px 14px 12px 42px;
+          border-radius: 12px;
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          background: rgba(0, 0, 0, 0.25);
+          color: #fff;
+          font-size: 0.93rem;
+          box-sizing: border-box;
+          outline: none;
+          font-family: inherit;
+          transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .md-weather-city-input:focus {
+          border-color: rgba(168, 85, 247, 0.6);
+          box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.2);
+        }
+        .md-weather-city-input::placeholder {
+          color: rgba(255, 255, 255, 0.45);
+        }
+        .md-weather-update-btn {
+          background: linear-gradient(135deg, #a855f7, #6366f1);
+          color: #fff;
+          border: none;
+          border-radius: 12px;
+          padding: 12px 24px;
+          font-weight: 700;
+          font-size: 0.92rem;
+          cursor: pointer;
+          box-shadow: 0 4px 15px rgba(168, 85, 247, 0.35);
+          transition: all 0.2s ease;
+          white-space: nowrap;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+        }
+        .md-weather-update-btn:hover:not(:disabled) {
+          transform: translateY(-1px);
+          box-shadow: 0 6px 20px rgba(168, 85, 247, 0.5);
+        }
+        .md-weather-update-btn:active:not(:disabled) {
+          transform: translateY(0);
+        }
+        .md-weather-update-btn:disabled {
+          opacity: 0.7;
+          cursor: not-allowed;
+        }
+        .md-weather-location-bar {
+          margin-top: 14px;
+          font-size: 0.86rem;
+          color: #94a3b8;
+          display: flex;
+          align-items: center;
+          flex-wrap: wrap;
+          gap: 8px;
+          word-break: break-word;
+        }
+
+        /* Mobile / Phone Responsive Optimization:
+           Place input given full width so the place is properly visible,
+           and Update button positioned below the place input. */
+        @media (max-width: 640px) {
+          .md-weather-section {
+            padding: 18px 16px;
+          }
+          .md-weather-input-container {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 10px;
+          }
+          .md-weather-field-wrap {
+            width: 100%;
+          }
+          .md-weather-city-input {
+            width: 100%;
+            font-size: 0.95rem;
+            padding-top: 12px;
+            padding-bottom: 12px;
+          }
+          .md-weather-update-btn {
+            width: 100%;
+            padding: 12px 18px;
+            font-size: 0.95rem;
+          }
+        }
+
         /* ── Light mode overrides (inside same <style> to win cascade) ── */
         html.light .md-hero h1 { color: #17131f; }
         html.light .md-hero p { color: #52525b; }
@@ -935,6 +1107,34 @@ export default function MoodDetection() {
           color: #17131f;
         }
         html.light .md-pref-input::placeholder { color: #a1a1aa; }
+        html.light .md-weather-section {
+          background: #ffffff;
+          border-color: rgba(0,0,0,0.08);
+          box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        }
+        html.light .md-weather-section.active {
+          background: linear-gradient(135deg, rgba(168,85,247,0.07) 0%, rgba(99,102,241,0.04) 100%);
+          border-color: rgba(168,85,247,0.3);
+        }
+        html.light .md-weather-city-input {
+          background: #f4f4f5;
+          border-color: #d4d4d8;
+          color: #17131f;
+        }
+        html.light .md-weather-city-input::placeholder {
+          color: #a1a1aa;
+        }
+        html.light .md-weather-badge {
+          color: #1e1b4b;
+          background: rgba(168,85,247,0.12);
+          border-color: rgba(168,85,247,0.28);
+        }
+        html.light .md-weather-location-bar {
+          color: #64748b;
+        }
+        html.light .md-weather-location-bar strong {
+          color: #0f172a !important;
+        }
         html.light .md-result {
           background: #ffffff;
           border-color: rgba(0,0,0,0.08);
@@ -1156,51 +1356,23 @@ export default function MoodDetection() {
           {/* =========================================================
               WEATHER-BASED RECOMMENDATIONS CARD
              ========================================================= */}
-          <div className="md-weather-section" style={{
-            background: useWeather
-              ? 'linear-gradient(135deg, rgba(139, 92, 246, 0.12) 0%, rgba(59, 130, 246, 0.08) 100%)'
-              : 'rgba(255, 255, 255, 0.02)',
-            border: useWeather
-              ? '1px solid rgba(168, 85, 247, 0.35)'
-              : '1px solid rgba(255, 255, 255, 0.1)',
-            borderRadius: '20px',
-            padding: '22px 24px',
-            marginBottom: '26px',
-            boxShadow: useWeather
-              ? '0 12px 35px rgba(139, 92, 246, 0.15)'
-              : '0 8px 25px rgba(0,0,0,0.2)',
-            backdropFilter: 'blur(16px)',
-            transition: 'all 0.3s ease',
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '14px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <div className={`md-weather-section${useWeather ? ' active' : ''}`}>
+            <div className="md-weather-header">
+              <div className="md-weather-title-group">
                 <button
                   type="button"
                   onClick={() => setUseWeather(!useWeather)}
+                  className="md-weather-toggle-btn"
                   style={{
-                    width: '48px',
-                    height: '26px',
                     background: useWeather ? 'linear-gradient(135deg, #a855f7, #6366f1)' : 'rgba(255,255,255,0.15)',
-                    borderRadius: '13px',
-                    position: 'relative',
-                    border: 'none',
-                    cursor: 'pointer',
-                    transition: 'background 0.3s ease',
                     boxShadow: useWeather ? '0 0 12px rgba(168,85,247,0.5)' : 'none',
                   }}
                   title={useWeather ? 'Disable weather recommendations' : 'Enable weather recommendations'}
                 >
-                  <div style={{
-                    width: '20px',
-                    height: '20px',
-                    background: '#fff',
-                    borderRadius: '50%',
-                    position: 'absolute',
-                    top: '3px',
-                    left: useWeather ? '25px' : '3px',
-                    transition: 'left 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-                    boxShadow: '0 2px 5px rgba(0,0,0,0.3)',
-                  }} />
+                  <div
+                    className="md-weather-toggle-thumb"
+                    style={{ left: useWeather ? '25px' : '3px' }}
+                  />
                 </button>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -1212,18 +1384,7 @@ export default function MoodDetection() {
               </div>
 
               {useWeather && weatherContext && (
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px',
-                  fontSize: '0.92rem',
-                  color: '#fff',
-                  background: 'linear-gradient(135deg, rgba(168,85,247,0.25), rgba(99,102,241,0.2))',
-                  padding: '7px 18px',
-                  borderRadius: '99px',
-                  border: '1px solid rgba(168,85,247,0.4)',
-                  boxShadow: '0 4px 15px rgba(168,85,247,0.2)',
-                }}>
+                <div className="md-weather-badge">
                   <span style={{ fontSize: '1.2rem' }}>{weatherContext.icon}</span>
                   <span style={{ fontWeight: '800', fontSize: '1.05rem', color: '#f3e8ff' }}>{weatherContext.temp_c}°C</span>
                   <span style={{ opacity: 0.85, fontWeight: '500', color: '#cbd5e1' }}>• {weatherContext.condition}</span>
@@ -1232,66 +1393,36 @@ export default function MoodDetection() {
             </div>
 
             {useWeather && (
-              <div style={{ marginTop: '18px', display: 'flex', gap: '12px' }}>
-                <div style={{ position: 'relative', flex: 1, display: 'flex', alignItems: 'center' }}>
-                  <span style={{ position: 'absolute', left: '14px', fontSize: '1.1rem', pointerEvents: 'none', opacity: 0.7 }}>
+              <div className="md-weather-input-container">
+                <div className="md-weather-field-wrap">
+                  <span className="md-weather-field-icon">
                     📍
                   </span>
                   <input
                     type="text"
-                    className="md-pref-input"
+                    className="md-weather-city-input"
                     placeholder="Enter city name (e.g. London, Bicholim, Tokyo)..."
                     value={customCity}
                     onChange={(e) => setCustomCity(e.target.value)}
                     onKeyDown={(e) => { if (e.key === 'Enter') updateCityWeather(customCity); }}
-                    style={{
-                      width: '100%',
-                      paddingLeft: '42px',
-                      paddingRight: '14px',
-                      paddingTop: '11px',
-                      paddingBottom: '11px',
-                      borderRadius: '12px',
-                      border: '1px solid rgba(255,255,255,0.15)',
-                      background: 'rgba(0,0,0,0.25)',
-                      color: '#fff',
-                      fontSize: '0.93rem',
-                      boxSizing: 'border-box',
-                    }}
                   />
                 </div>
 
                 <button
                   type="button"
+                  className="md-weather-update-btn"
                   onClick={() => updateCityWeather(customCity)}
-                  style={{
-                    background: 'linear-gradient(135deg, #a855f7, #6366f1)',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '12px',
-                    padding: '0 24px',
-                    fontWeight: '700',
-                    fontSize: '0.9rem',
-                    cursor: 'pointer',
-                    boxShadow: '0 4px 15px rgba(168,85,247,0.35)',
-                    transition: 'all 0.2s ease',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-1px)';
-                    e.currentTarget.style.boxShadow = '0 6px 20px rgba(168,85,247,0.5)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = '0 4px 15px rgba(168,85,247,0.35)';
-                  }}
+                  disabled={isUpdatingWeather}
+                  title="Update weather for entered city"
                 >
-                  Update
+                  {isUpdatingWeather ? 'Updating...' : 'Update'}
                 </button>
               </div>
             )}
             
             {useWeather && weatherContext && (
-               <div style={{ marginTop: '14px', fontSize: '0.86rem', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                 <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 8px #22c55e', display: 'inline-block' }} />
+               <div className="md-weather-location-bar">
+                 <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 8px #22c55e', display: 'inline-block', flexShrink: 0 }} />
                  <span>Active Location:</span>
                  <strong style={{ color: '#f8fafc', fontWeight: '700' }}>{detectedLocation}</strong>
                </div>
