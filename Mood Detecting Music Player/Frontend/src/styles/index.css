@@ -7171,6 +7171,17 @@ html.light .player-progress-bar {
   }
 }
 
+/* Mobile floating Zen Mode FAB button — visible only on mobile */
+.mobile-zen-fab {
+  display: none !important;
+}
+
+@media (max-width: 768px) {
+  .mobile-zen-fab {
+    display: flex !important;
+  }
+}
+
 /* Mood-adaptive accents are intentionally limited to colour and motion. */
 .app-layout::before { content: ""; position: fixed; inset: -25%; pointer-events: none; z-index: -1; background: radial-gradient(circle at 80% 10%, color-mix(in srgb, var(--mood-primary) 16%, transparent), transparent 32%), radial-gradient(circle at 10% 75%, color-mix(in srgb, var(--mood-secondary) 12%, transparent), transparent 28%); animation: moodDrift 14s ease-in-out infinite alternate; }
 .primary-btn, .top-logo-icon { background: linear-gradient(135deg, var(--mood-primary), var(--mood-secondary)); }
@@ -8969,26 +8980,28 @@ body.light .featured-track-artist {
 
 @media (max-width: 860px) {
   .zen-viewport-container {
-    padding: 18px 20px;
+    padding: 14px 16px 20px;
     height: 100%;
     overflow-y: auto;
+    overflow-x: hidden;
   }
 
   .zen-main-layout {
     flex-direction: column;
     text-align: center;
-    gap: 20px;
-    margin: 16px 0;
+    gap: 16px;
+    margin: 10px 0;
+    padding-bottom: 20px;
   }
 
   .zen-vinyl-frame {
-    width: 330px;
-    height: 330px;
+    width: 280px;
+    height: 280px;
   }
 
   .zen-vinyl-warm-glow {
-    width: 260px;
-    height: 260px;
+    width: 220px;
+    height: 220px;
   }
 
   .zen-info-panel {
@@ -9027,6 +9040,127 @@ body.light .featured-track-artist {
 
   .zen-volume-module {
     margin-top: 6px;
+  }
+}
+
+/* ── Mobile: Phones (max 600px) ── */
+@media (max-width: 600px) {
+  .zen-viewport-container {
+    padding: 10px 12px 16px;
+  }
+
+  .zen-header {
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .zen-vis-toggles {
+    gap: 2px;
+    padding: 3px 4px;
+  }
+
+  .zen-vis-btn {
+    padding: 4px 7px;
+    font-size: 0.7rem;
+  }
+
+  .zen-theme-btn {
+    padding: 5px 10px;
+    font-size: 0.75rem;
+  }
+
+  .zen-badge {
+    font-size: 0.7rem;
+    padding: 4px 10px;
+  }
+
+  .zen-main-layout {
+    gap: 12px;
+    margin: 6px 0;
+  }
+
+  .zen-vinyl-column {
+    flex: none;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .zen-vinyl-frame {
+    width: 220px;
+    height: 220px;
+  }
+
+  .zen-vinyl-warm-glow {
+    width: 180px;
+    height: 180px;
+  }
+
+  .zen-song-title {
+    font-size: 1.6rem !important;
+    letter-spacing: -0.01em !important;
+  }
+
+  .zen-artist-name {
+    font-size: 1rem !important;
+    margin: 0 0 12px 0 !important;
+  }
+
+  .zen-waveform-module {
+    margin-bottom: 10px;
+    max-width: 100%;
+  }
+
+  .zen-progress-section {
+    max-width: 100%;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .zen-controls-bar {
+    max-width: 100%;
+    gap: 12px;
+  }
+
+  .zen-vol-range {
+    width: 70px;
+  }
+
+  .zen-btn-play {
+    width: 52px;
+    height: 52px;
+  }
+}
+
+/* ── Very small phones (max 420px) ── */
+@media (max-width: 420px) {
+  .zen-vinyl-frame {
+    width: 180px;
+    height: 180px;
+  }
+
+  .zen-vinyl-warm-glow {
+    width: 145px;
+    height: 145px;
+  }
+
+  .zen-vis-toggles {
+    display: none; /* Hide visualizer mode toggles on very tiny screens */
+  }
+
+  .zen-song-title {
+    font-size: 1.35rem !important;
+  }
+
+  .zen-playback-buttons {
+    gap: 18px;
+  }
+
+  .zen-volume-module {
+    padding: 6px 10px;
+  }
+
+  .zen-vol-range {
+    width: 55px;
   }
 }
 

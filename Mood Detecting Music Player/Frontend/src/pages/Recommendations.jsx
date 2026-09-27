@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { usePlayer } from "../context/PlayerContext";
 import VinylPlayer from "../components/VinylPlayer";
 import AudioVisualizer from "../components/AudioVisualizer";
+import ZenModeModal from "../components/ZenModeModal";
 import { API_BASE_URL } from "../services/apiConfig";
 
 const MOOD_EMOJIS = {
@@ -37,6 +38,7 @@ export default function Recommendations() {
   const [songPool, setSongPool] = useState([]); // full 50-song pool
   const [weatherCtx, setWeatherCtx] = useState(null);
   const [shuffling, setShuffling] = useState(false);
+  const [isZenOpen, setIsZenOpen] = useState(false);
 
   // LIKED SONGS STATE — tracks which songs the user has liked in this session
   const [likedSongs, setLikedSongs] = useState({});
@@ -170,6 +172,22 @@ export default function Recommendations() {
                   onClick={() => playTrack(songs[0], songs)}
                 >
                   ▶ Play All Tracks
+                </button>
+              )}
+
+              {songs.length > 0 && (
+                <button
+                  type="button"
+                  className="primary-btn"
+                  style={{
+                    background: "linear-gradient(135deg, rgba(245,158,11,0.25), rgba(251,146,60,0.25))",
+                    border: "1px solid rgba(245,158,11,0.4)",
+                    color: "var(--text)"
+                  }}
+                  onClick={() => setIsZenOpen(true)}
+                  title="Open Zen Mode"
+                >
+                  ✨ Zen Mode
                 </button>
               )}
 
@@ -420,6 +438,39 @@ export default function Recommendations() {
           </button>
         </div>
       )}
+      {/* Mobile floating Zen Mode button — shows when a track is actively playing */}
+      {currentTrack && isPlaying && (
+        <button
+          type="button"
+          onClick={() => setIsZenOpen(true)}
+          style={{
+            position: "fixed",
+            bottom: "85px",
+            right: "16px",
+            zIndex: 9999,
+            background: "linear-gradient(135deg, #f59e0b, #fb923c)",
+            border: "none",
+            borderRadius: "50px",
+            padding: "10px 18px",
+            color: "#fff",
+            fontWeight: "700",
+            fontSize: "0.85rem",
+            cursor: "pointer",
+            boxShadow: "0 4px 20px rgba(245,158,11,0.5)",
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            animation: "moodDrift 3s ease-in-out infinite alternate"
+          }}
+          title="Open Zen Sanctuary"
+          className="mobile-zen-fab"
+        >
+          ✨ Zen
+        </button>
+      )}
+
+      {/* Zen Mode Modal */}
+      <ZenModeModal isOpen={isZenOpen} onClose={() => setIsZenOpen(false)} />
 
     </>
   );

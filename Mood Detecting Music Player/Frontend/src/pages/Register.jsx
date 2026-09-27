@@ -111,13 +111,19 @@ export default function Register() {
 
       setOtpSent(true);
       setOtp("");
-      setMessage("OTP sent successfully. Please check your email inbox.");
+      setMessage("OTP sent successfully. Please check your email inbox (and spam folder).");
     } catch (error) {
       console.error("Send OTP Error:", error);
-      setError(
-        error.message ||
-          "Unable to send OTP. Make sure the OTP server is running."
-      );
+      if (error.name === "TypeError" && error.message.includes("fetch")) {
+        setError(
+          "Cannot reach the OTP server. Please ensure the OTP server is running and VITE_OTP_URL is configured correctly on Vercel."
+        );
+      } else {
+        setError(
+          error.message ||
+            "Unable to send OTP. Please try again."
+        );
+      }
     } finally {
       setOtpLoading(false);
     }

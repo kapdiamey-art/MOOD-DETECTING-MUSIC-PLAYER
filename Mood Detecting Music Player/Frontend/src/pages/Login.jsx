@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { API_BASE_URL } from "../services/apiConfig";
 import { useNavigate, useLocation } from "react-router-dom";
 
 import {
@@ -91,7 +92,31 @@ export default function Login() {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-      await saveFirebaseSession(user, user.email || "");
+      const userEmail = (user.email || "").trim().toLowerCase();
+
+      // Check if user is registered in Moodify's database
+      let isRegistered = false;
+      try {
+        const checkRes = await fetch(`${API_BASE_URL}/auth/check-user`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: userEmail })
+        });
+        const checkData = await checkRes.json();
+        isRegistered = checkData.registered === true;
+      } catch (_) {
+        // If check fails, also look for local registration flag
+        isRegistered = localStorage.getItem("moodifyRegistered_" + userEmail) === "true";
+      }
+
+      if (!isRegistered) {
+        await signOut(auth);
+        setError("No Moodify account found for this Google account. Please register first.");
+        setTimeout(() => navigate("/register"), 2000);
+        return;
+      }
+
+      await saveFirebaseSession(user, userEmail);
       setMessage("Google sign-in successful! Redirecting...");
       setTimeout(() => navigate("/mood"), 500);
     } catch (err) {
@@ -115,7 +140,31 @@ export default function Login() {
       const provider = new OAuthProvider("microsoft.com");
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-      await saveFirebaseSession(user, user.email || "");
+      const userEmail = (user.email || "").trim().toLowerCase();
+
+      // Check if user is registered in Moodify's database
+      let isRegistered = false;
+      try {
+        const checkRes = await fetch(`${API_BASE_URL}/auth/check-user`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: userEmail })
+        });
+        const checkData = await checkRes.json();
+        isRegistered = checkData.registered === true;
+      } catch (_) {
+        // If check fails, also look for local registration flag
+        isRegistered = localStorage.getItem("moodifyRegistered_" + userEmail) === "true";
+      }
+
+      if (!isRegistered) {
+        await signOut(auth);
+        setError("No Moodify account found for this Microsoft account. Please register first.");
+        setTimeout(() => navigate("/register"), 2000);
+        return;
+      }
+
+      await saveFirebaseSession(user, userEmail);
       setMessage("Microsoft sign-in successful! Redirecting...");
       setTimeout(() => navigate("/mood"), 500);
     } catch (err) {

@@ -16,3 +16,4 @@ torch
 httpx
 cryptography
 google-genai
+requests

@@ -24,6 +24,14 @@ export default function ZenModeModal({ isOpen, onClose }) {
     return localStorage.getItem("theme") !== "light";
   });
 
+  // ── Responsive sizes based on screen width ──────────────────────────────
+  const isMobile = typeof window !== "undefined" && window.innerWidth <= 600;
+  const isSmallTablet = typeof window !== "undefined" && window.innerWidth <= 860;
+  const vinylSize = isMobile ? (window.innerWidth <= 420 ? 160 : 200) : isSmallTablet ? 260 : 440;
+  const visualizerSize = isMobile ? (window.innerWidth <= 420 ? 145 : 180) : isSmallTablet ? 260 : 560;
+  const visualizerBaseRadius = isMobile ? (window.innerWidth <= 420 ? 58 : 72) : isSmallTablet ? 100 : 225;
+  const waveformWidth = isMobile ? (window.innerWidth - 60) : 520;
+
   // ── Fullscreen helpers ──────────────────────────────────────────────
   const enterFullscreen = useCallback(() => {
     const el = document.documentElement;
@@ -38,11 +46,12 @@ export default function ZenModeModal({ isOpen, onClose }) {
     else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
   }, []);
 
-  // Auto enter fullscreen when zen opens, restore on close
+  // Auto enter fullscreen when zen opens, restore on close (skip on mobile — not supported well)
   useEffect(() => {
-    if (isOpen) {
+    const mobile = window.innerWidth <= 768;
+    if (isOpen && !mobile) {
       enterFullscreen();
-    } else {
+    } else if (!isOpen) {
       if (document.fullscreenElement) exitFullscreen();
     }
   }, [isOpen]);
@@ -193,6 +202,18 @@ export default function ZenModeModal({ isOpen, onClose }) {
             >
               <span>{isDark ? "☀️ Light" : "🌙 Dark"}</span>
             </button>
+
+            {/* Close button — always visible on mobile */}
+            <button
+              type="button"
+              className="zen-theme-btn"
+              onClick={() => { if (document.fullscreenElement) exitFullscreen(); onClose(); }}
+              title="Close Zen Mode (Esc)"
+              aria-label="Close Zen Mode"
+              style={{ background: "rgba(239,68,68,0.15)", borderColor: "rgba(239,68,68,0.3)", color: "#f87171" }}
+            >
+              <span>✕ Close</span>
+            </button>
           </div>
         </header>
 
@@ -208,20 +229,20 @@ export default function ZenModeModal({ isOpen, onClose }) {
               <div className="zen-concentric-visualizer">
                 <AudioVisualizer
                   mode={visualizerMode}
-                  height={560}
-                  width={560}
-                  baseRadius={225}
+                  height={visualizerSize}
+                  width={visualizerSize}
+                  baseRadius={visualizerBaseRadius}
                   glowColor="#f59e0b"
                   interactive={false}
                 />
               </div>
 
-              {/* 440px High-Fidelity Vinyl Record Platter with Realistic Tonearm */}
+              {/* High-Fidelity Vinyl Record Platter with Realistic Tonearm */}
               <div className="zen-vinyl-disc-wrap">
                 <VinylPlayer
-                  size={440}
+                  size={vinylSize}
                   variant="turntable"
-                  showTonearm={true}
+                  showTonearm={!isMobile}
                   interactive={true}
                 />
               </div>
@@ -245,7 +266,7 @@ export default function ZenModeModal({ isOpen, onClose }) {
               <AudioVisualizer
                 mode={visualizerMode === "portal" ? "bars" : visualizerMode}
                 height={48}
-                width={520}
+                width={waveformWidth}
                 glowColor="#f59e0b"
                 interactive={false}
               />
