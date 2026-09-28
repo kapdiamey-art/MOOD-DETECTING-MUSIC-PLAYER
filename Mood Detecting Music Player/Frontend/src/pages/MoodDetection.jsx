@@ -29,6 +29,15 @@ export default function MoodDetection() {
   const [useWeather,       setUseWeather      ] = useState(false);
   const [isUpdatingWeather, setIsUpdatingWeather] = useState(false);
 
+  // ── Feedback / Correction state ──────────────────────────────────────
+  const [showCorrectionModal, setShowCorrectionModal] = useState(false);
+  const [correctedEmotion,    setCorrectedEmotion   ] = useState(null);   // null = user accepted model result
+  const [feedbackSent,        setFeedbackSent        ] = useState(false);
+  const [isFetchingCorrected, setIsFetchingCorrected ] = useState(false);
+  // The emotion we actually use for the playlist (model result OR user correction)
+  const effectiveEmotion = correctedEmotion || mood?.emotion || null;
+  // ─────────────────────────────────────────────────────────────────────
+
   // Autocomplete states
   const [genreSuggestions,   setGenreSuggestions  ] = useState([]);
   const [artistSuggestions,  setArtistSuggestions ] = useState([]);
@@ -293,6 +302,10 @@ export default function MoodDetection() {
     setLoading(true);
     setMood(null);
     setRecommendations([]);
+    // Reset feedback state on each new detection
+    setCorrectedEmotion(null);
+    setFeedbackSent(false);
+    setShowCorrectionModal(false);
 
     try {
       const token = localStorage.getItem("moodifyToken");
@@ -363,6 +376,98 @@ export default function MoodDetection() {
     }
   };
 
+  // ── Send feedback to backend ─────────────────────────────────────────
+  const sendFeedback = async (userCorrect, chosenEmotion = null) => {
+    if (!mood) return;
+    const token = localStorage.getItem("moodifyToken");
+    try {
+      await fetch(`${API_BASE_URL}/mood/feedback`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { "Authorization": `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          text:               text,
+          predicted_emotion:  mood.emotion,
+          user_correct:       userCorrect,
+          actual_emotion:     chosenEmotion,
+          model_version:      "v1.0",
+        }),
+      });
+    } catch (err) {
+      console.warn("Feedback submission failed (non-critical):", err);
+    }
+  };
+
+  // ── Fetch new recommendations for the corrected emotion ──────────────
+  const fetchRecsForCorrectEmotion = async (emotion) => {
+    setIsFetchingCorrected(true);
+    const token = localStorage.getItem("moodifyToken");
+    try {
+      const res = await fetch(`${API_BASE_URL}/mood/detect`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { "Authorization": `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          text:     `I am feeling ${emotion}`,  // minimal text to force correct emotion
+          genre:    genre.trim() || undefined,
+          artist:   artist.trim() || undefined,
+          language: language,
+          weather:  useWeather && weatherContext ? weatherContext.condition : undefined,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.recommendations) {
+          const shuffled = [...data.recommendations].sort(() => Math.random() - 0.5);
+          const display15 = shuffled.slice(0, 15);
+          setRecommendations(display15);
+          localStorage.setItem("moodify_song_pool",       JSON.stringify(data.recommendations));
+          localStorage.setItem("moodify_recommendations", JSON.stringify(display15));
+        }
+      }
+    } catch (err) {
+      console.warn("Could not re-fetch recs for corrected emotion:", err);
+    } finally {
+      setIsFetchingCorrected(false);
+    }
+  };
+
+  // ── Handle correction: user selected the right emotion ───────────────
+  const handleEmotionCorrection = (chosenEmotion) => {
+    setCorrectedEmotion(chosenEmotion);
+    setShowCorrectionModal(false);
+    setFeedbackSent(true);
+
+    const moodData = MOOD_MAPPING[chosenEmotion] || MOOD_MAPPING.neutral;
+    const correctedMood = {
+      emoji:       moodData.emoji,
+      name:        moodData.name,
+      description: moodData.description,
+      confidence:  mood ? mood.confidence : 99.9,
+      gradient:    moodData.gradient,
+      color:       moodData.color,
+      emotion:     chosenEmotion,
+    };
+
+    // 1. Instantly update UI mood state & theme with zero delay
+    setMood(correctedMood);
+    applyMoodTheme(chosenEmotion);
+
+    // 2. Persist corrected mood in localStorage immediately for Recommendations page
+    localStorage.setItem("moodify_mood", JSON.stringify(correctedMood));
+
+    // 3. Fire-and-forget feedback submission to backend DB (non-blocking)
+    sendFeedback(false, chosenEmotion);
+
+    // 4. Fetch fresh recommendations for corrected emotion asynchronously
+    fetchRecsForCorrectEmotion(chosenEmotion);
+  };
+  // ─────────────────────────────────────────────────────────────────────
+
   return (
     <div className="mood-page">
 
@@ -374,13 +479,15 @@ export default function MoodDetection() {
           filter: blur(120px);
           pointer-events: none;
           z-index: 0;
+          will-change: transform, opacity;
+          transform: translateZ(0);
           animation: orbPulse 8s ease-in-out infinite alternate;
         }
         .md-orb-1 { width:500px; height:500px; background:rgba(139,92,246,0.18); top:-150px; right:-100px; }
         .md-orb-2 { width:400px; height:400px; background:rgba(236,72,153,0.12); bottom:-100px; left:-100px; animation-delay: 3s; }
         @keyframes orbPulse {
-          from { transform: scale(1);   opacity: 0.8; }
-          to   { transform: scale(1.2); opacity: 1;   }
+          from { transform: translateZ(0) scale(1);   opacity: 0.8; }
+          to   { transform: translateZ(0) scale(1.2); opacity: 1;   }
         }
 
         /* ── Page layout ── */
@@ -1161,6 +1268,280 @@ export default function MoodDetection() {
         }
         html.light .md-feature h3 { color: #17131f; }
         html.light .md-feature p  { color: #71717a; }
+
+        /* ── Feedback / Correction UI ── */
+        .md-feedback-wrapper {
+          display: flex;
+          justify-content: center;
+          width: 100%;
+          margin-top: 14px;
+        }
+        .md-feedback-link {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          padding: 7px 16px;
+          border-radius: 99px;
+          background: rgba(168, 85, 247, 0.12);
+          border: 1px solid rgba(168, 85, 247, 0.35);
+          color: #d8b4fe;
+          font-weight: 600;
+          font-size: 0.81rem;
+          font-family: inherit;
+          cursor: pointer;
+          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+          box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+          backdrop-filter: blur(8px);
+        }
+        .md-feedback-link:hover {
+          background: rgba(168, 85, 247, 0.24);
+          border-color: rgba(168, 85, 247, 0.6);
+          color: #ffffff;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3);
+        }
+        .md-feedback-icon {
+          font-size: 0.95rem;
+          animation: pulseIcon 2s infinite ease-in-out;
+        }
+        @keyframes pulseIcon {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.2); }
+        }
+        .md-feedback-arrow {
+          opacity: 0.7;
+          font-size: 0.85rem;
+          transition: transform 0.2s;
+        }
+        .md-feedback-link:hover .md-feedback-arrow {
+          transform: translateX(3px);
+          opacity: 1;
+        }
+
+        .md-feedback-confirmed {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          padding: 6px 14px;
+          border-radius: 99px;
+          background: rgba(16, 185, 129, 0.12);
+          border: 1px solid rgba(16, 185, 129, 0.35);
+          color: #34d399;
+          font-size: 0.81rem;
+          font-weight: 600;
+          animation: fadeIn 0.4s ease;
+        }
+        .md-feedback-check-circle {
+          width: 18px;
+          height: 18px;
+          border-radius: 50%;
+          background: #10b981;
+          color: #000;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 900;
+          font-size: 0.7rem;
+          flex-shrink: 0;
+        }
+
+        /* Modal overlay */
+        .md-correction-overlay {
+          position: fixed;
+          inset: 0;
+          background: rgba(6, 4, 15, 0.82);
+          backdrop-filter: blur(16px);
+          -webkit-backdrop-filter: blur(16px);
+          z-index: 9999;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 20px;
+          animation: fadeIn 0.25s ease-out;
+        }
+
+        .md-correction-modal {
+          background: linear-gradient(165deg, rgba(24, 18, 43, 0.96), rgba(13, 9, 26, 0.98));
+          border: 1px solid rgba(168, 85, 247, 0.4);
+          border-radius: 28px;
+          padding: 34px 28px 28px;
+          max-width: 520px;
+          width: 100%;
+          box-shadow: 0 32px 90px rgba(0,0,0,0.85), 0 0 50px rgba(168,85,247,0.25);
+          animation: modalPop 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+          position: relative;
+          overflow: hidden;
+        }
+        @keyframes modalPop {
+          0% { transform: scale(0.92) translateY(20px); opacity: 0; }
+          100% { transform: scale(1) translateY(0); opacity: 1; }
+        }
+
+        html.light .md-correction-modal {
+          background: linear-gradient(165deg, #ffffff, #f8fafc);
+          border-color: rgba(168,85,247,0.3);
+          box-shadow: 0 24px 60px rgba(0,0,0,0.15), 0 0 40px rgba(168,85,247,0.15);
+        }
+
+        .md-modal-header-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 5px 12px;
+          border-radius: 99px;
+          background: rgba(168, 85, 247, 0.15);
+          border: 1px solid rgba(168, 85, 247, 0.35);
+          color: #c4b5fd;
+          font-size: 0.72rem;
+          font-weight: 800;
+          letter-spacing: 0.08em;
+          margin-bottom: 14px;
+        }
+        .md-pulse-dot {
+          width: 7px;
+          height: 7px;
+          border-radius: 50%;
+          background: #a855f7;
+          box-shadow: 0 0 8px #a855f7;
+          animation: pulseDot 1.5s infinite;
+        }
+        @keyframes pulseDot {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.4; transform: scale(0.8); }
+        }
+
+        .md-correction-close {
+          position: absolute;
+          top: 20px;
+          right: 20px;
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          border: 1px solid rgba(255,255,255,0.1);
+          background: rgba(255,255,255,0.06);
+          color: var(--text-secondary);
+          cursor: pointer;
+          font-size: 0.9rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.2s;
+        }
+        .md-correction-close:hover {
+          background: rgba(239, 68, 68, 0.25);
+          border-color: rgba(239, 68, 68, 0.5);
+          color: #f87171;
+          transform: rotate(90deg);
+        }
+
+        .md-correction-title {
+          font-size: 1.25rem;
+          font-weight: 800;
+          color: var(--text);
+          margin-bottom: 8px;
+          letter-spacing: -0.02em;
+        }
+
+        .md-correction-sub {
+          font-size: 0.88rem;
+          color: var(--text-secondary);
+          margin-bottom: 24px;
+          line-height: 1.6;
+        }
+
+        .md-correction-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 12px;
+        }
+        @media (max-width: 440px) {
+          .md-correction-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        .md-emotion-chip {
+          position: relative;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          padding: 16px 10px;
+          border-radius: 18px;
+          border: 1px solid rgba(255,255,255,0.08);
+          background: rgba(255,255,255,0.03);
+          cursor: pointer;
+          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+          font-family: inherit;
+          overflow: hidden;
+        }
+
+        html.light .md-emotion-chip {
+          background: #f1f5f9;
+          border-color: #e2e8f0;
+        }
+
+        .md-emotion-chip:hover {
+          border-color: var(--chip-color, #a855f7);
+          background: rgba(255, 255, 255, 0.08);
+          transform: translateY(-4px) scale(1.02);
+          box-shadow: 0 12px 25px -5px var(--chip-color, rgba(168,85,247,0.4));
+        }
+
+        .md-emotion-chip.active {
+          border-color: var(--chip-color, #a855f7);
+          background: var(--chip-gradient, linear-gradient(135deg, #a855f7, #6366f1));
+          box-shadow: 0 8px 25px -4px var(--chip-color, rgba(168,85,247,0.5));
+        }
+        .md-emotion-chip.active .md-emotion-chip-name {
+          color: #ffffff;
+        }
+
+        .md-emotion-chip-emoji {
+          font-size: 2.1rem;
+          transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .md-emotion-chip:hover .md-emotion-chip-emoji {
+          transform: scale(1.2) rotate(6deg);
+        }
+
+        .md-emotion-chip-name {
+          font-size: 0.82rem;
+          font-weight: 700;
+          color: var(--text);
+          text-transform: capitalize;
+        }
+
+        .md-corrected-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 16px;
+          border-radius: 99px;
+          background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(5,150,105,0.25));
+          border: 1px solid rgba(16,185,129,0.4);
+          color: #34d399;
+          font-size: 0.85rem;
+          font-weight: 700;
+          margin-bottom: 18px;
+          box-shadow: 0 4px 15px rgba(16,185,129,0.15);
+        }
+
+        .md-fetching-corrected {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 10px 16px;
+          border-radius: 12px;
+          background: rgba(168, 85, 247, 0.1);
+          border: 1px solid rgba(168, 85, 247, 0.25);
+          color: #c4b5fd;
+          font-size: 0.86rem;
+          font-weight: 600;
+          margin-bottom: 16px;
+          animation: fadeIn 0.3s ease;
+        }
       `}</style>
 
       {/* Ambient orbs */}
@@ -1448,20 +1829,34 @@ export default function MoodDetection() {
             </div>
           )}
 
-          {/* ── RESULT CARD (INTEGRATED WITH AUTO-DETECTED WEATHER & LOCATION) ── */}
+          {/* ── RESULT CARD ── */}
           {mood && (
             <div
               className="md-result"
-              style={{ "--result-color": mood.color }}
+              style={{ "--result-color": (correctedEmotion ? MOOD_MAPPING[correctedEmotion]?.color : mood.color) }}
             >
               <div className="md-result-top">
-                <div className="md-result-emoji">{mood.emoji}</div>
+                <div className="md-result-emoji">
+                  {correctedEmotion ? MOOD_MAPPING[correctedEmotion]?.emoji : mood.emoji}
+                </div>
                 <div>
                   <div className="md-result-label">Mood Detected</div>
-                  <div className="md-result-name">You seem {mood.name}</div>
-                  <div className="md-result-desc">{mood.description}</div>
+                  <div className="md-result-name">
+                    You seem {correctedEmotion ? MOOD_MAPPING[correctedEmotion]?.name : mood.name}
+                  </div>
+                  <div className="md-result-desc">
+                    {correctedEmotion ? MOOD_MAPPING[correctedEmotion]?.description : mood.description}
+                  </div>
                 </div>
               </div>
+
+              {/* Corrected badge */}
+              {correctedEmotion && (
+                <div className="md-corrected-badge">
+                  ✅ Corrected to <strong style={{ textTransform: 'capitalize', marginLeft: 4 }}>{correctedEmotion}</strong>
+                  &nbsp;— thanks for helping us improve!
+                </div>
+              )}
 
               {useWeather && weatherContext && (
                 <div style={{ marginBottom: '20px', display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', color: '#a78bfa', background: 'rgba(139,92,246,0.1)', padding: '6px 12px', borderRadius: '12px', border: '1px solid rgba(139,92,246,0.2)' }}>
@@ -1477,16 +1872,98 @@ export default function MoodDetection() {
               <div className="md-conf-track">
                 <div
                   className="md-conf-fill"
-                  style={{ width: `${mood.confidence}%`, background: mood.gradient }}
+                  style={{ width: `${mood.confidence}%`, background: correctedEmotion ? MOOD_MAPPING[correctedEmotion]?.gradient : mood.gradient }}
                 />
               </div>
+
+              {/* Loading state while fetching corrected recs */}
+              {isFetchingCorrected && (
+                <div className="md-fetching-corrected">
+                  <div className="md-spinner" style={{ borderColor: 'rgba(139,92,246,0.3)', borderTopColor: '#a78bfa' }} />
+                  Fetching songs for your corrected mood...
+                </div>
+              )}
 
               <button
                 className="md-playlist-btn"
                 onClick={() => navigate("/recommendations")}
+                disabled={isFetchingCorrected}
+                style={isFetchingCorrected ? { opacity: 0.6, cursor: 'not-allowed' } : {}}
               >
-                Create My Mood Playlist →
+                {isFetchingCorrected
+                  ? "Updating playlist..."
+                  : `Create My ${correctedEmotion ? MOOD_MAPPING[correctedEmotion]?.name : mood.name} Playlist →`
+                }
               </button>
+
+              {/* ── Feedback link pill ── */}
+              <div className="md-feedback-wrapper">
+                {!feedbackSent && !correctedEmotion ? (
+                  <button
+                    className="md-feedback-link"
+                    onClick={() => setShowCorrectionModal(true)}
+                    title="Let us know if we got your mood wrong"
+                  >
+                    <span className="md-feedback-icon">💡</span>
+                    <span>Guessed wrong? Help us correct your mood</span>
+                    <span className="md-feedback-arrow">→</span>
+                  </button>
+                ) : (
+                  <div className="md-feedback-confirmed">
+                    <span className="md-feedback-check-circle">✓</span>
+                    <span>Feedback saved! Model will learn from this correction.</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ── Emotion Correction Modal ── */}
+          {showCorrectionModal && (
+            <div
+              className="md-correction-overlay"
+              onClick={(e) => { if (e.target === e.currentTarget) setShowCorrectionModal(false); }}
+            >
+              <div className="md-correction-modal">
+                <button
+                  className="md-correction-close"
+                  onClick={() => setShowCorrectionModal(false)}
+                  title="Close"
+                >✕</button>
+
+                <div className="md-modal-header-badge">
+                  <span className="md-pulse-dot" />
+                  LIVE AI CONTINUOUS LEARNING
+                </div>
+
+                <div className="md-correction-title">What emotion were you actually feeling?</div>
+                <div className="md-correction-sub">
+                  We detected <strong style={{ color: mood?.color || "#a855f7" }}>
+                    {mood?.emoji} {mood?.name}
+                  </strong>. Select your true mood below — your input directly trains and improves our model!
+                </div>
+
+                <div className="md-correction-grid">
+                  {Object.entries(MOOD_MAPPING).map(([key, val]) => {
+                    const isSelected = (correctedEmotion === key) || (mood?.emotion === key && !correctedEmotion);
+                    return (
+                      <button
+                        key={key}
+                        className={`md-emotion-chip ${isSelected ? "active" : ""}`}
+                        style={{
+                          "--chip-color": val.color,
+                          "--chip-gradient": val.gradient,
+                        }}
+                        onClick={() => handleEmotionCorrection(key)}
+                        title={val.name}
+                      >
+                        <span className="md-emotion-chip-emoji">{val.emoji}</span>
+                        <span className="md-emotion-chip-name">{val.name}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           )}
         </section>

@@ -28,7 +28,7 @@ except ImportError as e:
     recommend_from_text = None
     print(f"Warning: Could not load recommendation engine. Error: {e}")
 
-from config.database import mood_sessions_col
+from config.database import mood_sessions_col, emotion_feedback_col
 from routes.auth import get_current_user
 
 router = APIRouter()
@@ -54,6 +54,17 @@ EMOTION_TO_RECOMMENDER = {
     "sadness": "sadness", "joy": "joy", "love": "love",
     "anger": "angry", "fear": "fear", "surprise": "surprise"
 }
+
+ALL_EMOTIONS = ["sadness", "joy", "love", "anger", "fear", "surprise", "neutral"]
+
+
+class EmotionFeedbackRequest(BaseModel):
+    """Payload sent when the user corrects the detected mood."""
+    text: str                        # original input text
+    predicted_emotion: str           # what the model detected
+    user_correct: bool               # True = model was right, False = wrong
+    actual_emotion: Optional[str] = None  # emotion chosen by user (only when wrong)
+    model_version: Optional[str] = "v1.0"
 
 
 @router.post("/detect")
@@ -131,6 +142,57 @@ async def detect_mood(
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/feedback")
+async def submit_emotion_feedback(
+    request: EmotionFeedbackRequest,
+    token: Optional[str] = Depends(oauth2_scheme_optional)
+):
+    """
+    Save user feedback about a mood detection result.
+    - user_correct=True  → model guessed right (still stored for stats)
+    - user_correct=False → actual_emotion is the ground-truth label used for retraining
+    """
+    if emotion_feedback_col is None:
+        # Silently succeed even without DB — frontend should not break
+        return {"status": "ok", "stored": False}
+
+    # Validate actual_emotion when user says model was wrong
+    if not request.user_correct:
+        if not request.actual_emotion or request.actual_emotion not in ALL_EMOTIONS:
+            raise HTTPException(
+                status_code=400,
+                detail=f"actual_emotion must be one of {ALL_EMOTIONS}"
+            )
+
+    doc = {
+        "text":               request.text.strip()[:500],
+        "predicted":          request.predicted_emotion.lower(),
+        "user_correct":       request.user_correct,
+        "actual_label":       request.actual_emotion.lower() if request.actual_emotion else request.predicted_emotion.lower(),
+        "model_version":      request.model_version or "v1.0",
+        "timestamp":          datetime.utcnow(),
+    }
+
+    # Attach user_id if logged in
+    if token:
+        try:
+            from routes.auth import resolve_user_from_token
+            user = await resolve_user_from_token(token)
+            if user:
+                doc["user_id"] = str(user["_id"])
+        except Exception:
+            pass  # anonymous feedback is still valuable
+
+    await emotion_feedback_col.insert_one(doc)
+    return {"status": "ok", "stored": True}
+
+
+@router.get("/emotions")
+async def get_all_emotions():
+    """Return the list of all supported emotions — used by the frontend correction UI."""
+    return {"emotions": ALL_EMOTIONS}
 
 
 @router.get("/journal")

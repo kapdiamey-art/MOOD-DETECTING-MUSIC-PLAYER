@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useRef } from "react";
 import { usePlayer } from "../context/PlayerContext";
 
 // Mood color palettes with primary, secondary, and accent glows
@@ -50,33 +50,51 @@ const MOOD_PALETTES = {
 export default function AmbientAurora() {
   const { isPlaying } = usePlayer();
   const [currentEmotion, setCurrentEmotion] = useState("default");
-  const [mousePos, setMousePos] = useState({ x: 0.5, y: 0.5 });
+  const orb1Ref = useRef(null);
+  const orb2Ref = useRef(null);
 
   // Sync with active emotion from localStorage and document attributes
   useEffect(() => {
     const checkEmotion = () => {
       const stored = localStorage.getItem("moodify_theme_emotion") ||
                      document.documentElement.dataset.mood;
+      let target = "default";
       if (stored && MOOD_PALETTES[stored]) {
-        setCurrentEmotion(stored);
+        target = stored;
       } else {
         try {
           const savedMood = JSON.parse(localStorage.getItem("moodify_mood"));
           if (savedMood?.emotion && MOOD_PALETTES[savedMood.emotion]) {
-            setCurrentEmotion(savedMood.emotion);
+            target = savedMood.emotion;
           }
         } catch {}
       }
+      setCurrentEmotion(prev => (prev !== target ? target : prev));
     };
 
     checkEmotion();
-    const interval = setInterval(checkEmotion, 1500);
+    const interval = setInterval(checkEmotion, 2000);
 
-    // Subtle parallax response to mouse movements
+    // High-performance RAF parallax response to mouse movements (0 React re-renders!)
+    let rafId = null;
+    let latestX = 0;
+    let latestY = 0;
+
     const handleMouseMove = (e) => {
-      const x = e.clientX / window.innerWidth;
-      const y = e.clientY / window.innerHeight;
-      setMousePos({ x, y });
+      latestX = (e.clientX / window.innerWidth - 0.5);
+      latestY = (e.clientY / window.innerHeight - 0.5);
+
+      if (!rafId) {
+        rafId = requestAnimationFrame(() => {
+          if (orb1Ref.current) {
+            orb1Ref.current.style.transform = `translate3d(${latestX * 40}px, ${latestY * 30}px, 0)`;
+          }
+          if (orb2Ref.current) {
+            orb2Ref.current.style.transform = `translate3d(${latestX * -35}px, ${latestY * -25}px, 0)`;
+          }
+          rafId = null;
+        });
+      }
     };
 
     window.addEventListener("mousemove", handleMouseMove, { passive: true });
@@ -84,22 +102,13 @@ export default function AmbientAurora() {
     return () => {
       clearInterval(interval);
       window.removeEventListener("mousemove", handleMouseMove);
+      if (rafId) cancelAnimationFrame(rafId);
     };
   }, []);
 
   const palette = useMemo(() => {
     return MOOD_PALETTES[currentEmotion] || MOOD_PALETTES.default;
   }, [currentEmotion]);
-
-  // Calculate smooth parallax displacement for each orb
-  const orb1Offset = {
-    x: (mousePos.x - 0.5) * 40,
-    y: (mousePos.y - 0.5) * 30
-  };
-  const orb2Offset = {
-    x: (mousePos.x - 0.5) * -35,
-    y: (mousePos.y - 0.5) * -25
-  };
 
   return (
     <div
@@ -108,19 +117,21 @@ export default function AmbientAurora() {
     >
       {/* Primary Ambient Orb */}
       <div
+        ref={orb1Ref}
         className="aurora-orb aurora-orb-1"
         style={{
           background: `radial-gradient(circle, ${palette.primary} 0%, transparent 70%)`,
-          transform: `translate(${orb1Offset.x}px, ${orb1Offset.y}px)`
+          willChange: "transform",
         }}
       />
 
       {/* Secondary Counter-Orb */}
       <div
+        ref={orb2Ref}
         className="aurora-orb aurora-orb-2"
         style={{
           background: `radial-gradient(circle, ${palette.secondary} 0%, transparent 70%)`,
-          transform: `translate(${orb2Offset.x}px, ${orb2Offset.y}px)`
+          willChange: "transform",
         }}
       />
 
