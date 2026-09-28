@@ -1,4 +1,4 @@
-﻿# setup_retraining_schedule.ps1
+# setup_retraining_schedule.ps1
 # Run this ONCE (as administrator) to register the automated retraining task.
 # Runs every 2 days at 3:00 AM, starting TODAY.
 
@@ -6,8 +6,8 @@ $TaskName = "Moodify_FeedbackRetrain"
 $BatPath  = "c:\Users\ameyk\OneDrive\Desktop\PERSISTENT INTERNSHIP\Mood Detecting Music Player\schedule_retraining.bat"
 $LogPath  = "c:\Users\ameyk\OneDrive\Desktop\PERSISTENT INTERNSHIP\Mood Detecting Music Player\Emotion Detection Model\models\scheduler.log"
 
-# Start TODAY at 3:00 AM
-$startDate = (Get-Date).Date.AddHours(3)
+# Start TONIGHT at 3:00 AM (Sept 29)
+$startDate = (Get-Date).Date.AddDays(1).AddHours(3)
 
 $trigger  = New-ScheduledTaskTrigger -Daily -DaysInterval 2 -At $startDate
 $action   = New-ScheduledTaskAction -Execute "cmd.exe" -Argument "/c `"$BatPath`" >> `"$LogPath`" 2>&1"

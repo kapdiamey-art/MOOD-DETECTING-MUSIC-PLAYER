@@ -47,7 +47,7 @@ MODEL_BAK_PATH  = MODELS_DIR / "emotion_model_before_retrain.pth"
 VOCAB_PATH      = MODELS_DIR / "vocabulary.json"
 LOG_PATH        = MODELS_DIR / "retrain_log.jsonl"
 
-MIN_NEW_SAMPLES   = 10
+MIN_NEW_SAMPLES   = 1
 CORRECTION_WEIGHT = 3
 FINETUNE_EPOCHS   = 5
 FINETUNE_LR       = 5e-4

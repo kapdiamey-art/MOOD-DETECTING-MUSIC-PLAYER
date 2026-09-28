@@ -1,10 +1,10 @@
-﻿@echo off
+@echo off
 :: schedule_retraining.bat
 :: Runs the Moodify feedback retraining script.
 :: Triggered by Windows Task Scheduler every 2 days.
 
 set PROJECT_ROOT=c:\Users\ameyk\OneDrive\Desktop\PERSISTENT INTERNSHIP\Mood Detecting Music Player
-set PYTHON_EXE=%PROJECT_ROOT%\Emotion Detection Model\venv\Scripts\python.exe
+set PYTHON_EXE=C:\Users\ameyk\AppData\Local\Programs\Python\Python314\python.exe
 set SCRIPT=%PROJECT_ROOT%\Emotion Detection Model\src\retrain_from_feedback.py
 
 echo ============================================================
