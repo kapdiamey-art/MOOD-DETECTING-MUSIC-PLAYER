@@ -47,11 +47,26 @@ def get_weather_context(
     try:
         if lat is not None and lon is not None:
             url = f"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={OPENWEATHER_API_KEY}&units=metric"
+            res = requests.get(url, timeout=5)
         else:
-            query_city = city or "Mumbai"
+            query_city = (city or "Mumbai").strip()
             url = f"https://api.openweathermap.org/data/2.5/weather?q={query_city}&appid={OPENWEATHER_API_KEY}&units=metric"
+            res = requests.get(url, timeout=5)
 
-        res = requests.get(url, timeout=5)
+            # If 404 (sub-locality not found in OpenWeather database), attempt country code ',IN' or regional fallback
+            if res.status_code == 404:
+                url_country = f"https://api.openweathermap.org/data/2.5/weather?q={query_city},IN&appid={OPENWEATHER_API_KEY}&units=metric"
+                res_country = requests.get(url_country, timeout=5)
+                if res_country.status_code == 200:
+                    res = res_country
+                else:
+                    # Smart regional fallback for Goa sub-localities (e.g. Porvorim, Bicholim, Margao)
+                    fallback_city = "Goa" if any(g in query_city.lower() for g in ["porvorim", "panaji", "margao", "mapusa", "bicholim", "vasco", "calangute"]) else "Mumbai"
+                    url_fb = f"https://api.openweathermap.org/data/2.5/weather?q={fallback_city}&appid={OPENWEATHER_API_KEY}&units=metric"
+                    res_fb = requests.get(url_fb, timeout=5)
+                    if res_fb.status_code == 200:
+                        res = res_fb
+
         if res.status_code == 200:
             data = res.json()
             cond_main = data["weather"][0]["main"]
@@ -87,7 +102,7 @@ def get_weather_context(
                 "time_tag": time_ctx["tag"],
             }
         else:
-            print(f"[weather_service] OpenWeather API error {res.status_code}: {res.text}")
+            print(f"[weather_service] OpenWeather API info {res.status_code}: {res.text}")
     except Exception as e:
         print(f"[weather_service] Exception fetching weather: {e}")
 

@@ -94,25 +94,16 @@ export default function Login() {
       const user = result.user;
       const userEmail = (user.email || "").trim().toLowerCase();
 
-      // Check if user is registered in Moodify's database
-      let isRegistered = false;
-      try {
-        const checkRes = await fetch(`${API_BASE_URL}/auth/check-user`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: userEmail })
-        });
-        const checkData = await checkRes.json();
-        isRegistered = checkData.registered === true;
-      } catch (_) {
-        // If check fails, also look for local registration flag
-        isRegistered = localStorage.getItem("moodifyRegistered_" + userEmail) === "true";
-      }
-
-      if (!isRegistered) {
+      // Check strictly in Firebase Auth if this account was just created (unregistered!)
+      const additionalInfo = getAdditionalUserInfo(result);
+      if (additionalInfo && additionalInfo.isNewUser) {
+        // User was NOT registered in Firebase Auth! Delete temporary account & block login
+        try {
+          await user.delete();
+        } catch (_) {}
         await signOut(auth);
         setError("No Moodify account found for this Google account. Please register first.");
-        setTimeout(() => navigate("/register"), 2000);
+        setTimeout(() => navigate("/register"), 2200);
         return;
       }
 
@@ -142,25 +133,16 @@ export default function Login() {
       const user = result.user;
       const userEmail = (user.email || "").trim().toLowerCase();
 
-      // Check if user is registered in Moodify's database
-      let isRegistered = false;
-      try {
-        const checkRes = await fetch(`${API_BASE_URL}/auth/check-user`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: userEmail })
-        });
-        const checkData = await checkRes.json();
-        isRegistered = checkData.registered === true;
-      } catch (_) {
-        // If check fails, also look for local registration flag
-        isRegistered = localStorage.getItem("moodifyRegistered_" + userEmail) === "true";
-      }
-
-      if (!isRegistered) {
+      // Check strictly in Firebase Auth if this account was just created (unregistered!)
+      const additionalInfo = getAdditionalUserInfo(result);
+      if (additionalInfo && additionalInfo.isNewUser) {
+        // User was NOT registered in Firebase Auth! Delete temporary account & block login
+        try {
+          await user.delete();
+        } catch (_) {}
         await signOut(auth);
         setError("No Moodify account found for this Microsoft account. Please register first.");
-        setTimeout(() => navigate("/register"), 2000);
+        setTimeout(() => navigate("/register"), 2200);
         return;
       }
 

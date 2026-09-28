@@ -142,12 +142,14 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
 
 @router.post("/register-sync")
 async def register_sync(data: dict):
+    import re
     email = data.get("email", "").strip().lower()
     name = data.get("name", "").strip()
     if not email:
         raise HTTPException(400, "Email required")
     if users_col is not None:
-        existing = await users_col.find_one({"email": email})
+        pattern = f"^{re.escape(email)}$"
+        existing = await users_col.find_one({"email": {"$regex": pattern, "$options": "i"}})
         if not existing:
             await users_col.insert_one({
                 "email": email,
@@ -159,11 +161,13 @@ async def register_sync(data: dict):
 
 @router.post("/check-user")
 async def check_user(data: dict):
+    import re
     email = data.get("email", "").strip().lower()
     if not email:
         return {"registered": False}
     if users_col is not None:
-        user = await users_col.find_one({"email": email})
+        pattern = f"^{re.escape(email)}$"
+        user = await users_col.find_one({"email": {"$regex": pattern, "$options": "i"}})
         if user:
             return {"registered": True}
     return {"registered": False}
