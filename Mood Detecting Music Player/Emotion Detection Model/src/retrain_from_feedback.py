@@ -127,12 +127,12 @@ def fetch_feedback():
     return records, doc_ids
 
 
-def update_main_train_csv(new_records):
-    """Permanently append user-corrected feedback samples to train.csv."""
+def create_augmented_csv(new_records):
+    """Create a temporary augmented CSV with new user-corrected samples."""
     import pandas as pd
 
     if not new_records:
-        return
+        return None
 
     df_new = pd.DataFrame(new_records, columns=["text", "emotion"])
 
@@ -144,9 +144,16 @@ def update_main_train_csv(new_records):
     else:
         df_combined = df_new
 
-    df_combined.to_csv(TRAIN_CSV, index=False)
-    log.info(f"Updated train.csv size: {len(df_combined)} (+{len(new_records)} new corrections integrated permanently)")
+    df_combined.to_csv(AUG_CSV, index=False)
+    log.info(f"Created augmented CSV size: {len(df_combined)} (+{len(new_records)} new corrections)")
     return df_combined
+
+def commit_augmented_csv():
+    """Permanently save the augmented CSV as train.csv."""
+    import shutil
+    if AUG_CSV.exists():
+        shutil.copy(AUG_CSV, TRAIN_CSV)
+        log.info(f"Committed augmented CSV to {TRAIN_CSV}")
 
 
 def finetune():
@@ -188,11 +195,23 @@ def finetune():
     model.load_state_dict(torch.load(MODEL_PATH, map_location=device))
     model = model.to(device)
 
-    old_val_acc = _evaluate_val(model, device, FeedbackDataset, VAL_CSV)
+    old_val_acc, old_f1s = _evaluate_val(model, device, FeedbackDataset, VAL_CSV)
     log.info(f"Baseline val accuracy: {old_val_acc:.2f}%")
 
-    train_loader = DataLoader(FeedbackDataset(TRAIN_CSV), batch_size=BATCH_SIZE, shuffle=True)
-    criterion    = nn.CrossEntropyLoss()
+    train_loader = DataLoader(FeedbackDataset(AUG_CSV), batch_size=BATCH_SIZE, shuffle=True)
+    
+    # Calculate class weights
+    df_aug = pd.read_csv(AUG_CSV)
+    counts = df_aug['emotion'].str.lower().map(LABEL_MAP).value_counts().sort_index()
+    counts_arr = torch.ones(7)
+    for k, v in counts.items():
+        if not pd.isna(k):
+            counts_arr[int(k)] = v
+    weights = 1.0 / torch.sqrt(counts_arr)
+    weights = weights / weights.sum() * 7
+    weights = weights.to(device)
+
+    criterion    = nn.CrossEntropyLoss(weight=weights)
     optimizer    = optim.Adam(model.parameters(), lr=FINETUNE_LR)
 
     model.train()
@@ -215,26 +234,31 @@ def finetune():
             f"train_acc={correct/total*100:.2f}%"
         )
 
-    new_val_acc = _evaluate_val(model, device, FeedbackDataset, VAL_CSV)
+    new_val_acc, new_f1s = _evaluate_val(model, device, FeedbackDataset, VAL_CSV)
     log.info(f"New val accuracy: {new_val_acc:.2f}%")
-    return model, new_val_acc, old_val_acc
+    return model, new_val_acc, old_val_acc, new_f1s, old_f1s
 
 
 def _evaluate_val(model, device, DatasetClass, csv_path):
-    """Run inference on val set; return accuracy (%)."""
+    """Run inference on val set; return accuracy (%) and per-class F1."""
     import torch
     from torch.utils.data import DataLoader
+    from sklearn.metrics import f1_score
     val_loader = DataLoader(DatasetClass(csv_path), batch_size=64, shuffle=False)
     model.eval()
-    correct = total = 0
+    all_preds, all_labels = [], []
     with torch.no_grad():
         for inputs, labels in val_loader:
             inputs, labels = inputs.to(device), labels.to(device)
             preds = torch.argmax(model(inputs), dim=1)
-            correct += (preds == labels).sum().item()
-            total   += labels.size(0)
+            all_preds.extend(preds.cpu().tolist())
+            all_labels.extend(labels.cpu().tolist())
     model.train()
-    return correct / total * 100 if total else 0.0
+    
+    total = len(all_labels)
+    acc = sum(1 for p, l in zip(all_preds, all_labels) if p == l) / total * 100 if total else 0.0
+    f1_per_class = f1_score(all_labels, all_preds, average=None, labels=list(range(7)))
+    return acc, f1_per_class
 
 
 def save_model(model):
@@ -362,27 +386,35 @@ def main():
             write_log(log_entry)
             return
 
-        # Fine-tune on the CURRENT train.csv + new corrections (via augmented CSV)
+        # Create the augmented CSV before finetuning
+        create_augmented_csv(new_records)
+
+        # Fine-tune on the temporary AUG_CSV
         # NOTE: We do NOT permanently write to train.csv yet — only do that if the
         #       model passes the accuracy guard below.
-        model, new_val_acc, old_val_acc = finetune()
+        model, new_val_acc, old_val_acc, new_f1s, old_f1s = finetune()
         log_entry["old_val_acc"] = round(old_val_acc, 4)
         log_entry["new_val_acc"] = round(new_val_acc, 4)
 
         drop = old_val_acc - new_val_acc
-        if drop > ACCURACY_DROP_THRESHOLD:
+        f1_drops = [float(old_f1 - new_f1) for old_f1, new_f1 in zip(old_f1s, new_f1s)]
+        max_f1_drop = max(f1_drops) if f1_drops else 0.0
+        
+        # Max allowed F1 drop per class is 5% (0.05)
+        F1_DROP_THRESHOLD = 0.05
+
+        if drop > ACCURACY_DROP_THRESHOLD or max_f1_drop > F1_DROP_THRESHOLD:
             # Model got worse — reject it and keep the old one
             log.warning(
-                f"Val accuracy dropped too much: {old_val_acc:.2f}% -> {new_val_acc:.2f}% "
-                f"(drop={drop:.2f}% > threshold={ACCURACY_DROP_THRESHOLD}%). "
-                "Model NOT saved. Train CSV NOT updated. Feedback kept for next run."
+                f"Model rejected! Acc drop: {drop:.2f}% (Threshold: {ACCURACY_DROP_THRESHOLD}%). "
+                f"Max F1 drop: {max_f1_drop*100:.2f}% (Threshold: {F1_DROP_THRESHOLD*100:.2f}%)."
             )
-            log_entry["status"] = "rejected_accuracy_drop"
+            log_entry["status"] = "rejected_performance_drop"
             # Feedback docs are intentionally NOT marked as retrained
             # so they will be included again in the next retraining attempt
         else:
             # Model is good — now permanently integrate corrections into train.csv
-            update_main_train_csv(new_records)
+            commit_augmented_csv()
             save_model(model)
             mark_docs_retrained(doc_ids)
             log_entry["model_updated"] = True

@@ -72,14 +72,28 @@ def prepare_input(text):
     return torch.tensor([sequence], dtype=torch.long)
 
 
+import os
+
 def load_model():
     # Upgraded BiLSTM + Multi-Head Self-Attention model (93.24% accuracy)
     loaded_model = SelfTrainedAttentionEmotionModel(len(word_to_index), EMBEDDING_DIM, HIDDEN_DIM, NUM_CLASSES)
     loaded_model.load_state_dict(torch.load(BASE_DIR / "models" / "emotion_model.pth", map_location=device))
     return loaded_model.to(device).eval()
 
+model = None
+last_model_mtime = 0
 
-model = load_model()
+def get_model():
+    global model, last_model_mtime
+    model_path = BASE_DIR / "models" / "emotion_model.pth"
+    try:
+        current_mtime = os.path.getmtime(model_path)
+    except OSError:
+        current_mtime = 0
+    if model is None or current_mtime > last_model_mtime:
+        model = load_model()
+        last_model_mtime = current_mtime
+    return model
 
 
 CRISIS_KEYWORDS = {
@@ -272,7 +286,8 @@ def predict_emotion(text, confidence_threshold=CONFIDENCE_THRESHOLD, margin_thre
             }
 
     with torch.no_grad():
-        probabilities = torch.softmax(model(prepare_input(text).to(device)), dim=1)[0]
+        current_model = get_model()
+        probabilities = torch.softmax(current_model(prepare_input(text).to(device)), dim=1)[0]
         values, indices = torch.topk(probabilities, k=2)
     top_index, second_index = indices.tolist()
     confidence, second_confidence = values.tolist()

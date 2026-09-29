@@ -81,9 +81,28 @@ print(model)
 
 
 
+import pandas as pd
+import numpy as np
+
+# Calculate class weights for imbalanced dataset
+LABEL_MAP = {
+    "sadness": 0, "joy": 1, "love": 2,
+    "anger": 3, "fear": 4, "surprise": 5, "neutral": 6,
+}
+
+df_train = pd.read_csv("data/processed/train.csv")
+counts = df_train['emotion'].str.lower().map(LABEL_MAP).value_counts().sort_index()
+counts_arr = torch.ones(NUM_CLASSES)
+for k, v in counts.items():
+    if not pd.isna(k):
+        counts_arr[int(k)] = v
+weights = 1.0 / torch.sqrt(counts_arr)
+weights = weights / weights.sum() * NUM_CLASSES
+weights = weights.to(device)
+
 # 6. Loss Function
 
-criterion = nn.CrossEntropyLoss()
+criterion = nn.CrossEntropyLoss(weight=weights)
 
 # 7. Optimizer
 

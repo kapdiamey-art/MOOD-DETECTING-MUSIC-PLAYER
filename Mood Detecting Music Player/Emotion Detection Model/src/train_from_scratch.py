@@ -56,8 +56,27 @@ def train_model():
     model = SelfTrainedAttentionEmotionModel(vocab_size=vocab_size, embedding_dim=128, hidden_dim=128, num_classes=7)
     model = model.to(device)
 
-    # Label Smoothing Cross-Entropy Loss to prevent overconfidence
-    criterion = nn.CrossEntropyLoss(label_smoothing=0.1)
+    # Calculate class weights for imbalanced dataset
+    import pandas as pd
+    import numpy as np
+    
+    LABEL_MAP = {
+        "sadness": 0, "joy": 1, "love": 2,
+        "anger": 3, "fear": 4, "surprise": 5, "neutral": 6,
+    }
+    
+    df_train = pd.read_csv(os.path.join(BASE_DIR, "data", "processed", "train.csv"))
+    counts = df_train['emotion'].str.lower().map(LABEL_MAP).value_counts().sort_index()
+    counts_arr = torch.ones(7)
+    for k, v in counts.items():
+        if not pd.isna(k):
+            counts_arr[int(k)] = v
+    weights = 1.0 / torch.sqrt(counts_arr)
+    weights = weights / weights.sum() * 7
+    weights = weights.to(device)
+
+    # Label Smoothing Cross-Entropy Loss to prevent overconfidence, with class weights
+    criterion = nn.CrossEntropyLoss(weight=weights, label_smoothing=0.1)
 
     # AdamW Optimizer + Weight Decay
     optimizer = optim.AdamW(model.parameters(), lr=1e-3, weight_decay=0.01)
@@ -118,6 +137,70 @@ def train_model():
 
     print(f"\nTraining Complete! Best Validation Accuracy achieved: {best_val_acc:.2f}%")
     print(f"Saved self-trained model checkpoint to: models/emotion_model.pth")
+
+    # Auto push to GitHub after successful training
+    push_to_github(best_val_acc)
+
+
+def push_to_github(best_val_acc: float):
+    """Commit updated model weights, vocabulary, and datasets to git and push."""
+    import subprocess
+    from datetime import datetime, timezone
+
+    REPO_ROOT = BASE_DIR.parent  # Root of the git repo (one level above Emotion Detection Model)
+
+    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    commit_msg = f"[auto-train] {timestamp} | best_val_acc={best_val_acc:.2f}%"
+
+    files_to_stage = [
+        os.path.join(BASE_DIR, "models", "emotion_model.pth"),
+        os.path.join(BASE_DIR, "models", "vocabulary.json"),
+        os.path.join(BASE_DIR, "data", "processed", "train.csv"),
+        os.path.join(BASE_DIR, "data", "processed", "val.csv"),
+        os.path.join(BASE_DIR, "data", "processed", "test.csv"),
+        os.path.join(BASE_DIR, "src", "train_from_scratch.py"),
+        os.path.join(BASE_DIR, "src", "retrain_from_feedback.py"),
+        os.path.join(BASE_DIR, "src", "predict.py"),
+        os.path.join(BASE_DIR, "src", "regression_test.py"),
+    ]
+
+    def run_git(args):
+        result = subprocess.run(
+            ["git"] + args,
+            cwd=str(REPO_ROOT),
+            capture_output=True,
+            text=True,
+        )
+        return result.returncode, (result.stdout + result.stderr).strip()
+
+    try:
+        rc, out = run_git(["add"] + files_to_stage)
+        if rc != 0:
+            print(f"[git] add failed: {out}")
+            return
+
+        rc, status = run_git(["status", "--porcelain"])
+        if not status.strip():
+            print("[git] Nothing to commit — model unchanged.")
+            return
+
+        rc, out = run_git(["commit", "-m", commit_msg])
+        if rc != 0:
+            print(f"[git] commit failed: {out}")
+            return
+        print(f"[git] Committed: '{commit_msg}'")
+
+        rc, out = run_git(["push", "origin", "HEAD"])
+        if rc != 0:
+            print(f"[git] push failed: {out}")
+            print("[git] Model saved locally. Push manually if needed.")
+        else:
+            print(f"[git] Pushed to GitHub successfully! Render will redeploy.")
+
+    except FileNotFoundError:
+        print("[git] 'git' not found in PATH. Skipping auto-push.")
+    except Exception as e:
+        print(f"[git] Unexpected error: {e}")
 
 
 if __name__ == "__main__":
