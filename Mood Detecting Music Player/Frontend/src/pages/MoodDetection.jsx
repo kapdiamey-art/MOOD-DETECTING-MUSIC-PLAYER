@@ -1274,68 +1274,60 @@ export default function MoodDetection() {
           display: flex;
           justify-content: center;
           width: 100%;
-          margin-top: 14px;
+          margin-top: 10px;
         }
         .md-feedback-link {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          gap: 6px;
-          padding: 7px 16px;
+          gap: 4px;
+          padding: 4px 11px;
           border-radius: 99px;
-          background: rgba(168, 85, 247, 0.12);
-          border: 1px solid rgba(168, 85, 247, 0.35);
-          color: #d8b4fe;
-          font-weight: 600;
-          font-size: 0.81rem;
+          background: rgba(168, 85, 247, 0.07);
+          border: 1px solid rgba(168, 85, 247, 0.22);
+          color: rgba(196, 181, 253, 0.65);
+          font-weight: 500;
+          font-size: 0.72rem;
           font-family: inherit;
           cursor: pointer;
-          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-          box-shadow: 0 2px 10px rgba(0,0,0,0.12);
-          backdrop-filter: blur(8px);
+          opacity: 0.8;
+          transition: all 0.2s ease;
         }
         .md-feedback-link:hover {
-          background: rgba(168, 85, 247, 0.24);
-          border-color: rgba(168, 85, 247, 0.6);
-          color: #ffffff;
+          background: rgba(168, 85, 247, 0.18);
+          border-color: rgba(168, 85, 247, 0.5);
+          color: #d8b4fe;
+          opacity: 1;
           transform: translateY(-1px);
-          box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3);
+          box-shadow: 0 3px 10px rgba(168, 85, 247, 0.2);
         }
-        .md-feedback-icon {
-          font-size: 0.95rem;
-          animation: pulseIcon 2s infinite ease-in-out;
-        }
-        @keyframes pulseIcon {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.2); }
-        }
+        .md-feedback-icon { font-size: 0.75rem; }
         .md-feedback-arrow {
-          opacity: 0.7;
-          font-size: 0.85rem;
+          opacity: 0.5;
+          font-size: 0.72rem;
           transition: transform 0.2s;
         }
         .md-feedback-link:hover .md-feedback-arrow {
-          transform: translateX(3px);
-          opacity: 1;
+          transform: translateX(2px);
+          opacity: 0.9;
         }
 
         .md-feedback-confirmed {
           display: inline-flex;
           align-items: center;
-          justify-content: center;
-          gap: 8px;
-          padding: 6px 14px;
+          gap: 5px;
+          padding: 4px 10px;
           border-radius: 99px;
-          background: rgba(16, 185, 129, 0.12);
-          border: 1px solid rgba(16, 185, 129, 0.35);
-          color: #34d399;
-          font-size: 0.81rem;
-          font-weight: 600;
-          animation: fadeIn 0.4s ease;
+          background: rgba(16, 185, 129, 0.08);
+          border: 1px solid rgba(16, 185, 129, 0.25);
+          color: rgba(52, 211, 153, 0.75);
+          font-size: 0.7rem;
+          font-weight: 500;
+          animation: fadeIn 0.3s ease;
         }
         .md-feedback-check-circle {
-          width: 18px;
-          height: 18px;
+          width: 13px;
+          height: 13px;
           border-radius: 50%;
           background: #10b981;
           color: #000;
@@ -1343,7 +1335,7 @@ export default function MoodDetection() {
           align-items: center;
           justify-content: center;
           font-weight: 900;
-          font-size: 0.7rem;
+          font-size: 0.55rem;
           flex-shrink: 0;
         }
 

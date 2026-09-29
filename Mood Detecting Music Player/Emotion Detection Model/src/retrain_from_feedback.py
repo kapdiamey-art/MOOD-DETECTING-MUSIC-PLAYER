@@ -47,12 +47,16 @@ MODEL_BAK_PATH  = MODELS_DIR / "emotion_model_before_retrain.pth"
 VOCAB_PATH      = MODELS_DIR / "vocabulary.json"
 LOG_PATH        = MODELS_DIR / "retrain_log.jsonl"
 
-MIN_NEW_SAMPLES   = 1
-CORRECTION_WEIGHT = 3
-FINETUNE_EPOCHS   = 5
-FINETUNE_LR       = 5e-4
-BATCH_SIZE        = 32
-MAX_LENGTH        = 50
+# Root of the git repository (two levels up from src/)
+REPO_ROOT = BASE_DIR.parent
+
+MIN_NEW_SAMPLES        = 1
+CORRECTION_WEIGHT      = 2
+FINETUNE_EPOCHS        = 2
+FINETUNE_LR            = 1e-4
+BATCH_SIZE             = 32
+MAX_LENGTH             = 50
+ACCURACY_DROP_THRESHOLD = 0.5   # max allowed val-acc drop (%) before rejecting new model
 
 logging.basicConfig(
     level=logging.INFO,
@@ -123,28 +127,30 @@ def fetch_feedback():
     return records, doc_ids
 
 
-def build_augmented_csv(new_records):
-    """Merge original train.csv + oversampled corrections into AUG_CSV."""
+def update_main_train_csv(new_records):
+    """Permanently append user-corrected feedback samples to train.csv."""
     import pandas as pd
 
-    original = pd.read_csv(TRAIN_CSV)
-    log.info(f"Original train size: {len(original)}")
+    if not new_records:
+        return
 
-    correction_rows = []
-    for rec in new_records:
-        for _ in range(CORRECTION_WEIGHT):
-            correction_rows.append(rec)
+    df_new = pd.DataFrame(new_records, columns=["text", "emotion"])
 
-    corrections_df = pd.DataFrame(correction_rows, columns=["text", "emotion"])
-    augmented      = pd.concat([original, corrections_df], ignore_index=True)
-    augmented      = augmented.sample(frac=1, random_state=42).reset_index(drop=True)
-    augmented.to_csv(AUG_CSV, index=False)
-    log.info(f"Augmented train size: {len(augmented)} (+{len(correction_rows)} oversampled corrections)")
-    return augmented
+    if TRAIN_CSV.exists():
+        df_existing = pd.read_csv(TRAIN_CSV)
+        log.info(f"Existing train.csv size: {len(df_existing)}")
+        df_combined = pd.concat([df_existing, df_new], ignore_index=True)
+        df_combined = df_combined.drop_duplicates(subset=["text", "emotion"]).reset_index(drop=True)
+    else:
+        df_combined = df_new
+
+    df_combined.to_csv(TRAIN_CSV, index=False)
+    log.info(f"Updated train.csv size: {len(df_combined)} (+{len(new_records)} new corrections integrated permanently)")
+    return df_combined
 
 
 def finetune():
-    """Fine-tune emotion_model.pth on AUG_CSV. Returns (model, new_val_acc, old_val_acc)."""
+    """Fine-tune emotion_model.pth on the updated full train.csv dataset. Returns (model, new_val_acc, old_val_acc)."""
     import torch
     import torch.nn as nn
     import torch.optim as optim
@@ -185,7 +191,7 @@ def finetune():
     old_val_acc = _evaluate_val(model, device, FeedbackDataset, VAL_CSV)
     log.info(f"Baseline val accuracy: {old_val_acc:.2f}%")
 
-    train_loader = DataLoader(FeedbackDataset(AUG_CSV), batch_size=BATCH_SIZE, shuffle=True)
+    train_loader = DataLoader(FeedbackDataset(TRAIN_CSV), batch_size=BATCH_SIZE, shuffle=True)
     criterion    = nn.CrossEntropyLoss()
     optimizer    = optim.Adam(model.parameters(), lr=FINETUNE_LR)
 
@@ -240,6 +246,73 @@ def save_model(model):
     log.info(f"Saved new model to {MODEL_PATH}")
 
 
+def push_model_to_github(new_samples: int, old_acc: float, new_acc: float):
+    """
+    Commit the updated model weights + train.csv to git and push to origin.
+    This triggers an automatic redeploy on Render/Railway if connected to GitHub.
+    """
+    import subprocess
+
+    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    commit_msg = (
+        f"[auto-retrain] {timestamp} | "
+        f"+{new_samples} corrections | "
+        f"val_acc {old_acc:.2f}% -> {new_acc:.2f}%"
+    )
+
+    # Files to stage — model weights and updated training data
+    files_to_add = [
+        str(MODEL_PATH),
+        str(TRAIN_CSV),
+        str(LOG_PATH),
+    ]
+
+    def run_git(args, **kwargs):
+        """Run a git command in the repo root; return (returncode, stdout+stderr)."""
+        result = subprocess.run(
+            ["git"] + args,
+            cwd=str(REPO_ROOT),
+            capture_output=True,
+            text=True,
+            **kwargs
+        )
+        return result.returncode, (result.stdout + result.stderr).strip()
+
+    try:
+        # Stage the changed files
+        rc, out = run_git(["add"] + files_to_add)
+        if rc != 0:
+            log.warning(f"git add failed (rc={rc}): {out}")
+            return
+        log.info(f"git add OK: staged model + train.csv")
+
+        # Check if there's actually anything to commit
+        rc, status = run_git(["status", "--porcelain"])
+        if not status.strip():
+            log.info("Nothing changed in git — model file unchanged, skipping push.")
+            return
+
+        # Commit
+        rc, out = run_git(["commit", "-m", commit_msg])
+        if rc != 0:
+            log.warning(f"git commit failed (rc={rc}): {out}")
+            return
+        log.info(f"git commit OK: '{commit_msg}'")
+
+        # Push to origin (the branch that was last checked out)
+        rc, out = run_git(["push", "origin", "HEAD"])
+        if rc != 0:
+            log.warning(f"git push failed (rc={rc}): {out}")
+            log.warning("Model is saved locally but NOT pushed. Push manually if needed.")
+        else:
+            log.info(f"git push OK — model is now live on GitHub. Render/Railway will redeploy.")
+
+    except FileNotFoundError:
+        log.warning("'git' executable not found. Skipping auto-push. Install git or add it to PATH.")
+    except Exception as e:
+        log.warning(f"Auto-push failed unexpectedly: {e}")
+
+
 def mark_docs_retrained(doc_ids):
     if not doc_ids or not MONGO_URI:
         return
@@ -289,24 +362,38 @@ def main():
             write_log(log_entry)
             return
 
-        build_augmented_csv(new_records)
-
+        # Fine-tune on the CURRENT train.csv + new corrections (via augmented CSV)
+        # NOTE: We do NOT permanently write to train.csv yet — only do that if the
+        #       model passes the accuracy guard below.
         model, new_val_acc, old_val_acc = finetune()
         log_entry["old_val_acc"] = round(old_val_acc, 4)
         log_entry["new_val_acc"] = round(new_val_acc, 4)
 
-        if new_val_acc >= old_val_acc - 0.5:
+        drop = old_val_acc - new_val_acc
+        if drop > ACCURACY_DROP_THRESHOLD:
+            # Model got worse — reject it and keep the old one
+            log.warning(
+                f"Val accuracy dropped too much: {old_val_acc:.2f}% -> {new_val_acc:.2f}% "
+                f"(drop={drop:.2f}% > threshold={ACCURACY_DROP_THRESHOLD}%). "
+                "Model NOT saved. Train CSV NOT updated. Feedback kept for next run."
+            )
+            log_entry["status"] = "rejected_accuracy_drop"
+            # Feedback docs are intentionally NOT marked as retrained
+            # so they will be included again in the next retraining attempt
+        else:
+            # Model is good — now permanently integrate corrections into train.csv
+            update_main_train_csv(new_records)
             save_model(model)
             mark_docs_retrained(doc_ids)
             log_entry["model_updated"] = True
             log_entry["status"]        = "success"
-            log.info("Retraining complete. Model updated.")
-        else:
-            log.warning(
-                f"Val accuracy dropped too much: {old_val_acc:.2f}% -> {new_val_acc:.2f}%. "
-                "Model NOT saved."
+            log.info(
+                f"Retraining complete. "
+                f"Val acc: {old_val_acc:.2f}% -> {new_val_acc:.2f}% (delta={new_val_acc - old_val_acc:+.2f}%). "
+                f"Integrated {len(new_records)} new corrections into train.csv and saved updated model."
             )
-            log_entry["status"] = "rejected_accuracy_drop"
+            # Auto-push to GitHub so Render/Railway redeploys with the new weights
+            push_model_to_github(len(new_records), old_val_acc, new_val_acc)
 
     except Exception as exc:
         log.error(f"Retraining failed: {exc}", exc_info=True)

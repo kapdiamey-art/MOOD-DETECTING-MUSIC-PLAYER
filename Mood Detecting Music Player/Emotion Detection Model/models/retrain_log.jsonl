@@ -1,2 +1,5 @@
 {"run_at": "2026-09-28T17:37:35.930977+00:00", "status": "skipped_insufficient_data", "new_samples": 3, "old_val_acc": null, "new_val_acc": null, "model_updated": false, "error": null}
 {"run_at": "2026-09-28T17:37:35.930977+00:00", "status": "skipped_insufficient_data", "new_samples": 3, "old_val_acc": null, "new_val_acc": null, "model_updated": false, "error": null}
+{"run_at": "2026-09-28T17:57:07.611504+00:00", "status": "rejected_accuracy_drop", "new_samples": 3, "old_val_acc": 93.3934, "new_val_acc": 92.4925, "model_updated": false, "error": null}
+{"run_at": "2026-09-29T03:30:44.301600+00:00", "status": "success", "new_samples": 3, "old_val_acc": 93.3934, "new_val_acc": 93.3934, "model_updated": true, "error": null}
+{"run_at": "2026-09-29T03:36:06.558325+00:00", "status": "success", "new_samples": 3, "old_val_acc": 93.3934, "new_val_acc": 93.3433, "model_updated": true, "error": null}
